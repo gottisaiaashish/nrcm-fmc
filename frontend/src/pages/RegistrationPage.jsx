@@ -120,6 +120,50 @@ export default function RegistrationPage() {
     );
   }
 
+  if (isClosed) {
+    return (
+      <div className="min-h-screen w-full bg-[#F0ECD9] text-[#17171a] flex flex-col justify-between items-center px-6 py-10">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
+          <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#17171a]">
+            NRCM.FMC // RECRUITMENT 2026
+          </span>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#17171a] text-[#F0ECD9] hover:bg-red-600 transition-all font-mono text-xs font-bold uppercase tracking-widest cursor-pointer shadow-md"
+          >
+            <span>← BACK TO SITE</span>
+          </button>
+        </div>
+
+        <div className="w-full max-w-3xl mx-auto text-center py-12 flex flex-col items-center my-auto">
+          <div className="w-20 h-20 rounded-full bg-red-600/10 text-red-600 border-4 border-[#17171a] mb-8 flex items-center justify-center shadow-[4px_4px_0px_#17171a]">
+            <ChevronDown className="w-10 h-10 rotate-90 stroke-[3]" />
+          </div>
+
+          <h1 className="font-sans font-black uppercase text-4xl sm:text-6xl md:text-7xl text-[#17171a] tracking-tight leading-none mb-6 text-center">
+            SORRY, RECRUITMENT HAS BEEN CLOSED
+          </h1>
+
+          <p className="font-mono text-xs sm:text-base font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed max-w-xl mb-10 text-center">
+            APPLICATIONS FOR NRCM FILM MAKING CLUB RECRUITMENT 2026 ARE CURRENTLY CLOSED. THANK YOU FOR YOUR INTEREST!
+          </p>
+
+          <button
+            onClick={() => navigate('/')}
+            className="px-10 py-5 rounded-2xl bg-[#e50914] text-white font-mono text-sm sm:text-base font-black tracking-[0.15em] uppercase border-4 border-[#17171a] shadow-[6px_6px_0px_#17171a] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer flex items-center gap-3"
+          >
+            <span>RETURN TO HOME</span>
+            <ArrowRight className="w-5 h-5 stroke-[3]" />
+          </button>
+        </div>
+
+        <div className="w-full text-center font-mono text-xs font-bold text-[#17171a]/40 uppercase tracking-widest">
+          © 2026 NRCM FILM MAKING CLUB · OFFICIAL RECRUITMENT
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={S.page}>
 
@@ -148,12 +192,12 @@ export default function RegistrationPage() {
         <div style={S.metaRow}>
           {[
             { label: 'CLUB', val: 'NRCM.FMC' },
-            { label: 'STATUS', val: isClosed ? 'RECRUITMENT CLOSED' : 'APPLICATIONS OPEN' },
+            { label: 'STATUS', val: 'APPLICATIONS OPEN' },
             { label: 'ELIGIBILITY', val: 'ALL BRANCHES' },
           ].map((item, i) => (
             <div key={i} style={S.metaCell(i === 2)}>
               <span style={S.metaLbl}>{item.label}</span>
-              <span style={{ ...S.metaVal, color: i === 1 && isClosed ? '#ef4444' : S.metaVal.color }}>{item.val}</span>
+              <span style={S.metaVal}>{item.val}</span>
             </div>
           ))}
         </div>
@@ -161,29 +205,12 @@ export default function RegistrationPage() {
 
       {/* FORM */}
       <div style={S.formWrap}>
-        {isClosed ? (
-          <div className="w-full text-center py-16 px-6 bg-[#EBE7D3] border-4 border-[#17171a] rounded-3xl shadow-[8px_8px_0px_#17171a] flex flex-col items-center">
-            <h2 className="font-sans font-black uppercase text-3xl sm:text-5xl text-[#17171a] mb-4 tracking-tight leading-tight">
-              SORRY, RECRUITMENT HAS BEEN CLOSED
-            </h2>
-            <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed mb-8">
-              APPLICATIONS FOR NRCM FILM MAKING CLUB RECRUITMENT 2026 ARE CURRENTLY CLOSED. THANK YOU FOR YOUR INTEREST!
-            </p>
-            <button
-              onClick={() => navigate('/')}
-              className="px-8 py-4 rounded-2xl bg-[#e50914] text-white font-mono text-xs sm:text-sm font-black tracking-widest uppercase border-4 border-[#17171a] shadow-[4px_4px_0px_#17171a] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer"
-            >
-              RETURN TO HOME
-            </button>
-          </div>
-        ) : (
-          <>
-            <div style={S.heading}>
-              <h2 style={S.h2}>JOIN THE CLUB</h2>
-              <p style={S.subtext}>Fill in your details to apply for NRCM FMC Crew</p>
-            </div>
+        <div style={S.heading}>
+          <h2 style={S.h2}>JOIN THE CLUB</h2>
+          <p style={S.subtext}>Fill in your details to apply for NRCM FMC Crew</p>
+        </div>
 
-            <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           
           {/* 1. Full Name */}
           <div style={S.fieldWrap}>
@@ -327,8 +354,6 @@ export default function RegistrationPage() {
             {loading ? 'SUBMITTING...' : <>SUBMIT APPLICATION <ArrowRight size={16} strokeWidth={3} /></>}
           </button>
         </form>
-        </>
-        )}
 
         <p style={S.footer}>© NRCM Film Making Club · Official Recruitment 2026</p>
       </div>
