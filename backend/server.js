@@ -47,20 +47,18 @@ const brevoTransporter = rawBrevoKey
     })
   : null;
 
-// Nodemailer Transporter Configuration (Direct Gmail Fallback)
-const transporter = EMAIL_USER && EMAIL_PASS
+// Direct Gmail Transporter (Sends 100% cleanly from nrcmfmc@gmail.com)
+const gmailTransporter = EMAIL_USER && EMAIL_PASS
   ? nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // Use STARTTLS
-      requireTLS: true,
+      port: 465,
+      secure: true,
       auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS,
       },
-      tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
+      lookup: (hostname, options, callback) => {
+        dns.lookup(hostname, { family: 4 }, callback);
       },
       connectionTimeout: 15000,
       greetingTimeout: 15000,
@@ -122,6 +120,26 @@ Narsimha Reddy Engineering College
 `;
 
   try {
+    if (gmailTransporter) {
+      try {
+        await gmailTransporter.sendMail({
+          from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
+          replyTo: EMAIL_USER,
+          to: email,
+          subject: `NRCM.FMC Application Under Review - ${name}`,
+          text: textContent,
+          html: htmlContent,
+          headers: {
+            'X-Entity-Ref-ID': passId,
+          }
+        });
+        console.log(`✉️ [GMAIL DIRECT SENT] Confirmation email sent directly from ${EMAIL_USER} to ${email} (${name})`);
+        return;
+      } catch (gmailErr) {
+        console.warn(`⚠️ [GMAIL DIRECT FAILED, FALLING BACK TO BREVO]:`, gmailErr.message);
+      }
+    }
+
     if (brevoTransporter) {
       await brevoTransporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
@@ -132,21 +150,8 @@ Narsimha Reddy Engineering College
         html: htmlContent
       });
       console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
-    } else if (transporter) {
-      await transporter.sendMail({
-        from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
-        replyTo: EMAIL_USER,
-        to: email,
-        subject: `NRCM.FMC Application Under Review - ${name}`,
-        text: textContent,
-        html: htmlContent,
-        headers: {
-          'X-Entity-Ref-ID': passId,
-        }
-      });
-      console.log(`✉️ [GMAIL SMTP SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
     } else {
-      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure BREVO_API_KEY or EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
     }
   } catch (err) {
     console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
