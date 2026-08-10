@@ -120,6 +120,34 @@ Narsimha Reddy Engineering College
 `;
 
   try {
+    // 1. Try Brevo REST API (HTTPS Port 443 - NEVER BLOCKED BY RENDER)
+    if (rawBrevoKey && rawBrevoKey.startsWith('xkeysib-')) {
+      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': rawBrevoKey,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'NRCM Film Making Club', email: EMAIL_USER },
+          replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER },
+          to: [{ email: email, name: name }],
+          subject: `NRCM.FMC Application Under Review - ${name}`,
+          htmlContent: htmlContent,
+          textContent: textContent
+        })
+      });
+      const resData = await resp.json();
+      if (resp.ok) {
+        console.log(`✉️ [BREVO API SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER} - MessageID: ${resData.messageId}`);
+        return;
+      } else {
+        console.error(`⚠️ [BREVO API ERROR]:`, resData);
+      }
+    }
+
+    // 2. Try Brevo SMTP Relay
     if (brevoTransporter) {
       await brevoTransporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
@@ -151,7 +179,7 @@ Narsimha Reddy Engineering College
         console.warn(`⚠️ [GMAIL DIRECT FAILED]:`, gmailErr.message);
       }
     } else {
-      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure BREVO_API_KEY in environment variables to dispatch live emails.`);
     }
   } catch (err) {
     console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
