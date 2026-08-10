@@ -1,5 +1,6 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, Sparkles } from 'lucide-react';
+import MotionButton from './MotionButton';
 
 export default function EventsSection({ onRegisterEvent }) {
   return (
@@ -63,13 +64,10 @@ export default function EventsSection({ onRegisterEvent }) {
 
               {/* Action CTA Button */}
               <div className="w-full pt-4 flex justify-center">
-                <button
+                <MotionButton
+                  label="REGISTER NOW"
                   onClick={onRegisterEvent}
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white font-mono text-xs tracking-[0.2em] font-extrabold uppercase shadow-[0_0_25px_rgba(229,9,20,0.5)] hover:shadow-[0_0_35px_rgba(229,9,20,0.7)] hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2.5 border border-red-400/30 cursor-pointer"
-                >
-                  REGISTER NOW
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                </button>
+                />
               </div>
 
             </div>
