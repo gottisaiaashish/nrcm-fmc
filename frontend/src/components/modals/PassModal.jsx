@@ -9,6 +9,7 @@ export default function PassModal({ isOpen, onClose }) {
     mobile: '',
     email: '',
     branch: 'CSE',
+    year: '1ST YEAR',
     interestedArea: 'Cinematography / Camera',
     previousExperience: 'No',
     portfolioLink: '',
@@ -23,19 +24,24 @@ export default function PassModal({ isOpen, onClose }) {
     e.preventDefault();
     setLoading(true);
 
+    const submissionData = {
+      ...formData,
+      branch: `${formData.branch} — ${formData.year}`
+    };
+
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       await fetch(`${apiUrl}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submissionData)
       });
       const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
+      existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...submissionData, createdAt: new Date().toISOString() });
       localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
     } catch (err) {
       const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
+      existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...submissionData, createdAt: new Date().toISOString() });
       localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
     } finally {
       setLoading(false);
@@ -99,19 +105,30 @@ export default function PassModal({ isOpen, onClose }) {
               </div>
 
               {/* 4. Branch & Year */}
-              <div className="flex flex-col text-left w-full">
-                <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">4. BRANCH &amp; YEAR *</label>
-                <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} className={selectClass}>
-                  <option value="CSE">CSE — COMPUTER SCIENCE</option>
-                  <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
-                  <option value="EEE">EEE — ELECTRICAL &amp; ELECTRONICS</option>
-                  <option value="AIML">AIML — AI &amp; MACHINE LEARNING</option>
-                  <option value="CYBER SECURITY">CYBER SECURITY</option>
-                  <option value="CIVIL">CIVIL — CIVIL ENGG</option>
-                  <option value="MECH">MECH — MECHANICAL</option>
-                  <option value="IT">IT — INFORMATION TECH</option>
-                  <option value="OTHER">OTHER</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">4. BRANCH *</label>
+                  <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} className={selectClass}>
+                    <option value="CSE">CSE — COMPUTER SCIENCE</option>
+                    <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
+                    <option value="EEE">EEE — ELECTRICAL &amp; ELECTRONICS</option>
+                    <option value="AIML">AIML — AI &amp; MACHINE LEARNING</option>
+                    <option value="CYBER SECURITY">CYBER SECURITY</option>
+                    <option value="CIVIL">CIVIL — CIVIL ENGG</option>
+                    <option value="MECH">MECH — MECHANICAL</option>
+                    <option value="IT">IT — INFORMATION TECH</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </div>
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">YEAR OF STUDY *</label>
+                  <select value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} className={selectClass}>
+                    <option value="1ST YEAR">1ST YEAR (I YEAR)</option>
+                    <option value="2ND YEAR">2ND YEAR (II YEAR)</option>
+                    <option value="3RD YEAR">3RD YEAR (III YEAR)</option>
+                    <option value="4TH YEAR">4TH YEAR (IV YEAR)</option>
+                  </select>
+                </div>
               </div>
 
               {/* 5. Interested Area */}

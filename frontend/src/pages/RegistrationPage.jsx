@@ -11,6 +11,7 @@ export default function RegistrationPage() {
     mobile: '',
     email: '',
     branch: 'CSE',
+    year: '1ST YEAR',
     interestedArea: 'Cinematography / Camera',
     previousExperience: 'No',
     portfolioLink: '',
@@ -22,15 +23,19 @@ export default function RegistrationPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const submissionData = {
+      ...formData,
+      branch: `${formData.branch} — ${formData.year}`
+    };
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       await fetch(`${apiUrl}/api/register`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submissionData)
       });
     } catch (_) {}
     const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-    existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
+    existing.unshift({ _id: `FMC-APP-${Date.now()}`, passId: `FMC-APP-${Date.now()}`, ...submissionData, createdAt: new Date().toISOString() });
     localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
     setLoading(false);
     setSubmitted(true);
@@ -174,21 +179,36 @@ export default function RegistrationPage() {
           </div>
 
           {/* 4. Branch & Year */}
-          <div style={S.fieldWrap}>
-            <label style={S.label}>4. BRANCH &amp; YEAR *</label>
-            <div style={{ position: 'relative' }}>
-              <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} style={S.select}>
-                <option value="CSE">CSE — COMPUTER SCIENCE</option>
-                <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
-                <option value="EEE">EEE — ELECTRICAL &amp; ELECTRONICS</option>
-                <option value="AIML">AIML — AI &amp; MACHINE LEARNING</option>
-                <option value="CYBER SECURITY">CYBER SECURITY</option>
-                <option value="CIVIL">CIVIL — CIVIL ENGG</option>
-                <option value="MECH">MECH — MECHANICAL</option>
-                <option value="IT">IT — INFORMATION TECH</option>
-                <option value="OTHER">OTHER</option>
-              </select>
-              <ChevronDown size={16} color="#17171a" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full" style={S.fieldWrap}>
+            <div>
+              <label style={S.label}>4. BRANCH *</label>
+              <div style={{ position: 'relative' }}>
+                <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} style={S.select}>
+                  <option value="CSE">CSE — COMPUTER SCIENCE</option>
+                  <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
+                  <option value="EEE">EEE — ELECTRICAL &amp; ELECTRONICS</option>
+                  <option value="AIML">AIML — AI &amp; MACHINE LEARNING</option>
+                  <option value="CYBER SECURITY">CYBER SECURITY</option>
+                  <option value="CIVIL">CIVIL — CIVIL ENGG</option>
+                  <option value="MECH">MECH — MECHANICAL</option>
+                  <option value="IT">IT — INFORMATION TECH</option>
+                  <option value="OTHER">OTHER</option>
+                </select>
+                <ChevronDown size={16} color="#17171a" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              </div>
+            </div>
+
+            <div>
+              <label style={S.label}>YEAR OF STUDY *</label>
+              <div style={{ position: 'relative' }}>
+                <select value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} style={S.select}>
+                  <option value="1ST YEAR">1ST YEAR (I YEAR)</option>
+                  <option value="2ND YEAR">2ND YEAR (II YEAR)</option>
+                  <option value="3RD YEAR">3RD YEAR (III YEAR)</option>
+                  <option value="4TH YEAR">4TH YEAR (IV YEAR)</option>
+                </select>
+                <ChevronDown size={16} color="#17171a" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+              </div>
             </div>
           </div>
 

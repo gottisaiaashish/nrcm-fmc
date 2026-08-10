@@ -6,6 +6,7 @@ export default function HeroRegistrationBox() {
   const [formData, setFormData] = useState({
     name: '',
     branch: 'CSE',
+    year: '1ST YEAR',
     mobile: '',
     email: '',
   });
@@ -79,11 +80,32 @@ export default function HeroRegistrationBox() {
                       className="w-full px-4 py-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:border-red-600 transition-colors"
                     >
                       <option value="CSE">CSE — Computer Science</option>
-                      <option value="ECE">ECE — Electronics & Comm</option>
+                      <option value="ECE">ECE — Electronics &amp; Comm</option>
+                      <option value="EEE">EEE — Electrical &amp; Electronics</option>
+                      <option value="AIML">AIML — AI &amp; Machine Learning</option>
+                      <option value="CYBER SECURITY">Cyber Security</option>
+
                       <option value="IT">IT — Information Tech</option>
-                      <option value="CSM/CSD">CSM / CSD — AI & Data</option>
                       <option value="MECH">MECH — Mechanical</option>
                       <option value="CIVIL">CIVIL — Civil Engg</option>
+                      <option value="OTHER">OTHER</option>
+                    </select>
+                  </div>
+
+                  {/* Year */}
+                  <div>
+                    <label className="block font-mono text-[10px] text-zinc-400 uppercase tracking-widest mb-2">
+                      // 03. YEAR OF STUDY *
+                    </label>
+                    <select
+                      value={formData.year}
+                      onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                      className="w-full px-4 py-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-white font-mono text-xs focus:outline-none focus:border-red-600 transition-colors"
+                    >
+                      <option value="1ST YEAR">1ST YEAR (I YEAR)</option>
+                      <option value="2ND YEAR">2ND YEAR (II YEAR)</option>
+                      <option value="3RD YEAR">3RD YEAR (III YEAR)</option>
+                      <option value="4TH YEAR">4TH YEAR (IV YEAR)</option>
                     </select>
                   </div>
 
