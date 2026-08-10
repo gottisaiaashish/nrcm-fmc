@@ -84,6 +84,7 @@ const sendConfirmationEmail = async (applicant) => {
     if (EMAIL_USER && EMAIL_PASS) {
       await transporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
+        replyTo: EMAIL_USER,
         to: email,
         subject: `[NRCM.FMC] Application Received - ${name}`,
         html: htmlContent,
