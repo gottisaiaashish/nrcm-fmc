@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, Calendar, Clock, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '', branch: 'CSE', mobile: '', email: '',
-  });
+  const [formData, setFormData] = useState({ name: '', branch: 'CSE', mobile: '', email: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,153 +14,193 @@ export default function RegistrationPage() {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       await fetch(`${apiUrl}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      existing.unshift({ _id: `FMC-PASS-${Date.now()}`, passId: `FMC-PASS-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
-      localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
-    } catch (err) {
-      const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      existing.unshift({ _id: `FMC-PASS-${Date.now()}`, passId: `FMC-PASS-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
-      localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
-    } finally {
-      setLoading(false);
-      setSubmitted(true);
-    }
+    } catch (_) {}
+    const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
+    existing.unshift({ _id: `FMC-PASS-${Date.now()}`, passId: `FMC-PASS-${Date.now()}`, ...formData, createdAt: new Date().toISOString() });
+    localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
+    setLoading(false);
+    setSubmitted(true);
   };
 
-  const inputClass = "w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm";
-
-  return (
-    <div className="min-h-screen bg-[#F0ECD9] text-[#17171a]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      {/* Top Bar */}
-      <div className="sticky top-0 z-10 bg-[#F0ECD9]/95 backdrop-blur-sm border-b-2 border-[#17171a]/10 flex items-center justify-between px-5 py-3">
+  if (submitted) {
+    return (
+      <div style={{ fontFamily: "'Space Grotesk', -apple-system, sans-serif" }}
+        className="min-h-screen bg-[#0f0f11] flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-24 h-24 rounded-full bg-red-600 border-4 border-white/10 flex items-center justify-center shadow-[0_0_60px_rgba(229,9,20,0.4)] mb-8">
+          <Check className="w-12 h-12 text-white stroke-[3]" />
+        </div>
+        <span className="font-mono text-xs text-red-500 tracking-[0.3em] uppercase font-bold mb-3 block">
+          ✦ PASS GENERATED ✦
+        </span>
+        <h1 className="font-black text-4xl sm:text-5xl text-white uppercase leading-tight mb-4">
+          PASS CONFIRMED,<br />
+          <span className="text-red-500">{formData.name}</span>
+        </h1>
+        <p className="font-mono text-xs sm:text-sm text-white/50 max-w-sm uppercase leading-loose mb-10">
+          Your official entry pass for <span className="text-red-500 font-bold">NRCM.FMC Induction 2026</span> has been logged
+          for <span className="text-white font-bold">{formData.branch}</span>.
+          See you at Main Auditorium!
+        </p>
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-[#17171a]/70 hover:text-[#17171a] font-mono text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">BACK TO SITE</span>
+          className="px-10 py-4 rounded-full bg-white text-[#0f0f11] font-mono text-sm font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all cursor-pointer shadow-xl">
+          ← BACK TO SITE
         </button>
-        <span className="font-mono text-xs font-black tracking-widest uppercase text-[#17171a]">NRCM.FMC</span>
-        <div className="w-20 sm:w-24" /> {/* spacer */}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ fontFamily: "'Space Grotesk', -apple-system, sans-serif" }}
+      className="min-h-screen bg-[#0f0f11] text-white overflow-x-hidden">
+
+      {/* ── HERO BANNER ── */}
+      <div className="relative w-full h-[55vw] min-h-[220px] max-h-[420px] overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80"
+          alt="Junior Induction 2026"
+          className="w-full h-full object-cover scale-105"
+          style={{ filter: 'brightness(0.35) contrast(1.1)' }}
+        />
+        {/* gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f11] via-[#0f0f11]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f11]/60 to-transparent h-20" />
+
+        {/* Back */}
+        <button onClick={() => navigate('/')}
+          className="absolute top-5 left-5 font-mono text-[11px] text-white/60 hover:text-white uppercase tracking-widest cursor-pointer transition-colors flex items-center gap-1.5">
+          ← NRCM.FMC
+        </button>
+
+        {/* Center Title */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-4">
+          <span className="font-mono text-[10px] text-red-500 tracking-[0.4em] uppercase font-bold mb-3">
+            NRCM.FMC · OFFICIAL EVENT
+          </span>
+          <h1 className="font-black uppercase leading-none text-white"
+            style={{ fontSize: 'clamp(2.2rem, 9vw, 5.5rem)', letterSpacing: '-0.02em' }}>
+            JUNIOR<br />INDUCTION
+          </h1>
+          <div className="font-serif italic text-red-500 mt-1"
+            style={{ fontSize: 'clamp(2.5rem, 10vw, 6rem)', lineHeight: 1 }}>
+            2026
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-5 sm:px-8 py-10">
-        {!submitted ? (
-          <>
-            {/* Event Header Banner */}
-            <div className="bg-[#17171a] text-white rounded-3xl overflow-hidden mb-8 border-4 border-[#17171a] shadow-xl">
-              <div className="relative h-40 sm:h-48">
-                <img
-                  src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=800&q=80"
-                  alt="Junior Induction 2026"
-                  className="w-full h-full object-cover brightness-50"
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-                  <span className="font-mono text-[10px] text-red-400 tracking-[0.3em] uppercase font-bold mb-2">NRCM.FMC OFFICIAL EVENT</span>
-                  <h1 className="font-black text-3xl sm:text-4xl uppercase text-white leading-none tracking-tight">
-                    JUNIOR INDUCTION
-                  </h1>
-                  <span className="font-serif italic text-red-500 text-4xl sm:text-5xl mt-1">2026</span>
-                </div>
-              </div>
-              {/* Event Details Row */}
-              <div className="grid grid-cols-3 divide-x divide-white/10 bg-[#111] text-center">
-                <div className="py-3 px-2">
-                  <p className="font-mono text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5">DATE</p>
-                  <p className="font-mono text-[11px] text-white font-bold">AUG 11, 2026</p>
-                </div>
-                <div className="py-3 px-2">
-                  <p className="font-mono text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5">TIME</p>
-                  <p className="font-mono text-[11px] text-white font-bold">03:30 PM</p>
-                </div>
-                <div className="py-3 px-2">
-                  <p className="font-mono text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5">VENUE</p>
-                  <p className="font-mono text-[11px] text-white font-bold">MAIN AUDI</p>
-                </div>
-              </div>
+      {/* ── EVENT META BAR ── */}
+      <div className="bg-[#17171a] border-y border-white/5">
+        <div className="max-w-lg mx-auto grid grid-cols-3 divide-x divide-white/5">
+          {[
+            { icon: <Calendar className="w-3.5 h-3.5 text-red-500" />, label: 'DATE', val: 'AUG 11, 2026' },
+            { icon: <Clock className="w-3.5 h-3.5 text-red-500" />, label: 'TIME', val: '03:30 PM IST' },
+            { icon: <MapPin className="w-3.5 h-3.5 text-red-500" />, label: 'VENUE', val: 'MAIN AUDI' },
+          ].map((item, i) => (
+            <div key={i} className="flex flex-col items-center justify-center py-4 px-3 gap-1.5">
+              {item.icon}
+              <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">{item.label}</span>
+              <span className="font-mono text-[11px] sm:text-xs text-white font-bold tracking-wide text-center leading-tight">{item.val}</span>
             </div>
+          ))}
+        </div>
+      </div>
 
-            {/* Form */}
-            <div className="mb-6 text-center">
-              <h2 className="font-black text-3xl sm:text-4xl uppercase tracking-tight mb-1">REACH OUT</h2>
-              <p className="font-mono text-[11px] text-[#17171a]/60 uppercase tracking-widest">
-                Fill in your details to secure your entry pass
-              </p>
+      {/* ── FORM SECTION ── */}
+      <div className="max-w-lg mx-auto px-5 sm:px-8 py-10">
+        {/* Heading */}
+        <div className="text-center mb-8">
+          <h2 className="font-black uppercase text-white leading-none mb-2"
+            style={{ fontSize: 'clamp(2rem, 8vw, 3.5rem)', letterSpacing: '-0.02em' }}>
+            REACH OUT
+          </h2>
+          <p className="font-mono text-[11px] text-white/40 uppercase tracking-[0.2em]">
+            Secure your entry pass below
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Name */}
+          <div>
+            <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">FULL NAME *</label>
+            <input
+              type="text" required
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 focus:bg-white/8 transition-all"
+            />
+          </div>
+
+          {/* Branch */}
+          <div>
+            <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">BRANCH / DEPT *</label>
+            <div className="relative">
+              <select
+                value={formData.branch}
+                onChange={e => setFormData({ ...formData, branch: e.target.value })}
+                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all appearance-none cursor-pointer"
+              >
+                <option value="CSE" className="bg-[#17171a]">CSE — Computer Science</option>
+                <option value="ECE" className="bg-[#17171a]">ECE — Electronics &amp; Comm</option>
+                <option value="IT" className="bg-[#17171a]">IT — Information Tech</option>
+                <option value="CSM/CSD" className="bg-[#17171a]">CSM / CSD — AI &amp; Data</option>
+                <option value="MECH" className="bg-[#17171a]">MECH — Mechanical</option>
+                <option value="CIVIL" className="bg-[#17171a]">CIVIL — Civil Engg</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
             </div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">FULL NAME *</label>
-                <input type="text" required placeholder="ENTER YOUR FULL NAME" value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} />
-              </div>
-
-              <div>
-                <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">BRANCH / DEPT *</label>
-                <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })}
-                  className="w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] font-mono text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors cursor-pointer shadow-sm">
-                  <option value="CSE">CSE — COMPUTER SCIENCE</option>
-                  <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
-                  <option value="IT">IT — INFORMATION TECH</option>
-                  <option value="CSM/CSD">CSM / CSD — AI &amp; DATA</option>
-                  <option value="MECH">MECH — MECHANICAL</option>
-                  <option value="CIVIL">CIVIL — CIVIL ENGG</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">MOBILE *</label>
-                  <input type="tel" required placeholder="+91 98765 43210" value={formData.mobile}
-                    onChange={e => setFormData({ ...formData, mobile: e.target.value })} className={inputClass} />
-                </div>
-                <div>
-                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">EMAIL *</label>
-                  <input type="email" required placeholder="STUDENT@NRCM.AC.IN" value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClass} />
-                </div>
-              </div>
-
-              <div className="pt-3">
-                <button type="submit" disabled={loading}
-                  className="w-full h-14 rounded-2xl bg-[#e50914] text-white font-mono text-sm font-bold tracking-widest uppercase hover:bg-red-700 transition-all cursor-pointer border-4 border-[#17171a] shadow-xl flex items-center justify-center gap-3 disabled:opacity-60">
-                  <span>{loading ? 'GENERATING PASS...' : 'SUBMIT'}</span>
-                  <ArrowRight className="w-5 h-5 stroke-[3]" />
-                </button>
-              </div>
-            </form>
-          </>
-        ) : (
-          /* Confirmation */
-          <div className="min-h-[80vh] flex flex-col items-center justify-center text-center space-y-5 py-10">
-            <div className="w-24 h-24 rounded-full bg-[#e50914] border-4 border-[#17171a] flex items-center justify-center shadow-2xl">
-              <Check className="w-12 h-12 text-white stroke-[4]" />
+          {/* Mobile + Email side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">MOBILE *</label>
+              <input
+                type="tel" required
+                placeholder="+91 98765 43210"
+                value={formData.mobile}
+                onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all"
+              />
             </div>
+            <div>
+              <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">EMAIL *</label>
+              <input
+                type="email" required
+                placeholder="student@nrcm.ac.in"
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all"
+              />
+            </div>
+          </div>
 
-            <span className="font-mono text-xs text-red-600 font-bold tracking-[0.3em] uppercase">
-              EVENT PASS GENERATED
-            </span>
-
-            <h2 className="font-black text-4xl sm:text-5xl uppercase text-[#17171a] leading-tight">
-              PASS CONFIRMED,<br />{formData.name}
-            </h2>
-
-            <p className="font-mono text-xs font-bold text-[#17171a]/70 max-w-sm mx-auto uppercase leading-relaxed">
-              YOUR OFFICIAL ENTRY PASS FOR <span className="text-red-600 font-black">NRCM.FMC INDUCTION 2026</span> HAS BEEN LOGGED FOR <span className="text-red-600 font-black">{formData.branch}</span>. SEE YOU AT MAIN AUDITORIUM!
-            </p>
-
+          {/* Submit */}
+          <div className="pt-3">
             <button
-              onClick={() => navigate('/')}
-              className="mt-4 px-10 py-4 rounded-2xl bg-[#17171a] text-[#F0ECD9] font-mono text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors border-4 border-[#17171a] cursor-pointer shadow-lg"
+              type="submit" disabled={loading}
+              className="w-full py-4 rounded-2xl bg-red-600 text-white font-black text-sm uppercase tracking-[0.15em] hover:bg-red-500 active:scale-[0.99] transition-all cursor-pointer shadow-[0_8px_30px_rgba(229,9,20,0.35)] flex items-center justify-center gap-3 disabled:opacity-60"
             >
-              DONE — BACK TO SITE
+              {loading ? (
+                <span className="flex items-center gap-2 font-mono text-xs tracking-widest">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  GENERATING PASS...
+                </span>
+              ) : (
+                <>SUBMIT <ArrowRight className="w-4 h-4 stroke-[3]" /></>
+              )}
             </button>
           </div>
-        )}
+        </form>
+
+        {/* Footer note */}
+        <p className="text-center font-mono text-[10px] text-white/25 uppercase tracking-wider mt-8">
+          © NRCM FILM MAKING CLUB · Junior Induction 2026
+        </p>
       </div>
     </div>
   );
