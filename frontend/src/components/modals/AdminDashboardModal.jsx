@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Download, Trash2, Search, Users, Database, LogOut } from 'lucide-react';
+import { X, RefreshCw, Download, Trash2, Search, Users, Database, LogOut, Home, FileText, Layers, Clock, Shield } from 'lucide-react';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dbStatus, setDbStatus] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (isOpen) {
       fetchRegistrations();
+      updateClock();
+      const timer = setInterval(updateClock, 1000);
+      return () => clearInterval(timer);
     }
   }, [isOpen]);
+
+  const updateClock = () => {
+    const now = new Date();
+    setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+  };
 
   const fetchRegistrations = async () => {
     setLoading(true);
@@ -45,10 +55,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       await fetch(`${apiUrl}/api/admin/registrations/${id}`, { method: 'DELETE' });
 
-      // Filter locally as well
       setRegistrations(prev => prev.filter(item => item._id !== id && item.passId !== id));
 
-      // Update localStorage fallback
       const localData = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
       const updated = localData.filter(item => item._id !== id && item.passId !== id);
       localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(updated));
@@ -91,115 +99,248 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   );
 
   return (
-    <div className="fixed inset-0 z-[120] w-full h-full min-h-screen bg-[#0f0f11] text-[#F0ECD9] overflow-y-auto animate-in fade-in px-4 sm:px-8 md:px-12 py-6 sm:py-10 flex flex-col justify-between">
-      <div className="w-full max-w-7xl mx-auto min-h-full flex flex-col justify-between gap-8">
-        
-        {/* Header Bar */}
-        <div className="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-zinc-800 pb-6 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-red-600/10 border border-red-500/30 flex items-center justify-center text-red-500 font-bold">
-              <Users className="w-6 h-6" />
+    <div className="fixed inset-0 z-[120] w-screen h-screen bg-[#F4F0EA] text-[#17171a] flex overflow-hidden font-sans animate-in fade-in">
+      
+      {/* 01. Left Sidebar Navigation */}
+      <aside className="w-64 bg-[#EBE7DF] border-r border-zinc-300/80 p-5 flex flex-col justify-between shrink-0 h-full overflow-y-auto">
+        <div className="space-y-6">
+          {/* Brand Header */}
+          <div className="flex items-center gap-3 px-2 py-1">
+            <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-bold text-xs shadow-md">
+              FMC
             </div>
-            <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-black uppercase text-white tracking-tight">
-                EVENT REGISTRATION DASHBOARD
-              </h1>
-              <div className="flex items-center gap-3 font-mono text-xs text-zinc-400">
-                <span>TOTAL REGISTRATIONS: <strong className="text-red-500">{registrations.length}</strong></span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Database className="w-3.5 h-3.5 text-zinc-500" />
-                  {dbStatus || 'Connected'}
-                </span>
-              </div>
-            </div>
+            <span className="font-sans font-black text-lg tracking-tight uppercase text-[#17171a]">
+              NRCM.FMC OS
+            </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          {/* Navigation Pill Menu */}
+          <nav className="space-y-2">
             <button
-              onClick={fetchRegistrations}
-              disabled={loading}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono font-bold uppercase hover:bg-zinc-800 transition-all flex items-center gap-2 cursor-pointer"
+              onClick={() => setActiveTab('overview')}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-sans text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'overview'
+                  ? 'bg-black text-white shadow-md'
+                  : 'bg-white/80 text-zinc-700 hover:bg-white'
+              }`}
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-red-500 ${loading ? 'animate-spin' : ''}`} />
-              <span>REFRESH</span>
+              <div className="flex items-center gap-3">
+                <Home className="w-4 h-4" />
+                <span>Home Overview</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-white font-mono">HQ</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('overview')}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white/80 text-zinc-700 hover:bg-white font-sans text-xs font-bold transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Users className="w-4 h-4 text-red-600" />
+                <span>Event Passes</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-600 text-white font-mono">{registrations.length}</span>
             </button>
 
             <button
               onClick={exportCSV}
-              className="px-4 py-2.5 rounded-xl bg-red-600 text-white text-xs font-mono font-bold uppercase hover:bg-red-500 transition-all flex items-center gap-2 cursor-pointer shadow-md"
+              className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white/80 text-zinc-700 hover:bg-white font-sans text-xs font-bold transition-all cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>EXPORT CSV</span>
+              <div className="flex items-center gap-3">
+                <Download className="w-4 h-4" />
+                <span>Export Data</span>
+              </div>
+              <span className="text-[10px] text-zinc-500 font-mono">CSV</span>
             </button>
+          </nav>
+        </div>
+
+        {/* User Profile & Logout OS */}
+        <div className="pt-4 border-t border-zinc-300/80 space-y-3">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-9 h-9 rounded-full bg-zinc-800 text-white font-bold text-xs flex items-center justify-center border border-zinc-700">
+              GA
+            </div>
+            <div>
+              <p className="text-xs font-bold text-[#17171a]">Gotti Aashish</p>
+              <p className="text-[10px] text-zinc-500 font-mono">STUDIO HEAD</p>
+            </div>
+          </div>
+
+          <button
+            onClick={onLogout}
+            className="w-full py-2.5 rounded-2xl bg-white/80 hover:bg-red-50 text-red-600 font-mono text-xs font-bold uppercase transition-all flex items-center justify-center gap-2 cursor-pointer border border-zinc-300/60 shadow-sm"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Logout OS</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* 02. Main Content View */}
+      <main className="flex-1 h-full overflow-y-auto p-6 md:p-8 flex flex-col gap-6">
+        
+        {/* Top Header Bar */}
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+            <span>KLAPP OS</span>
+            <span>›</span>
+            <span className="font-bold text-[#17171a]">Dashboard Overview</span>
+          </div>
+
+          {/* Search Bar & Action Buttons */}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-80">
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search templates, campaigns, contacts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-10 pl-9 pr-4 rounded-xl bg-white border border-zinc-300/80 text-xs font-sans placeholder-zinc-400 focus:outline-none focus:border-black transition-colors shadow-sm"
+              />
+            </div>
 
             <button
-              onClick={onLogout}
-              className="px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono font-bold uppercase text-zinc-400 hover:text-red-500 hover:border-red-500 transition-all flex items-center gap-2 cursor-pointer"
+              onClick={fetchRegistrations}
+              disabled={loading}
+              className="px-4 h-10 rounded-xl bg-white border border-zinc-300/80 text-xs font-sans font-bold hover:bg-zinc-100 transition-all flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>LOGOUT</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
 
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-red-600 transition-all flex items-center justify-center cursor-pointer"
+              className="px-4 h-10 rounded-xl bg-white border border-zinc-300/80 text-xs font-sans font-bold hover:bg-red-50 hover:text-red-600 transition-all flex items-center gap-2 cursor-pointer shadow-sm shrink-0"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
+              <span>Close OS</span>
             </button>
+          </div>
+        </header>
+
+        {/* Good Afternoon Welcome Banner */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200/80 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#17171a] flex items-center gap-2">
+              Good Afternoon, Aashish 🌼
+            </h1>
+            <p className="text-xs text-zinc-500 font-sans">
+              Welcome to NRCM.FMC Command Center. Here is your live execution overview.
+            </p>
+          </div>
+
+          {/* Clock Widget */}
+          <div className="bg-[#F8F6F0] border border-zinc-200 rounded-2xl px-5 py-3 text-center shrink-0">
+            <div className="flex items-center gap-2 text-sm font-bold font-mono text-[#17171a]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{currentTime || '04:12:35 pm'}</span>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block mt-0.5">
+              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="w-full relative">
-          <Search className="w-4 h-4 text-zinc-500 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="SEARCH BY NAME, BRANCH, MOBILE, EMAIL OR PASS ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-11 pr-4 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 font-mono text-xs uppercase focus:outline-none focus:border-red-600 transition-colors"
-          />
+        {/* 4 Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1 */}
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200/80 shadow-sm space-y-2">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              TOTAL REGISTRATIONS
+            </span>
+            <div className="text-3xl font-black text-[#17171a]">{registrations.length}</div>
+            <span className="text-xs font-bold text-emerald-600 block">
+              ↑ Live Event Passes
+            </span>
+          </div>
+
+          {/* Card 2 */}
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200/80 shadow-sm space-y-2">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              ACTIVE DEPARTMENTS
+            </span>
+            <div className="text-3xl font-black text-[#17171a]">
+              {new Set(registrations.map(r => r.branch)).size || 1}
+            </div>
+            <span className="text-xs font-bold text-blue-600 block">
+              In Active Sprint
+            </span>
+          </div>
+
+          {/* Card 3 */}
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200/80 shadow-sm space-y-2">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              MONGODB STATUS
+            </span>
+            <div className="text-xl font-black text-[#17171a] truncate">
+              {dbStatus || 'Connected'}
+            </div>
+            <span className="text-xs font-bold text-amber-600 block">
+              Atlas Cloud Active
+            </span>
+          </div>
+
+          {/* Card 4 */}
+          <div className="bg-white rounded-3xl p-6 border border-zinc-200/80 shadow-sm space-y-2">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block">
+              EXPORT DATA
+            </span>
+            <div className="text-3xl font-black text-[#17171a]">100%</div>
+            <span className="text-xs font-bold text-emerald-600 block">
+              CSV Ready ⚡
+            </span>
+          </div>
         </div>
 
-        {/* Registrations Table */}
-        <div className="w-full flex-1 bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left font-mono text-xs">
+        {/* Data Table Container */}
+        <div className="bg-white rounded-3xl p-6 border border-zinc-200/80 shadow-sm flex-1 flex flex-col space-y-4 overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-[#17171a] flex items-center gap-2">
+              <FileText className="w-5 h-5 text-red-600" />
+              <span>Event Registrations List</span>
+            </h2>
+            <span className="text-xs font-mono text-zinc-400 uppercase">
+              SHOWING {filtered.length} ENTRIES
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-x-auto overflow-y-auto border border-zinc-200 rounded-2xl">
+            <table className="w-full text-left font-sans text-xs">
               <thead>
-                <tr className="bg-zinc-900/80 border-b border-zinc-800 text-red-500 font-bold uppercase tracking-wider">
-                  <th className="py-4 px-5">#</th>
-                  <th className="py-4 px-5">PASS ID</th>
-                  <th className="py-4 px-5">FULL NAME</th>
-                  <th className="py-4 px-5">BRANCH / DEPT</th>
-                  <th className="py-4 px-5">MOBILE NUMBER</th>
-                  <th className="py-4 px-5">EMAIL ADDRESS</th>
-                  <th className="py-4 px-5">REGISTERED AT</th>
-                  <th className="py-4 px-5 text-right">ACTION</th>
+                <tr className="bg-[#F8F6F0] border-b border-zinc-200 text-zinc-600 font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">#</th>
+                  <th className="py-3.5 px-4">PASS ID</th>
+                  <th className="py-3.5 px-4">FULL NAME</th>
+                  <th className="py-3.5 px-4">BRANCH</th>
+                  <th className="py-3.5 px-4">MOBILE</th>
+                  <th className="py-3.5 px-4">EMAIL</th>
+                  <th className="py-3.5 px-4">REGISTERED AT</th>
+                  <th className="py-3.5 px-4 text-right">ACTION</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-900 text-zinc-300">
+              <tbody className="divide-y divide-zinc-100 text-zinc-800">
                 {filtered.length > 0 ? (
                   filtered.map((item, index) => (
-                    <tr key={item._id || index} className="hover:bg-zinc-900/50 transition-colors">
-                      <td className="py-4 px-5 text-zinc-500 font-bold">{index + 1}</td>
-                      <td className="py-4 px-5 text-red-400 font-bold">{item.passId || item._id}</td>
-                      <td className="py-4 px-5 font-bold text-white uppercase">{item.name}</td>
-                      <td className="py-4 px-5">
-                        <span className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 font-bold text-zinc-200 uppercase">
+                    <tr key={item._id || index} className="hover:bg-zinc-50 transition-colors">
+                      <td className="py-3.5 px-4 text-zinc-400 font-bold">{index + 1}</td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-red-600">{item.passId || item._id}</td>
+                      <td className="py-3.5 px-4 font-bold text-[#17171a] uppercase">{item.name}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-1 rounded-full bg-zinc-100 border border-zinc-200 font-bold text-zinc-700 text-[11px] uppercase">
                           {item.branch}
                         </span>
                       </td>
-                      <td className="py-4 px-5 font-semibold text-zinc-300">{item.mobile}</td>
-                      <td className="py-4 px-5 text-zinc-400 lowercase">{item.email}</td>
-                      <td className="py-4 px-5 text-zinc-500 text-[11px]">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-zinc-700">{item.mobile}</td>
+                      <td className="py-3.5 px-4 text-zinc-600 lowercase">{item.email}</td>
+                      <td className="py-3.5 px-4 text-zinc-500 font-mono text-[11px]">
                         {new Date(item.createdAt || Date.now()).toLocaleString()}
                       </td>
-                      <td className="py-4 px-5 text-right">
+                      <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => handleDelete(item._id || item.passId)}
-                          className="p-2 rounded-lg bg-red-950/30 text-red-500 border border-red-900/50 hover:bg-red-600 hover:text-white transition-all cursor-pointer"
+                          className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all cursor-pointer border border-red-200"
                           title="Delete entry"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -209,7 +350,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="py-16 text-center text-zinc-500 uppercase tracking-widest font-bold">
+                    <td colSpan="8" className="py-16 text-center text-zinc-400 uppercase tracking-widest font-bold font-mono">
                       {loading ? 'LOADING REGISTRATION DATA...' : 'NO EVENT REGISTRATIONS FOUND'}
                     </td>
                   </tr>
@@ -218,13 +359,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             </table>
           </div>
         </div>
-
-        {/* Sub-Footer */}
-        <div className="w-full border-t border-zinc-900 pt-4 flex flex-col sm:flex-row items-center justify-between font-mono text-[10px] text-zinc-600 uppercase tracking-widest gap-2">
-          <div>NRCM.FMC OFFICIAL MANAGEMENT PORTAL</div>
-          <div>REAL-TIME MONGO DB SYNC ACTIVE</div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
