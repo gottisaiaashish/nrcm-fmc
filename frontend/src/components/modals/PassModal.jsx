@@ -63,7 +63,7 @@ export default function PassModal({ isOpen, onClose }) {
                 REACH OUT
               </h1>
               <p className="font-mono text-xs font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed">
-                JUNIOR INDUCTION 2026 // ENTRY DETAILS FOR NRCM CAMPUS AUDITORIUM
+                JUNIOR INDUCTION 2025 // ENTRY DETAILS FOR NRCM CAMPUS AUDITORIUM
               </p>
             </div>
 
@@ -146,7 +146,7 @@ export default function PassModal({ isOpen, onClose }) {
             </h2>
 
             <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/80 max-w-xs sm:max-w-md mx-auto uppercase leading-relaxed">
-              YOUR OFFICIAL ENTRY PASS FOR <span className="text-red-600 font-black">NRCM.FMC INDUCTION 2026</span> HAS BEEN LOGGED FOR <span className="text-red-600 font-black">{formData.branch}</span>. SEE YOU AT MAIN AUDITORIUM!
+              YOUR OFFICIAL ENTRY PASS FOR <span className="text-red-600 font-black">NRCM.FMC INDUCTION 2025</span> HAS BEEN LOGGED FOR <span className="text-red-600 font-black">{formData.branch}</span>. SEE YOU AT MAIN AUDITORIUM!
             </p>
 
             <button
