@@ -21,19 +21,27 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 // Brevo Configuration (REST API & SMTP Relay)
-const BREVO_API_KEY = process.env.BREVO_API_KEY?.startsWith('xkeysib-') ? process.env.BREVO_API_KEY : '';
-const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY || (process.env.BREVO_API_KEY?.startsWith('xsmtpsib-') ? process.env.BREVO_API_KEY : '');
-const BREVO_LOGIN = process.env.BREVO_LOGIN || 'b510f6001@smtp-brevo.com';
+const rawBrevoKey = (process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY || '').trim().replace(/^['"]|['"]$/g, '');
+const BREVO_LOGIN = (process.env.BREVO_LOGIN || 'b510f6001@smtp-brevo.com').trim();
 
-const brevoTransporter = BREVO_SMTP_KEY
+if (rawBrevoKey) {
+  console.log(`⚡ [BREVO INITIALIZED] Brevo SMTP Relay ready with key: ${rawBrevoKey.substring(0, 12)}...`);
+} else {
+  console.log(`ℹ️ [BREVO NOTICE] BREVO_API_KEY not found in environment.`);
+}
+
+const brevoTransporter = rawBrevoKey
   ? nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
       secure: false,
       auth: {
         user: BREVO_LOGIN,
-        pass: BREVO_SMTP_KEY,
+        pass: rawBrevoKey,
       },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 15000,
     })
   : null;
 
