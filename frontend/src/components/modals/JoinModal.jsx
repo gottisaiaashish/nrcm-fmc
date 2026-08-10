@@ -4,6 +4,22 @@ import { X, Check, ArrowRight } from 'lucide-react';
 export default function JoinModal({ isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isClosed, setIsClosed] = useState(() => {
+    return localStorage.getItem('nrcmfmc_recruitment_open') === 'false';
+  });
+
+  React.useEffect(() => {
+    const handleStatusChange = () => {
+      setIsClosed(localStorage.getItem('nrcmfmc_recruitment_open') === 'false');
+    };
+    window.addEventListener('storage', handleStatusChange);
+    window.addEventListener('recruitment_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('storage', handleStatusChange);
+      window.removeEventListener('recruitment_status_changed', handleStatusChange);
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -21,6 +37,7 @@ export default function JoinModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
+    if (isClosed) return;
     e.preventDefault();
     setLoading(true);
 
@@ -82,7 +99,25 @@ export default function JoinModal({ isOpen, onClose }) {
 
         {/* Main Content */}
         <div className="w-full flex-1 flex flex-col justify-center items-center py-4">
-          {!submitted ? (
+          {isClosed ? (
+            <div className="w-full max-w-2xl mx-auto text-center py-16 px-6 sm:px-10 bg-[#EBE7D3] border-4 border-[#17171a] rounded-3xl shadow-[8px_8px_0px_#17171a] flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-red-600/10 text-red-600 border-4 border-[#17171a] mb-6 flex items-center justify-center">
+                <X className="w-8 h-8 stroke-[3]" />
+              </div>
+              <h2 className="font-sans font-black uppercase text-3xl sm:text-5xl text-[#17171a] mb-4 tracking-tight leading-tight">
+                SORRY, RECRUITMENT HAS BEEN CLOSED
+              </h2>
+              <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed mb-8">
+                APPLICATIONS FOR NRCM FILM MAKING CLUB RECRUITMENT 2026 ARE CURRENTLY CLOSED. THANK YOU FOR YOUR INTEREST!
+              </p>
+              <button
+                onClick={onClose}
+                className="px-8 py-4 rounded-2xl bg-[#e50914] text-white font-mono text-xs sm:text-sm font-black tracking-widest uppercase border-4 border-[#17171a] shadow-[4px_4px_0px_#17171a] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer"
+              >
+                RETURN TO HOME
+              </button>
+            </div>
+          ) : !submitted ? (
             <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
               {/* Event Header Section Centered */}
               <div className="mb-8 sm:mb-10 text-center w-full max-w-2xl">

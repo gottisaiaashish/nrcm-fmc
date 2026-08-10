@@ -22,6 +22,7 @@ app.use(express.json());
 // In-Memory Fallback Storage if MongoDB is not yet connected
 let inMemoryRegistrations = [];
 let isMongoConnected = false;
+let isRecruitmentOpen = true;
 
 // MongoDB Schema & Model
 const registrationSchema = new mongoose.Schema({
@@ -68,8 +69,24 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     server: 'NRCM.FMC API Gateway',
     database: isMongoConnected ? 'MongoDB Connected' : 'In-Memory Fallback Mode',
+    recruitmentOpen: isRecruitmentOpen,
     timestamp: new Date().toISOString()
   });
+});
+
+// 1b. Recruitment Status Endpoints
+app.get('/api/recruitment-status', (req, res) => {
+  res.json({ success: true, isOpen: isRecruitmentOpen });
+});
+
+app.post('/api/admin/recruitment-status', (req, res) => {
+  const { isOpen } = req.body;
+  if (typeof isOpen === 'boolean') {
+    isRecruitmentOpen = isOpen;
+    console.log(`[RECRUITMENT STATUS UPDATED] isRecruitmentOpen set to ${isRecruitmentOpen}`);
+    return res.json({ success: true, isOpen: isRecruitmentOpen });
+  }
+  return res.status(400).json({ success: false, error: 'Invalid isOpen value.' });
 });
 
 // 2. Admin Login Endpoint
@@ -93,6 +110,13 @@ app.post('/api/admin/login', (req, res) => {
 // 3. Register Event Pass / Application Endpoint
 app.post('/api/register', async (req, res) => {
   try {
+    if (!isRecruitmentOpen) {
+      return res.status(403).json({
+        success: false,
+        error: 'Sorry, recruitment has been closed.'
+      });
+    }
+
     const { name, branch, mobile, email, interestedArea, previousExperience, portfolioLink, whyJoin, whatYouBring, instagramId } = req.body;
 
     if (!name || !branch || !mobile || !email) {

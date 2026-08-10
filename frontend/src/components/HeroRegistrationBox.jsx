@@ -3,6 +3,22 @@ import { Ticket, Check, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function HeroRegistrationBox() {
   const [submitted, setSubmitted] = useState(false);
+  const [isClosed, setIsClosed] = useState(() => {
+    return localStorage.getItem('nrcmfmc_recruitment_open') === 'false';
+  });
+
+  React.useEffect(() => {
+    const handleStatusChange = () => {
+      setIsClosed(localStorage.getItem('nrcmfmc_recruitment_open') === 'false');
+    };
+    window.addEventListener('storage', handleStatusChange);
+    window.addEventListener('recruitment_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('storage', handleStatusChange);
+      window.removeEventListener('recruitment_status_changed', handleStatusChange);
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     branch: 'CSE',
@@ -12,6 +28,7 @@ export default function HeroRegistrationBox() {
   });
 
   const handleSubmit = (e) => {
+    if (isClosed) return;
     e.preventDefault();
     setSubmitted(true);
   };
@@ -28,7 +45,16 @@ export default function HeroRegistrationBox() {
           {/* Subtle Top Red Accent Line */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent shadow-[0_0_15px_#ff1e27]" />
 
-          {!submitted ? (
+          {isClosed ? (
+            <div className="text-center py-10 px-4">
+              <h3 className="font-display text-2xl sm:text-4xl font-black uppercase text-red-600 mb-3 tracking-tight">
+                SORRY, RECRUITMENT HAS BEEN CLOSED
+              </h3>
+              <p className="font-mono text-xs sm:text-sm text-zinc-400 uppercase tracking-widest leading-relaxed max-w-lg mx-auto">
+                Applications for NRCM Film Making Club Recruitment 2026 are currently closed. Thank you for your interest!
+              </p>
+            </div>
+          ) : !submitted ? (
             <div>
               {/* Box Subhead */}
               <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b border-zinc-900">

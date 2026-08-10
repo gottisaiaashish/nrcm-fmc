@@ -6,6 +6,22 @@ export default function RegistrationPage() {
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isClosed, setIsClosed] = useState(() => {
+    return localStorage.getItem('nrcmfmc_recruitment_open') === 'false';
+  });
+
+  React.useEffect(() => {
+    const handleStatusChange = () => {
+      setIsClosed(localStorage.getItem('nrcmfmc_recruitment_open') === 'false');
+    };
+    window.addEventListener('storage', handleStatusChange);
+    window.addEventListener('recruitment_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('storage', handleStatusChange);
+      window.removeEventListener('recruitment_status_changed', handleStatusChange);
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -21,6 +37,7 @@ export default function RegistrationPage() {
   });
 
   const handleSubmit = async (e) => {
+    if (isClosed) return;
     e.preventDefault();
     setLoading(true);
     const submissionData = {
@@ -131,12 +148,12 @@ export default function RegistrationPage() {
         <div style={S.metaRow}>
           {[
             { label: 'CLUB', val: 'NRCM.FMC' },
-            { label: 'STATUS', val: 'APPLICATIONS OPEN' },
+            { label: 'STATUS', val: isClosed ? 'RECRUITMENT CLOSED' : 'APPLICATIONS OPEN' },
             { label: 'ELIGIBILITY', val: 'ALL BRANCHES' },
           ].map((item, i) => (
             <div key={i} style={S.metaCell(i === 2)}>
               <span style={S.metaLbl}>{item.label}</span>
-              <span style={S.metaVal}>{item.val}</span>
+              <span style={{ ...S.metaVal, color: i === 1 && isClosed ? '#ef4444' : S.metaVal.color }}>{item.val}</span>
             </div>
           ))}
         </div>
@@ -144,12 +161,29 @@ export default function RegistrationPage() {
 
       {/* FORM */}
       <div style={S.formWrap}>
-        <div style={S.heading}>
-          <h2 style={S.h2}>JOIN THE CLUB</h2>
-          <p style={S.subtext}>Fill in your details to apply for NRCM FMC Crew</p>
-        </div>
+        {isClosed ? (
+          <div className="w-full text-center py-16 px-6 bg-[#EBE7D3] border-4 border-[#17171a] rounded-3xl shadow-[8px_8px_0px_#17171a] flex flex-col items-center">
+            <h2 className="font-sans font-black uppercase text-3xl sm:text-5xl text-[#17171a] mb-4 tracking-tight leading-tight">
+              SORRY, RECRUITMENT HAS BEEN CLOSED
+            </h2>
+            <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed mb-8">
+              APPLICATIONS FOR NRCM FILM MAKING CLUB RECRUITMENT 2026 ARE CURRENTLY CLOSED. THANK YOU FOR YOUR INTEREST!
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-8 py-4 rounded-2xl bg-[#e50914] text-white font-mono text-xs sm:text-sm font-black tracking-widest uppercase border-4 border-[#17171a] shadow-[4px_4px_0px_#17171a] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-[2px] active:translate-y-[2px] transition-all cursor-pointer"
+            >
+              RETURN TO HOME
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={S.heading}>
+              <h2 style={S.h2}>JOIN THE CLUB</h2>
+              <p style={S.subtext}>Fill in your details to apply for NRCM FMC Crew</p>
+            </div>
 
-        <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
           
           {/* 1. Full Name */}
           <div style={S.fieldWrap}>
@@ -293,6 +327,8 @@ export default function RegistrationPage() {
             {loading ? 'SUBMITTING...' : <>SUBMIT APPLICATION <ArrowRight size={16} strokeWidth={3} /></>}
           </button>
         </form>
+        </>
+        )}
 
         <p style={S.footer}>© NRCM Film Making Club · Official Recruitment 2026</p>
       </div>

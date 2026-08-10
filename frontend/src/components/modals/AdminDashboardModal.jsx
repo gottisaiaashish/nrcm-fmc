@@ -10,15 +10,47 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [currentDate, setCurrentDate] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedApp, setSelectedApp] = useState(null);
+  const [recruitmentOpen, setRecruitmentOpen] = useState(() => {
+    return localStorage.getItem('nrcmfmc_recruitment_open') !== 'false';
+  });
 
   useEffect(() => {
     if (isOpen) {
       fetchRegistrations();
+      fetchRecruitmentStatus();
       updateClock();
       const timer = setInterval(updateClock, 1000);
       return () => clearInterval(timer);
     }
   }, [isOpen]);
+
+  const fetchRecruitmentStatus = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
+      const res = await fetch(`${apiUrl}/api/recruitment-status`);
+      const data = await res.json();
+      if (data.success && typeof data.isOpen === 'boolean') {
+        setRecruitmentOpen(data.isOpen);
+        localStorage.setItem('nrcmfmc_recruitment_open', data.isOpen ? 'true' : 'false');
+      }
+    } catch (_) {}
+  };
+
+  const toggleRecruitmentStatus = async () => {
+    const nextStatus = !recruitmentOpen;
+    setRecruitmentOpen(nextStatus);
+    localStorage.setItem('nrcmfmc_recruitment_open', nextStatus ? 'true' : 'false');
+    window.dispatchEvent(new Event('recruitment_status_changed'));
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
+      await fetch(`${apiUrl}/api/admin/recruitment-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOpen: nextStatus })
+      });
+    } catch (_) {}
+  };
 
   const updateClock = () => {
     const now = new Date();
@@ -219,7 +251,25 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             <span style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', fontSize:10, color:'#d1d5db', backgroundColor:'#e5e7eb', padding:'2px 5px', borderRadius:4, fontFamily:'monospace' }}>⌘K</span>
           </div>
 
-          <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+          <div style={{ display:'flex', gap:8, flexShrink:0, alignItems:'center' }}>
+            {/* Recruitment Toggle Switch */}
+            <button onClick={toggleRecruitmentStatus} title="Toggle Recruitment Status ON/OFF"
+              style={{
+                display:'flex', alignItems:'center', gap:8, padding:'6px 12px', borderRadius:20,
+                backgroundColor: recruitmentOpen ? '#f0fdf4' : '#fef2f2',
+                border: `1.5px solid ${recruitmentOpen ? '#bbf7d0' : '#fecaca'}`,
+                color: recruitmentOpen ? '#16a34a' : '#dc2626',
+                fontWeight:700, fontSize:11, cursor:'pointer', transition:'all 0.2s ease',
+                boxShadow:'0 1px 2px rgba(0,0,0,0.05)'
+              }}>
+              <span style={{
+                width:8, height:8, borderRadius:'50%',
+                backgroundColor: recruitmentOpen ? '#16a34a' : '#dc2626',
+                boxShadow: recruitmentOpen ? '0 0 8px #16a34a' : '0 0 8px #dc2626'
+              }} />
+              <span>RECRUITMENT: {recruitmentOpen ? 'ON (OPEN)' : 'OFF (CLOSED)'}</span>
+            </button>
+
             <button onClick={fetchRegistrations} disabled={loading} style={S.topBtn}
               onMouseEnter={e => e.currentTarget.style.backgroundColor='#f9fafb'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor='#ffffff'}>

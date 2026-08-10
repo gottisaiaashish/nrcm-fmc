@@ -4,6 +4,22 @@ import { Ticket, Check, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function TheClub() {
   const [registered, setRegistered] = useState(false);
+  const [isClosed, setIsClosed] = useState(() => {
+    return localStorage.getItem('nrcmfmc_recruitment_open') === 'false';
+  });
+
+  React.useEffect(() => {
+    const handleStatusChange = () => {
+      setIsClosed(localStorage.getItem('nrcmfmc_recruitment_open') === 'false');
+    };
+    window.addEventListener('storage', handleStatusChange);
+    window.addEventListener('recruitment_status_changed', handleStatusChange);
+    return () => {
+      window.removeEventListener('storage', handleStatusChange);
+      window.removeEventListener('recruitment_status_changed', handleStatusChange);
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     branch: 'CSE',
@@ -21,6 +37,7 @@ export default function TheClub() {
   ];
 
   const handleSubmit = (e) => {
+    if (isClosed) return;
     e.preventDefault();
     setRegistered(true);
   };
@@ -85,7 +102,16 @@ export default function TheClub() {
           <div className="relative rounded-3xl bg-zinc-950 border border-red-900/40 p-8 sm:p-12 shadow-[0_0_50px_rgba(229,9,20,0.2)] backdrop-blur-2xl red-frame-border overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-600 to-transparent" />
 
-            {!registered ? (
+            {isClosed ? (
+              <div className="text-center py-10 px-4">
+                <h3 className="font-display text-2xl sm:text-4xl font-black uppercase text-red-600 mb-3 tracking-tight">
+                  SORRY, RECRUITMENT HAS BEEN CLOSED
+                </h3>
+                <p className="font-mono text-xs sm:text-sm text-zinc-400 uppercase tracking-widest leading-relaxed max-w-lg mx-auto">
+                  Applications for NRCM Film Making Club Recruitment 2026 are currently closed. Thank you for your interest!
+                </p>
+              </div>
+            ) : !registered ? (
               <div>
                 <div className="flex items-center justify-between gap-4 mb-6 pb-6 border-b border-zinc-900">
                   <div className="flex items-center gap-3">
