@@ -48,6 +48,14 @@ export default function IntroSequence({ onComplete }) {
           // CINEMATIC COLLECTIVE EST. 2026
         </div>
 
+        {/* Main Stylized NRCM.FMC Title Reveal */}
+        <h1
+          className={`font-display text-fluid-title font-black tracking-tighter text-[#F0ECD9] uppercase leading-none transition-all duration-1000 ${
+            stage >= 1 ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-95 blur-md'
+          }`}
+        >
+          NRCM<span className="text-red-600 font-serif italic">.</span>FMC
+        </h1>
 
       </div>
     </div>
