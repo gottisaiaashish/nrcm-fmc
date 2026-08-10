@@ -135,10 +135,12 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       r.passId?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!isMatch) return false;
+    const isShortlisted = shortlistedIds.includes(r._id) || shortlistedIds.includes(r.passId);
     if (activeTab === 'shortlisted') {
-      return shortlistedIds.includes(r._id) || shortlistedIds.includes(r.passId);
+      return isShortlisted;
     }
-    return true;
+    // Overview tab shows ONLY non-shortlisted candidates
+    return !isShortlisted;
   });
 
   const getGreeting = () => {
@@ -212,12 +214,12 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
               onMouseEnter={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : '#f9fafb'}
               onMouseLeave={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : 'transparent'}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={S.iconBox(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.2)' : '#fef9c3')}>
-                  <Star size={14} color={activeTab === 'shortlisted' ? '#fff' : '#eab308'} fill={activeTab === 'shortlisted' ? '#fff' : '#eab308'} />
+                <div style={S.iconBox(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.2)' : '#f3f4f6')}>
+                  <Star size={14} color={activeTab === 'shortlisted' ? '#fff' : '#1c1c1e'} fill={activeTab === 'shortlisted' ? '#fff' : 'none'} />
                 </div>
                 <span style={{ whiteSpace:'nowrap' }}>Shortlisted</span>
               </div>
-              <span style={S.badge(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.25)' : '#fef08a', activeTab === 'shortlisted' ? '#fff' : '#854d0e')}>
+              <span style={S.badge(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'shortlisted' ? '#fff' : '#374151')}>
                 {shortlistedIds.length}
               </span>
             </button>
@@ -349,8 +351,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           {/* Stat Cards */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
             {[
-              { label:'Total Applications', value: registrations.length, sub:'↑ Live FMC Recruitment Applications', subColor:'#10b981' },
-              { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Review', subColor:'#3b82f6' },
+              { label:'New / Pending Applications', value: registrations.filter(r => !shortlistedIds.includes(r._id) && !shortlistedIds.includes(r.passId)).length, sub:'↑ In Overview Queue', subColor:'#10b981' },
+              { label:'Shortlisted Candidates', value: shortlistedIds.length, sub:'⭐ In Shortlisted Queue', subColor:'#3b82f6' },
             ].map((c, i) => (
               <div key={i} style={S.card}>
                 <span style={S.statLabel}>{c.label}</span>
@@ -365,7 +367,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 24px', borderBottom:'1px solid #f3f4f6' }}>
               <h2 style={{ fontSize:15, fontWeight:600, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
                 <FileText size={16} color="#ef4444" />
-                Recruitment Applications List
+                {activeTab === 'shortlisted' ? 'Shortlisted Candidates List' : 'Recruitment Applications List'}
               </h2>
               <span style={{ fontSize:11, fontWeight:500, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em' }}>
                 Showing {filtered.length} Entries
