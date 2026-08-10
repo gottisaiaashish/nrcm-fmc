@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+:root {
+  --bg-dark: #0f0f11;
+  --bg-surface: #17171a;
+  --cream: #F0ECD9;
+  --cream-muted: rgba(240, 236, 217, 0.65);
+
+  --red-primary: #e50914;
+  --red-accent: #ff2a35;
+  --red-dark: #7a0000;
+
+  --font-display: 'Syne', 'Space Grotesk', sans-serif;
+  --font-serif: 'Instrument Serif', serif;
+  --font-sans: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  background-color: var(--bg-dark);
+  color: var(--cream);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  width: 100%;
+  min-height: 100vh;
+  cursor: default;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f0f11;
+}
+::-webkit-scrollbar-thumb {
+  background: #28282e;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red-primary);
+}
+
+/* Working Stiff Typography Utility Classes */
+.font-display { font-family: var(--font-display); }
+.font-serif { font-family: var(--font-serif); }
+.font-sans { font-family: var(--font-sans); }
+.font-mono { font-family: var(--font-mono); }
+
+.f-300 { font-size: clamp(4.5rem, 15vw, 16rem); font-weight: 900; line-height: 0.8; }
+.f-280 { font-size: clamp(4rem, 13vw, 14rem); font-weight: 900; line-height: 0.82; }
+.f-240 { font-size: clamp(2.5rem, 8.5vw, 9rem); font-weight: 900; line-height: 0.85; }
+.f-120 { font-size: clamp(1.5rem, 4.5vw, 4.5rem); font-weight: 800; line-height: 0.9; }
+.f-80  { font-size: clamp(1.5rem, 4vw, 4rem); font-weight: 800; line-height: 0.95; }
+.f-44  { font-size: clamp(1.1rem, 2.5vw, 2.2rem); font-weight: 700; line-height: 1; }
+.f-32  { font-size: clamp(1rem, 1.8vw, 1.8rem); font-weight: 600; }
+.f-20  { font-size: 1.25rem; font-weight: 600; }
+.f-18  { font-size: 1.125rem; font-weight: 400; line-height: 1.5; }
+
+/* Working Stiff Team Card Red Corner Brackets */
+.corners {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.corners i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--red-primary);
+}
+.corners i:nth-child(1) { top: 0; left: 0; border-top: 2px solid; border-left: 2px solid; }
+.corners i:nth-child(2) { top: 0; right: 0; border-top: 2px solid; border-right: 2px solid; }
+.corners i:nth-child(3) { bottom: 0; left: 0; border-bottom: 2px solid; border-left: 2px solid; }
+.corners i:nth-child(4) { bottom: 0; right: 0; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* 3D Yellow/Red Working Stiff Button Effect */
+.ws-3d-button {
+  position: relative;
+  width: 120px;
+  height: 100px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.ws-3d-button:hover {
+  transform: scale(1.08);
+}
+.ws-3d-button:active {
+  transform: scale(0.96);
+}
+
+/* Marquee Infinite Scroll Animation */
+@keyframes marqueeScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marqueeScroll 20s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Grain Noise Overlay */
+.film-grain {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Hide Scrollbar */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
