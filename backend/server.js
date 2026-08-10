@@ -20,8 +20,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-// Brevo HTTP API Configuration (Sends from nrcmfmc@gmail.com over HTTPS Port 443)
-const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
+// Brevo Configuration (REST API & SMTP Relay)
+const BREVO_API_KEY = process.env.BREVO_API_KEY?.startsWith('xkeysib-') ? process.env.BREVO_API_KEY : '';
+const BREVO_SMTP_KEY = process.env.BREVO_SMTP_KEY || (process.env.BREVO_API_KEY?.startsWith('xsmtpsib-') ? process.env.BREVO_API_KEY : '');
+const BREVO_LOGIN = process.env.BREVO_LOGIN || 'b510f6001@smtp-brevo.com';
+
+const brevoTransporter = BREVO_SMTP_KEY
+  ? nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: BREVO_LOGIN,
+        pass: BREVO_SMTP_KEY,
+      },
+    })
+  : null;
 
 // Resend HTTP API Configuration (Preferred for Render Cloud Host)
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -112,7 +126,17 @@ Narsimha Reddy Engineering College
 `;
 
   try {
-    if (BREVO_API_KEY) {
+    if (brevoTransporter) {
+      await brevoTransporter.sendMail({
+        from: `"NRCM Film Making Club" <${EMAIL_USER || 'nrcmfmc@gmail.com'}>`,
+        replyTo: EMAIL_USER || 'nrcmfmc@gmail.com',
+        to: email,
+        subject: `NRCM FMC Application Under Review - ${name}`,
+        text: textContent,
+        html: htmlContent
+      });
+      console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from nrcmfmc@gmail.com`);
+    } else if (BREVO_API_KEY) {
       const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
