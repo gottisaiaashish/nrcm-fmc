@@ -41,51 +41,52 @@ const transporter = nodemailer.createTransport(
 
 const sendConfirmationEmail = async (applicant) => {
   const { passId, name, email, branch, interestedArea, mobile } = applicant;
+
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; background-color: #0f0f11; color: #ffffff; padding: 40px 20px; max-width: 600px; margin: 0 auto; border-radius: 16px; border: 2px solid #e50914;">
-      <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #27272a;">
-        <h1 style="font-size: 28px; font-weight: 900; color: #e50914; margin: 0; letter-spacing: 2px;">NRCM.FMC</h1>
-        <p style="font-size: 11px; color: #a1a1aa; font-family: monospace; letter-spacing: 3px; margin-top: 4px;">NARSIMHA REDDY ENGINEERING COLLEGE FILM MAKING CLUB</p>
-      </div>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #17171a; font-size: 15px; line-height: 1.6; max-width: 560px; margin: 0 auto; padding: 20px 0;">
+      <p style="font-weight: 700; color: #e50914; font-family: monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 20px;">
+        NRCM.FMC // RECRUITMENT 2026
+      </p>
 
-      <div style="padding: 30px 10px; text-align: center;">
-        <div style="display: inline-block; padding: 6px 16px; background-color: rgba(229, 9, 20, 0.15); border: 1px solid #e50914; color: #e50914; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 20px; margin-bottom: 20px;">
-          INDUCTION RECRUITMENT 2026
-        </div>
+      <p style="font-size: 18px; font-weight: 800; color: #17171a; margin-bottom: 16px;">
+        Hello ${name},
+      </p>
 
-        <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px;">APPLICATION RECEIVED, ${name.toUpperCase()}!</h2>
-        <p style="font-size: 14px; color: #d4d4d8; line-height: 1.6; margin-bottom: 24px;">
-          Thank you for applying to join the NRCM Film Making Club crew. Your recruitment application has been successfully logged into our Command System.
+      <p style="margin-bottom: 16px; color: #17171a;">
+        Your recruitment application for <strong style="color: #e50914;">NRCM.FMC</strong> has been received and is currently <mark style="background-color: #fef08a; padding: 2px 6px; font-weight: 700; color: #854d0e; border-radius: 4px;">UNDER REVIEW</mark>.
+      </p>
+
+      <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin: 20px 0;">
+        <p style="font-family: monospace; font-size: 11px; color: #e50914; margin: 0 0 10px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;">
+          APPLICATION DETAILS
         </p>
-
-        <div style="background-color: #17171a; border: 1px solid #27272a; border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 24px;">
-          <p style="font-family: monospace; font-size: 11px; color: #e50914; margin: 0 0 10px 0; font-weight: bold;">APPLICATION DETAILS SUMMARY</p>
-          <table style="width: 100%; font-size: 13px; color: #d4d4d8; border-collapse: collapse;">
-            <tr><td style="padding: 4px 0; color: #71717a; width: 140px;">Application ID:</td><td style="font-weight: bold; font-family: monospace; color: #ffffff;">${passId}</td></tr>
-            <tr><td style="padding: 4px 0; color: #71717a;">Full Name:</td><td style="font-weight: bold; color: #ffffff;">${name}</td></tr>
-            <tr><td style="padding: 4px 0; color: #71717a;">Branch & Year:</td><td style="font-weight: bold; color: #ffffff;">${branch}</td></tr>
-            <tr><td style="padding: 4px 0; color: #71717a;">Interested Area:</td><td style="font-weight: bold; color: #e50914;">${interestedArea || 'N/A'}</td></tr>
-            <tr><td style="padding: 4px 0; color: #71717a;">Mobile:</td><td style="font-weight: bold; color: #ffffff;">${mobile}</td></tr>
-          </table>
-        </div>
-
-        <p style="font-size: 13px; color: #a1a1aa; line-height: 1.5;">
-          Our FMC core team is currently reviewing all applications. If your profile is shortlisted, our team will get in touch with you via Mobile / WhatsApp / Instagram.
-        </p>
+        <table style="width: 100%; font-size: 13px; color: #374151; border-collapse: collapse;">
+          <tr><td style="padding: 4px 0; color: #6b7280; width: 140px;">Application ID:</td><td style="font-weight: 700; font-family: monospace; color: #e50914;">${passId}</td></tr>
+          <tr><td style="padding: 4px 0; color: #6b7280;">Full Name:</td><td style="font-weight: 700; color: #17171a;">${name}</td></tr>
+          <tr><td style="padding: 4px 0; color: #6b7280;">Branch & Year:</td><td style="font-weight: 700; color: #17171a;">${branch}</td></tr>
+          <tr><td style="padding: 4px 0; color: #6b7280;">Interested Area:</td><td style="font-weight: 700; color: #17171a;">${interestedArea || 'N/A'}</td></tr>
+          <tr><td style="padding: 4px 0; color: #6b7280;">Mobile:</td><td style="font-weight: 700; color: #17171a;">${mobile}</td></tr>
+        </table>
       </div>
 
-      <div style="text-align: center; padding-top: 20px; border-top: 1px solid #27272a; font-size: 11px; color: #71717a; font-family: monospace;">
-        © 2026 NRCM FILM MAKING CLUB · OFFICIAL RECRUITMENT
-      </div>
+      <p style="margin-bottom: 24px; color: #4b5563; font-size: 14px;">
+        Our core team is reviewing your application. If shortlisted, we will reach out to you via Mobile / WhatsApp.
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+
+      <p style="font-family: monospace; font-size: 11px; color: #9ca3af; text-transform: uppercase; margin: 0;">
+        NRCM FILM MAKING CLUB · OFFICIAL RECRUITMENT 2026
+      </p>
     </div>
   `;
 
   const textContent = `
-NRCM.FMC - FILM MAKING CLUB RECRUITMENT 2026
+NRCM.FMC // RECRUITMENT 2026
 
-Dear ${name},
+Hello ${name},
 
-Thank you for applying to join the NRCM Film Making Club crew! Your recruitment application has been successfully logged into our system.
+Your recruitment application for NRCM.FMC has been received and is currently UNDER REVIEW.
 
 APPLICATION DETAILS:
 - Application ID: ${passId}
@@ -94,10 +95,9 @@ APPLICATION DETAILS:
 - Interested Area: ${interestedArea || 'N/A'}
 - Mobile: ${mobile}
 
-Our FMC core team is currently reviewing all applications. If your profile is shortlisted, our team will contact you via Mobile / WhatsApp / Instagram.
+Our core team is reviewing your application. If shortlisted, we will reach out to you via Mobile / WhatsApp.
 
-Best regards,
-NRCM Film Making Club Team
+NRCM FILM MAKING CLUB · OFFICIAL RECRUITMENT 2026
 `;
 
   try {
@@ -106,7 +106,7 @@ NRCM Film Making Club Team
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
         replyTo: EMAIL_USER,
         to: email,
-        subject: `NRCM.FMC Application Confirmation - ${name}`,
+        subject: `NRCM.FMC Application Under Review - ${name}`,
         text: textContent,
         html: htmlContent,
         headers: {
