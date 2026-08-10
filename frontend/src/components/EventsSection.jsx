@@ -10,9 +10,6 @@ export default function EventsSection({ onRegisterEvent }) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 w-full relative z-10 my-auto flex flex-col items-center">
         {/* Main Section Heading */}
         <div className="text-center mb-10 sm:mb-14">
-          <span className="font-mono text-[10px] sm:text-xs text-red-500 tracking-[0.3em] uppercase font-bold block mb-2">
-            // ANNUAL FLAGSHIP
-          </span>
           <h2 className="font-display text-3xl sm:text-5xl font-black tracking-tight uppercase text-white">
             UPCOMING <span className="text-red-600 font-serif italic font-normal">EVENTS</span>
           </h2>
@@ -40,17 +37,9 @@ export default function EventsSection({ onRegisterEvent }) {
 
             {/* Event Details Drawer */}
             <div className="lg:col-span-5 p-6 sm:p-10 lg:p-12 flex flex-col justify-between items-center text-center bg-[#141416] relative">
-              
-              {/* Tag Header */}
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-red-500" />
-                <span className="font-mono text-[10px] sm:text-xs text-red-500 tracking-[0.25em] uppercase font-bold">
-                  NRCM.FMC OFFICIAL EVENT
-                </span>
-              </div>
 
               {/* Centered Event Title & Specs Block */}
-              <div className="my-auto py-6 w-full flex flex-col items-center justify-center">
+              <div className="my-auto py-4 w-full flex flex-col items-center justify-center">
                 <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white leading-[0.95]">
                   JUNIOR <br />
                   INDUCTION
@@ -59,21 +48,21 @@ export default function EventsSection({ onRegisterEvent }) {
                   2026
                 </div>
 
-                {/* Specs Section: Sleek Glassmorphism Badges */}
-                <div className="w-full space-y-2.5 pt-6 font-mono text-xs text-zinc-300 flex flex-col items-center">
-                  <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800/80 rounded-xl px-4 py-2.5 w-full max-w-xs justify-center shadow-inner">
+                {/* Specs Section: Clean Minimal Lines */}
+                <div className="w-full space-y-3 pt-6 font-mono text-xs text-zinc-300 flex flex-col items-center">
+                  <div className="flex items-center justify-center gap-3 border-b border-zinc-800/80 pb-2.5 w-full max-w-xs text-center">
                     <Calendar className="w-4 h-4 text-red-500 shrink-0" />
-                    <span className="tracking-wider text-[11px] font-semibold">AUG 11, 2026</span>
+                    <span className="tracking-wider text-[11px] font-semibold text-zinc-200">DATE: AUGUST 11, 2026</span>
                   </div>
 
-                  <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800/80 rounded-xl px-4 py-2.5 w-full max-w-xs justify-center shadow-inner">
+                  <div className="flex items-center justify-center gap-3 border-b border-zinc-800/80 pb-2.5 w-full max-w-xs text-center">
                     <Clock className="w-4 h-4 text-red-500 shrink-0" />
-                    <span className="tracking-wider text-[11px] font-semibold">03:30 PM IST</span>
+                    <span className="tracking-wider text-[11px] font-semibold text-zinc-200">TIME: 03:30 PM IST</span>
                   </div>
 
-                  <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800/80 rounded-xl px-4 py-2.5 w-full max-w-xs justify-center shadow-inner">
+                  <div className="flex items-center justify-center gap-3 border-b border-zinc-800/80 pb-2.5 w-full max-w-xs text-center">
                     <MapPin className="w-4 h-4 text-red-500 shrink-0" />
-                    <span className="tracking-wider text-[11px] font-semibold truncate">MAIN AUDITORIUM, NRCM</span>
+                    <span className="tracking-wider text-[11px] font-semibold text-zinc-200">VENUE: MAIN AUDITORIUM, NRCM</span>
                   </div>
                 </div>
               </div>
