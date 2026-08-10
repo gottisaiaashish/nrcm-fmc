@@ -27,12 +27,12 @@ export default function RegistrationPage() {
 
   const S = {
     page:     { fontFamily: "'Space Grotesk', -apple-system, sans-serif", minHeight: '100vh', backgroundColor: '#F0ECD9', color: '#17171a' },
-    topbar:   { backgroundColor: '#F0ECD9', borderBottom: '2px solid rgba(23,23,26,0.08)', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 },
-    backBtn:  { fontFamily: 'monospace', fontSize: 11, color: 'rgba(23,23,26,0.5)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 },
-    brand:    { fontFamily: 'monospace', fontSize: 11, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#17171a' },
+    topbar:   { backgroundColor: '#0f0f11', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+    backBtn:  { fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.12em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 },
+    brand:    { fontFamily: 'monospace', fontSize: 11, fontWeight: 900, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#fff' },
 
-    eventBanner: { margin: '20px 20px 0', borderRadius: 20, overflow: 'hidden', border: '3px solid #17171a', boxShadow: '4px 4px 0 #17171a' },
-    bannerImg: { width: '100%', height: 'clamp(160px, 40vw, 240px)', objectFit: 'cover', display: 'block', filter: 'brightness(0.45) contrast(1.1)' },
+    eventBanner: { margin: 0, borderRadius: 0, overflow: 'hidden', border: 'none', boxShadow: 'none', backgroundColor: '#0f0f11' },
+    bannerImg: { width: '100%', height: 'clamp(160px, 40vw, 240px)', objectFit: 'cover', display: 'block', filter: 'brightness(0.35) contrast(1.1)' },
     bannerOverlay: { position: 'relative', marginTop: -4 },
     bannerCenter: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 16px' },
     eventTag:  { fontFamily: 'monospace', fontSize: 9, color: '#e50914', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 8 },
