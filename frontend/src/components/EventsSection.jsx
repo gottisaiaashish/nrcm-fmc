@@ -14,7 +14,7 @@ export default function EventsSection({ onRegisterEvent }) {
         </h2>
 
         {/* Hero Upcoming Event Visual Focus Card */}
-        <div className="relative w-full mx-4 sm:mx-0 rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden shadow-2xl transition-all duration-500">
+        <div className="mx-4 sm:mx-0 rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden shadow-2xl transition-all duration-500">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Full-Bleed Media Visual */}
             <div className="lg:col-span-7 relative min-h-[340px] sm:min-h-[420px] lg:min-h-[500px] bg-zinc-900 overflow-hidden">
@@ -65,13 +65,13 @@ export default function EventsSection({ onRegisterEvent }) {
               </div>
 
               {/* Action CTA */}
-              <div className="w-full pt-4">
+              <div className="w-full pt-4 flex justify-center">
                 <button
                   onClick={onRegisterEvent}
-                  className="w-full py-4 rounded-xl bg-red-600 text-white font-mono text-xs tracking-widest uppercase font-bold hover:bg-red-500 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                  className="px-8 py-3.5 rounded-full bg-red-600 text-white font-mono text-xs tracking-widest uppercase font-bold hover:bg-red-500 active:scale-95 transition-all duration-200 flex items-center gap-2.5 cursor-pointer shadow-[0_4px_20px_rgba(229,9,20,0.4)]"
                 >
                   REGISTER NOW
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
                 </button>
               </div>
             </div>
