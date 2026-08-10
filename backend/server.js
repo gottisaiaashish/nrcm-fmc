@@ -70,7 +70,11 @@ const sendConfirmationEmail = async (applicant) => {
   const { passId, name, email, branch, interestedArea, mobile } = applicant;
 
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #111111; margin: 0; padding: 10px 0;">
+    <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #111111; margin: 0; padding: 10px 0; max-width: 600px;">
+      <div style="margin-bottom: 20px;">
+        <img src="https://nrcm-fmc-phi.vercel.app/nrcm_fmc_logo.png" alt="NRCM FMC Logo" style="width: 90px; height: 90px; border-radius: 50%; display: block; border: 1px solid #eaeaea;" />
+      </div>
+
       <p style="margin-bottom: 16px;">Dear ${name},</p>
 
       <p style="margin-bottom: 16px;">
