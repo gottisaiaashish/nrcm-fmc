@@ -94,7 +94,8 @@ const sendConfirmationEmail = async (applicant) => {
       <p style="margin-top: 24px; color: #333333;">
         Regards,<br />
         <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
-        Narsimha Reddy Engineering College
+        Narsimha Reddy Engineering College<br />
+        <span style="font-size: 11px; color: #888888;">Ref: ${passId}</span>
       </p>
     </div>
   `;
@@ -117,6 +118,7 @@ Our team is currently reviewing your application. If your application is shortli
 Regards,
 NRCM Film Making Club (NRCM FMC)
 Narsimha Reddy Engineering College
+Ref: ${passId}
 `;
 
   try {
