@@ -196,7 +196,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
           {/* Nav */}
           <nav style={S.nav}>
-            {/* Home */}
+            {/* Home / All Applications */}
             <button style={S.navBtn(activeTab === 'overview')} onClick={() => setActiveTab('overview')}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <div style={S.iconBox(activeTab === 'overview' ? 'rgba(255,255,255,0.2)' : '#f3f4f6')}>
@@ -205,19 +205,6 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <span style={{ whiteSpace:'nowrap' }}>Overview</span>
               </div>
               <span style={S.badge(activeTab === 'overview' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'overview' ? '#fff' : '#6b7280')}>HQ</span>
-            </button>
-
-            {/* Applications */}
-            <button style={S.navBtn(activeTab === 'applications')} onClick={() => setActiveTab('applications')}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor= activeTab === 'applications' ? '#1c1c1e' : '#f9fafb'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor= activeTab === 'applications' ? '#1c1c1e' : 'transparent'}>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={S.iconBox(activeTab === 'applications' ? 'rgba(255,255,255,0.2)' : '#fff1f2')}>
-                  <Users size={14} color={activeTab === 'applications' ? '#fff' : '#ef4444'} />
-                </div>
-                <span>Applications</span>
-              </div>
-              <span style={S.badge(activeTab === 'applications' ? 'rgba(255,255,255,0.25)' : '#ef4444', activeTab === 'applications' ? '#fff' : '#fff')}>{registrations.length}</span>
             </button>
 
             {/* Shortlisted */}
