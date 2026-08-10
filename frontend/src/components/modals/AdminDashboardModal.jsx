@@ -252,23 +252,43 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           </div>
 
           <div style={{ display:'flex', gap:8, flexShrink:0, alignItems:'center' }}>
-            {/* Recruitment Toggle Switch */}
-            <button onClick={toggleRecruitmentStatus} title="Toggle Recruitment Status ON/OFF"
-              style={{
-                display:'flex', alignItems:'center', gap:8, padding:'6px 12px', borderRadius:20,
-                backgroundColor: recruitmentOpen ? '#f0fdf4' : '#fef2f2',
-                border: `1.5px solid ${recruitmentOpen ? '#bbf7d0' : '#fecaca'}`,
-                color: recruitmentOpen ? '#16a34a' : '#dc2626',
-                fontWeight:700, fontSize:11, cursor:'pointer', transition:'all 0.2s ease',
-                boxShadow:'0 1px 2px rgba(0,0,0,0.05)'
-              }}>
-              <span style={{
-                width:8, height:8, borderRadius:'50%',
-                backgroundColor: recruitmentOpen ? '#16a34a' : '#dc2626',
-                boxShadow: recruitmentOpen ? '0 0 8px #16a34a' : '0 0 8px #dc2626'
-              }} />
-              <span>RECRUITMENT: {recruitmentOpen ? 'ON (OPEN)' : 'OFF (CLOSED)'}</span>
-            </button>
+            {/* Clean iOS Style Recruitment ON/OFF Toggle Switch */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 10px', borderRadius:20, backgroundColor:'#f3f4f6', border:'1px solid #e5e7eb' }}>
+              <span style={{ fontSize:11, fontWeight:700, color:'#374151', fontFamily:'monospace' }}>RECRUITMENT:</span>
+              <button
+                onClick={toggleRecruitmentStatus}
+                title={`Click to turn recruitment ${recruitmentOpen ? 'OFF' : 'ON'}`}
+                style={{
+                  width:44,
+                  height:24,
+                  borderRadius:12,
+                  backgroundColor: recruitmentOpen ? '#16a34a' : '#d1d5db',
+                  border:'none',
+                  cursor:'pointer',
+                  position:'relative',
+                  transition:'background-color 0.2s ease',
+                  padding:0,
+                  display:'flex',
+                  alignItems:'center'
+                }}
+              >
+                <span
+                  style={{
+                    width:18,
+                    height:18,
+                    borderRadius:'50%',
+                    backgroundColor:'#ffffff',
+                    position:'absolute',
+                    left: recruitmentOpen ? 23 : 3,
+                    transition:'left 0.2s ease',
+                    boxShadow:'0 1px 3px rgba(0,0,0,0.3)'
+                  }}
+                />
+              </button>
+              <span style={{ fontSize:11, fontWeight:800, color: recruitmentOpen ? '#16a34a' : '#dc2626', minWidth:26 }}>
+                {recruitmentOpen ? 'ON' : 'OFF'}
+              </span>
+            </div>
 
             <button onClick={fetchRegistrations} disabled={loading} style={S.topBtn}
               onMouseEnter={e => e.currentTarget.style.backgroundColor='#f9fafb'}
@@ -306,8 +326,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             </div>
           </div>
 
-          {/* Stat Cards & Controls */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
+          {/* Stat Cards */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
             {[
               { label:'Total Applications', value: registrations.length, sub:'↑ Live FMC Recruitment Applications', subColor:'#10b981' },
               { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Review', subColor:'#3b82f6' },
@@ -318,26 +338,6 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <span style={S.statSub(c.subColor)}>{c.sub}</span>
               </div>
             ))}
-
-            {/* 3rd Card: Direct Recruitment Switch */}
-            <div style={{ ...S.card, display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
-              <div>
-                <span style={S.statLabel}>RECRUITMENT CONTROL</span>
-                <div style={{ fontSize:18, fontWeight:800, color: recruitmentOpen ? '#16a34a' : '#dc2626', marginTop:6 }}>
-                  {recruitmentOpen ? 'ONLINE (ACCEPTING)' : 'OFFLINE (CLOSED)'}
-                </div>
-              </div>
-              <button onClick={toggleRecruitmentStatus}
-                style={{
-                  marginTop:12, padding:'8px 14px', borderRadius:10,
-                  backgroundColor: recruitmentOpen ? '#16a34a' : '#dc2626',
-                  color:'#ffffff', border:'none', fontWeight:700, fontSize:12,
-                  cursor:'pointer', transition:'all 0.2s ease', display:'flex', alignItems:'center', justifyContent:'center', gap:6,
-                  boxShadow: recruitmentOpen ? '0 4px 12px rgba(22, 163, 74, 0.3)' : '0 4px 12px rgba(220, 38, 38, 0.3)'
-                }}>
-                <span>SWITCH TO {recruitmentOpen ? 'OFF (CLOSE)' : 'ON (OPEN)'}</span>
-              </button>
-            </div>
           </div>
 
           {/* Table */}
