@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import dns from 'dns';
+import nodemailer from 'nodemailer';
 
 // Configure DNS fallback for MongoDB Atlas SRV resolution on Windows Node.js
 try {
@@ -14,6 +15,87 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
+
+// Nodemailer Transporter Configuration
+const EMAIL_USER = process.env.EMAIL_USER || '';
+const EMAIL_PASS = process.env.EMAIL_PASS || '';
+
+const transporter = nodemailer.createTransport(
+  EMAIL_USER && EMAIL_PASS
+    ? {
+        service: 'gmail',
+        auth: {
+          user: EMAIL_USER,
+          pass: EMAIL_PASS,
+        },
+      }
+    : {
+        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        auth: {
+          user: process.env.SMTP_USER || '',
+          pass: process.env.SMTP_PASS || '',
+        },
+      }
+);
+
+const sendConfirmationEmail = async (applicant) => {
+  const { passId, name, email, branch, interestedArea, mobile } = applicant;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; background-color: #0f0f11; color: #ffffff; padding: 40px 20px; max-width: 600px; margin: 0 auto; border-radius: 16px; border: 2px solid #e50914;">
+      <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #27272a;">
+        <h1 style="font-size: 28px; font-weight: 900; color: #e50914; margin: 0; letter-spacing: 2px;">NRCM.FMC</h1>
+        <p style="font-size: 11px; color: #a1a1aa; font-family: monospace; letter-spacing: 3px; margin-top: 4px;">NARSIMHA REDDY ENGINEERING COLLEGE FILM MAKING CLUB</p>
+      </div>
+
+      <div style="padding: 30px 10px; text-align: center;">
+        <div style="display: inline-block; padding: 6px 16px; background-color: rgba(229, 9, 20, 0.15); border: 1px solid #e50914; color: #e50914; font-family: monospace; font-size: 12px; font-weight: bold; border-radius: 20px; margin-bottom: 20px;">
+          INDUCTION RECRUITMENT 2026
+        </div>
+
+        <h2 style="font-size: 22px; font-weight: 800; color: #ffffff; margin-bottom: 12px;">APPLICATION RECEIVED, ${name.toUpperCase()}!</h2>
+        <p style="font-size: 14px; color: #d4d4d8; line-height: 1.6; margin-bottom: 24px;">
+          Thank you for applying to join the NRCM Film Making Club crew. Your recruitment application has been successfully logged into our Command System.
+        </p>
+
+        <div style="background-color: #17171a; border: 1px solid #27272a; border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 24px;">
+          <p style="font-family: monospace; font-size: 11px; color: #e50914; margin: 0 0 10px 0; font-weight: bold;">APPLICATION DETAILS SUMMARY</p>
+          <table style="width: 100%; font-size: 13px; color: #d4d4d8; border-collapse: collapse;">
+            <tr><td style="padding: 4px 0; color: #71717a; width: 140px;">Application ID:</td><td style="font-weight: bold; font-family: monospace; color: #ffffff;">${passId}</td></tr>
+            <tr><td style="padding: 4px 0; color: #71717a;">Full Name:</td><td style="font-weight: bold; color: #ffffff;">${name}</td></tr>
+            <tr><td style="padding: 4px 0; color: #71717a;">Branch & Year:</td><td style="font-weight: bold; color: #ffffff;">${branch}</td></tr>
+            <tr><td style="padding: 4px 0; color: #71717a;">Interested Area:</td><td style="font-weight: bold; color: #e50914;">${interestedArea || 'N/A'}</td></tr>
+            <tr><td style="padding: 4px 0; color: #71717a;">Mobile:</td><td style="font-weight: bold; color: #ffffff;">${mobile}</td></tr>
+          </table>
+        </div>
+
+        <p style="font-size: 13px; color: #a1a1aa; line-height: 1.5;">
+          Our FMC core team is currently reviewing all applications. If your profile is shortlisted, our team will get in touch with you via Mobile / WhatsApp / Instagram.
+        </p>
+      </div>
+
+      <div style="text-align: center; padding-top: 20px; border-top: 1px solid #27272a; font-size: 11px; color: #71717a; font-family: monospace;">
+        © 2026 NRCM FILM MAKING CLUB · OFFICIAL RECRUITMENT
+      </div>
+    </div>
+  `;
+
+  try {
+    if (EMAIL_USER && EMAIL_PASS) {
+      await transporter.sendMail({
+        from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
+        to: email,
+        subject: `[NRCM.FMC] Application Received - ${name}`,
+        html: htmlContent,
+      });
+      console.log(`✉️ [EMAIL SENT] Confirmation email sent to ${email} (${name})`);
+    } else {
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
+    }
+  } catch (err) {
+    console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
+  }
+};
 
 // Middleware
 app.use(cors());
@@ -142,6 +224,9 @@ app.post('/api/register', async (req, res) => {
       instagramId: instagramId || '',
       createdAt: new Date().toISOString()
     };
+
+    // Dispatch confirmation email asynchronously
+    sendConfirmationEmail(entryData).catch(err => console.error('Email Dispatch Error:', err.message));
 
     if (isMongoConnected) {
       const newEntry = new Registration(entryData);
