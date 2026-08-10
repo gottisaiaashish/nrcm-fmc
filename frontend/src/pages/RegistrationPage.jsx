@@ -134,7 +134,7 @@ export default function RegistrationPage() {
       <div style={S.eventBanner}>
         <div style={{ position: 'relative' }}>
           <img
-            src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80"
+            src="/join_crew_bg.jpg"
             alt="NRCM FMC Crew Recruitment"
             style={S.bannerImg}
           />
