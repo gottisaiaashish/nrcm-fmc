@@ -39,14 +39,6 @@ export default function IntroSequence({ onComplete }) {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/15 rounded-full blur-[160px] pointer-events-none" />
 
       <div className="relative z-10 text-center px-4 pointer-events-none">
-        {/* Monospace Metadata Tag */}
-        <div
-          className={`font-mono text-xs text-red-500 tracking-[0.3em] uppercase mb-4 transition-all duration-700 ${
-            stage >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          // CINEMATIC COLLECTIVE EST. 2026
-        </div>
 
         {/* Main Stylized NRCM.FMC Title Reveal */}
         <h1
