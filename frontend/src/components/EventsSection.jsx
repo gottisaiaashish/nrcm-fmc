@@ -7,16 +7,16 @@ export default function EventsSection({ onRegisterEvent }) {
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 w-full relative z-10 my-auto flex flex-col items-center">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 w-full relative z-10 my-auto flex flex-col items-center">
         {/* Main Section Heading */}
-        <div className="text-center mb-10 sm:mb-14">
+        <div className="text-center mb-8 sm:mb-14">
           <h2 className="font-display text-3xl sm:text-5xl font-black tracking-tight uppercase text-white">
             UPCOMING <span className="text-red-600 font-serif italic font-normal">EVENTS</span>
           </h2>
         </div>
 
         {/* Hero Upcoming Event Visual Focus Card */}
-        <div className="w-full rounded-2xl sm:rounded-3xl bg-[#141416] border border-zinc-800/90 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] transition-all duration-500 hover:border-zinc-700/80">
+        <div className="w-full max-w-[92%] sm:max-w-full mx-auto rounded-3xl bg-[#141416] border border-zinc-800/90 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] transition-all duration-500 hover:border-zinc-700/80">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             
             {/* Media Visual Column */}
