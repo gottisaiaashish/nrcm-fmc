@@ -2,6 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Configure DNS fallback for MongoDB Atlas SRV resolution on Windows Node.js
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (_) {}
 
 dotenv.config();
 
@@ -21,9 +27,15 @@ let isMongoConnected = false;
 const registrationSchema = new mongoose.Schema({
   passId: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  branch: { type: String, required: true },
   mobile: { type: String, required: true },
   email: { type: String, required: true },
+  branch: { type: String, required: true },
+  interestedArea: { type: String, default: '' },
+  previousExperience: { type: String, default: '' },
+  portfolioLink: { type: String, default: '' },
+  whyJoin: { type: String, default: '' },
+  whatYouBring: { type: String, default: '' },
+  instagramId: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -78,52 +90,53 @@ app.post('/api/admin/login', (req, res) => {
   });
 });
 
-// 3. Register Event Pass Endpoint
+// 3. Register Event Pass / Application Endpoint
 app.post('/api/register', async (req, res) => {
   try {
-    const { name, branch, mobile, email } = req.body;
+    const { name, branch, mobile, email, interestedArea, previousExperience, portfolioLink, whyJoin, whatYouBring, instagramId } = req.body;
 
     if (!name || !branch || !mobile || !email) {
       return res.status(400).json({
         success: false,
-        error: 'All fields (name, branch, mobile, email) are required.'
+        error: 'Required fields (name, branch, mobile, email) missing.'
       });
     }
 
-    const passId = `FMC-PASS-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const passId = `FMC-APP-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const entryData = {
+      passId,
+      name,
+      mobile,
+      email,
+      branch,
+      interestedArea: interestedArea || '',
+      previousExperience: previousExperience || '',
+      portfolioLink: portfolioLink || '',
+      whyJoin: whyJoin || '',
+      whatYouBring: whatYouBring || '',
+      instagramId: instagramId || '',
+      createdAt: new Date().toISOString()
+    };
 
     if (isMongoConnected) {
-      const newEntry = new Registration({
-        passId,
-        name,
-        branch,
-        mobile,
-        email
-      });
+      const newEntry = new Registration(entryData);
       await newEntry.save();
 
-      console.log(`[MONGODB PASS SAVED] ${name} (${branch}) - Pass ID: ${passId}`);
+      console.log(`[MONGODB APP SAVED] ${name} (${branch}) - App ID: ${passId}`);
       return res.status(201).json({
         success: true,
-        message: 'Event pass registered successfully in MongoDB!',
+        message: 'Application registered successfully in MongoDB!',
         pass: newEntry
       });
     } else {
-      const newEntry = {
-        _id: passId,
-        passId,
-        name,
-        branch,
-        mobile,
-        email,
-        createdAt: new Date().toISOString()
-      };
+      const newEntry = { _id: passId, ...entryData };
       inMemoryRegistrations.unshift(newEntry);
 
-      console.log(`[IN-MEMORY PASS SAVED] ${name} (${branch}) - Pass ID: ${passId}`);
+      console.log(`[IN-MEMORY APP SAVED] ${name} (${branch}) - App ID: ${passId}`);
       return res.status(201).json({
         success: true,
-        message: 'Event pass registered successfully (In-Memory)!',
+        message: 'Application registered successfully (In-Memory)!',
         pass: newEntry
       });
     }
@@ -131,7 +144,7 @@ app.post('/api/register', async (req, res) => {
     console.error('Registration Error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to process event registration.'
+      error: 'Failed to process recruitment application.'
     });
   }
 });

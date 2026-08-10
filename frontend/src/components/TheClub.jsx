@@ -184,20 +184,20 @@ export default function TheClub() {
                 </div>
 
                 <span className="font-mono text-xs text-red-500 tracking-widest uppercase block mb-1">
-                  REGISTRATION CONFIRMED
+                  APPLICATION RECEIVED
                 </span>
 
                 <h4 className="font-display text-2xl sm:text-3xl font-black uppercase text-white mb-2">
-                  WELCOME TO THE CREW, {formData.name}
+                  APPLICATION UNDER REVIEW, {formData.name}
                 </h4>
 
                 <p className="font-sans text-xs text-zinc-400 max-w-md mx-auto mb-6">
-                  Your entry pass for <span className="text-white font-bold">NRCM.FMC Junior Induction 2026</span> has been logged under branch <span className="text-red-500 font-bold">{formData.branch}</span>.
+                  Thank you for applying! Your application for <span className="text-white font-bold">NRCM.FMC Crew</span> has been received for branch <span className="text-red-500 font-bold">{formData.branch}</span>. Our team will review your details and get in touch with you!
                 </p>
 
                 <div className="p-4 rounded-xl bg-zinc-900/80 border border-red-900/40 max-w-sm mx-auto font-mono text-xs space-y-2 mb-6 text-left">
                   <div className="flex justify-between text-zinc-400">
-                    <span>PASS ID:</span>
+                    <span>APP ID:</span>
                     <span className="text-red-500 font-bold">FMC-2026-{Math.floor(1000 + Math.random() * 9000)}</span>
                   </div>
                   <div className="flex justify-between text-zinc-400">
@@ -206,8 +206,8 @@ export default function TheClub() {
                   </div>
                   <div className="flex justify-between text-zinc-400">
                     <span>STATUS:</span>
-                    <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> CONFIRMED
+                    <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" /> UNDER REVIEW
                     </span>
                   </div>
                 </div>

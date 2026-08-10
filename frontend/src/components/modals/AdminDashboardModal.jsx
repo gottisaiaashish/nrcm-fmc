@@ -59,16 +59,18 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   const exportCSV = () => {
     if (registrations.length === 0) return alert('No data to export.');
-    const headers = ['PASS ID', 'FULL NAME', 'BRANCH', 'MOBILE', 'EMAIL', 'REGISTERED AT'];
+    const headers = ['APP ID', 'FULL NAME', 'MOBILE', 'EMAIL', 'BRANCH & YEAR', 'INTERESTED AREA', 'PREVIOUS EXP', 'PORTFOLIO LINK', 'WHY JOIN FMC', 'WHAT YOU BRING', 'INSTAGRAM ID', 'APPLIED AT'];
     const rows = registrations.map(r => [
-      `"${r.passId || r._id}"`, `"${r.name}"`, `"${r.branch}"`,
-      `"${r.mobile}"`, `"${r.email}"`,
+      `"${r.passId || r._id}"`, `"${r.name}"`, `"${r.mobile}"`, `"${r.email}"`,
+      `"${r.branch}"`, `"${r.interestedArea || ''}"`, `"${r.previousExperience || ''}"`,
+      `"${r.portfolioLink || ''}"`, `"${r.whyJoin || ''}"`, `"${r.whatYouBring || ''}"`,
+      `"${r.instagramId || ''}"`,
       `"${new Date(r.createdAt || Date.now()).toLocaleString()}"`
     ]);
     const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const link = document.createElement('a');
     link.setAttribute('href', encodeURI(csv));
-    link.setAttribute('download', `NRCM_FMC_Registrations_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `NRCM_FMC_Recruitment_Applications_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -81,6 +83,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.mobile?.includes(searchQuery) ||
     r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.interestedArea?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.instagramId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.passId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -158,7 +162,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <div style={S.iconBox('#fff1f2')}>
                   <Users size={14} color="#ef4444" />
                 </div>
-                <span>Event Passes</span>
+                <span>Applications</span>
               </div>
               <span style={S.badge('#ef4444', '#fff')}>{registrations.length}</span>
             </button>
@@ -197,14 +201,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           <div style={S.breadcrumb}>
             <span>NRCM.FMC OS</span>
             <span style={{ color:'#d1d5db', fontSize:16 }}>›</span>
-            <span style={{ color:'#1c1c1e', fontWeight:600 }}>Dashboard Overview</span>
+            <span style={{ color:'#1c1c1e', fontWeight:600 }}>Recruitment Applications</span>
           </div>
 
           <div style={S.searchWrap}>
             <Search size={14} color="#9ca3af" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }} />
             <input
               type="text"
-              placeholder="Search registrations..."
+              placeholder="Search applications..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={S.searchInput}
@@ -237,7 +241,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 {getGreeting()} 🌼
               </h1>
               <p style={{ fontSize:13, color:'#6b7280', marginTop:4 }}>
-                Welcome to NRCM.FMC Command Center. Here is your live execution overview.
+                Welcome to NRCM.FMC Command Center. Reviewing live student recruitment applications.
               </p>
             </div>
             <div style={{ textAlign:'right', flexShrink:0, marginLeft:24 }}>
@@ -252,8 +256,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           {/* Stat Cards */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
             {[
-              { label:'Total Registrations', value: registrations.length, sub:'↑ Live Event Passes', subColor:'#10b981' },
-              { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Sprint', subColor:'#3b82f6' },
+              { label:'Total Applications', value: registrations.length, sub:'↑ Live FMC Recruitment Applications', subColor:'#10b981' },
+              { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Review', subColor:'#3b82f6' },
             ].map((c, i) => (
               <div key={i} style={S.card}>
                 <span style={S.statLabel}>{c.label}</span>
@@ -268,7 +272,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 24px', borderBottom:'1px solid #f3f4f6' }}>
               <h2 style={{ fontSize:15, fontWeight:600, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
                 <FileText size={16} color="#ef4444" />
-                Event Registrations List
+                Recruitment Applications List
               </h2>
               <span style={{ fontSize:11, fontWeight:500, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em' }}>
                 Showing {filtered.length} Entries
@@ -279,8 +283,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
                 <thead>
                   <tr style={S.tHead}>
-                    {['#','Pass ID','Full Name','Branch','Mobile','Email','Registered At','Action'].map((h, i) => (
-                      <th key={i} style={{ ...S.tHeadTh, textAlign: i === 7 ? 'right' : 'left' }}>{h}</th>
+                    {['#','App ID','Full Name','Branch','Mobile','Email','Interested Area','Prev Exp','Insta ID','Portfolio / Links','Action'].map((h, i) => (
+                      <th key={i} style={{ ...S.tHeadTh, textAlign: i === 10 ? 'right' : 'left' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -297,8 +301,11 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                       </td>
                       <td style={{ ...S.tCell, fontFamily:'monospace', fontSize:12 }}>{item.mobile}</td>
                       <td style={{ ...S.tCell, color:'#6b7280', fontSize:12 }}>{item.email}</td>
-                      <td style={{ ...S.tCell, color:'#9ca3af', fontFamily:'monospace', fontSize:11 }}>
-                        {new Date(item.createdAt || Date.now()).toLocaleString()}
+                      <td style={{ ...S.tCell, fontWeight:600, color:'#ef4444', fontSize:12 }}>{item.interestedArea || 'N/A'}</td>
+                      <td style={{ ...S.tCell, fontSize:12 }}>{item.previousExperience || 'N/A'}</td>
+                      <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
+                      <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        {item.portfolioLink || item.whyJoin || 'N/A'}
                       </td>
                       <td style={{ ...S.tCell, textAlign:'right' }}>
                         <button onClick={() => handleDelete(item._id || item.passId)}
@@ -311,8 +318,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan="8" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
-                        {loading ? 'Loading registrations...' : 'No event registrations found'}
+                      <td colSpan="11" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
+                        {loading ? 'Loading applications...' : 'No recruitment applications found'}
                       </td>
                     </tr>
                   )}

@@ -6,9 +6,15 @@ export default function JoinModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    branch: 'CSE',
     mobile: '',
     email: '',
+    branch: 'CSE',
+    interestedArea: 'Cinematography / Camera',
+    previousExperience: 'No',
+    portfolioLink: '',
+    whyJoin: '',
+    whatYouBring: '',
+    instagramId: ''
   });
 
   if (!isOpen) return null;
@@ -25,11 +31,10 @@ export default function JoinModal({ isOpen, onClose }) {
         body: JSON.stringify(formData)
       });
 
-      // Save in local storage fallback
       const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
       existing.unshift({
-        _id: `FMC-PASS-${Date.now()}`,
-        passId: `FMC-PASS-${Date.now()}`,
+        _id: `FMC-APP-${Date.now()}`,
+        passId: `FMC-APP-${Date.now()}`,
         ...formData,
         createdAt: new Date().toISOString()
       });
@@ -38,8 +43,8 @@ export default function JoinModal({ isOpen, onClose }) {
       console.warn('Backend server unreachable, saved entry to local storage fallback:', err.message);
       const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
       existing.unshift({
-        _id: `FMC-PASS-${Date.now()}`,
-        passId: `FMC-PASS-${Date.now()}`,
+        _id: `FMC-APP-${Date.now()}`,
+        passId: `FMC-APP-${Date.now()}`,
         ...formData,
         createdAt: new Date().toISOString()
       });
@@ -50,12 +55,15 @@ export default function JoinModal({ isOpen, onClose }) {
     }
   };
 
+  const inputClass = "w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm";
+  const selectClass = "w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors cursor-pointer shadow-sm";
+  const textareaClass = "w-full min-h-[90px] p-4 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm resize-y";
+
   return (
     <div className="fixed inset-0 z-[100] w-full h-full min-h-screen bg-[#F0ECD9] text-[#17171a] overflow-y-auto animate-in fade-in px-5 sm:px-8 md:px-12 py-6 sm:py-10 flex flex-col justify-between items-center">
       <div className="w-full max-w-5xl mx-auto min-h-full flex flex-col justify-between items-center gap-6 sm:gap-8">
         {/* Top Header Navigation Bar - Clean Close Button Only */}
         <div className="w-full flex items-center justify-end pb-2">
-          {/* Close Button */}
           <button
             onClick={onClose}
             aria-label="Close page"
@@ -66,96 +74,126 @@ export default function JoinModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Main Event Registration Content — Perfectly Centered */}
+        {/* Main Content */}
         <div className="w-full flex-1 flex flex-col justify-center items-center py-4">
           {!submitted ? (
             <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
               {/* Event Header Section Centered */}
               <div className="mb-8 sm:mb-10 text-center w-full max-w-2xl">
                 <h1 className="font-sans font-black uppercase text-[#17171a] tracking-tight leading-none mb-3 text-4xl sm:text-6xl md:text-7xl text-center">
-                  REACH OUT
+                  JOIN THE CREW
                 </h1>
                 <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/70 uppercase tracking-widest leading-relaxed text-center">
-                  JUNIOR INDUCTION 2026 // ENTRY DETAILS FOR NRCM CAMPUS AUDITORIUM
+                  OFFICIAL NRCM FILM MAKING CLUB RECRUITMENT APPLICATION
                 </p>
               </div>
 
-              {/* Form Grid Centered Container */}
-              <form onSubmit={handleSubmit} className="w-full space-y-6 sm:space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-6 sm:gap-y-8 w-full">
-                  {/* Item 1: Full Name */}
-                  <div className="flex flex-col text-left w-full">
-                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
-                      FULL NAME *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ENTER YOUR FULL NAME"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm"
-                    />
-                  </div>
+              {/* Form Grid */}
+              <form onSubmit={handleSubmit} className="w-full space-y-6">
+                {/* 1. Full Name */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">1. FULL NAME *</label>
+                  <input type="text" required placeholder="ENTER YOUR FULL NAME" value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} />
+                </div>
 
-                  {/* Item 2: Branch / Dept */}
+                {/* 2 & 3. Phone & Email */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                   <div className="flex flex-col text-left w-full">
-                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
-                      BRANCH / DEPT *
-                    </label>
-                    <select
-                      value={formData.branch}
-                      onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                      className="w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors cursor-pointer shadow-sm"
-                    >
-                      <option value="CSE">CSE — COMPUTER SCIENCE</option>
-                      <option value="ECE">ECE — ELECTRONICS & COMM</option>
-                      <option value="IT">IT — INFORMATION TECH</option>
-                      <option value="CSM/CSD">CSM / CSD — AI & DATA</option>
-                      <option value="MECH">MECH — MECHANICAL</option>
-                      <option value="CIVIL">CIVIL — CIVIL ENGG</option>
-                    </select>
+                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">2. PHONE NUMBER *</label>
+                    <input type="tel" required placeholder="+91 98765 43210" value={formData.mobile}
+                      onChange={e => setFormData({ ...formData, mobile: e.target.value })} className={inputClass} />
                   </div>
-
-                  {/* Item 3: Mobile Number */}
                   <div className="flex flex-col text-left w-full">
-                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
-                      MOBILE NUMBER *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+91 98765 43210"
-                      value={formData.mobile}
-                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                      className="w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm"
-                    />
-                  </div>
-
-                  {/* Item 4: Email Address */}
-                  <div className="flex flex-col text-left w-full">
-                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
-                      EMAIL ADDRESS *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="STUDENT@NRCM.AC.IN"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full h-14 px-5 rounded-2xl bg-[#EBE7D3] border-4 border-[#17171a] text-[#17171a] placeholder-[#17171a]/40 font-mono text-xs sm:text-sm font-bold uppercase focus:outline-none focus:bg-white transition-colors shadow-sm"
-                    />
+                    <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">3. EMAIL ID *</label>
+                    <input type="email" required placeholder="STUDENT@NRCM.AC.IN" value={formData.email}
+                      onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClass} />
                   </div>
                 </div>
 
+                {/* 4. Branch & Year */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">4. BRANCH &amp; YEAR *</label>
+                  <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} className={selectClass}>
+                    <option value="CSE">CSE — COMPUTER SCIENCE</option>
+                    <option value="ECE">ECE — ELECTRONICS &amp; COMM</option>
+                    <option value="EEE">EEE — ELECTRICAL &amp; ELECTRONICS</option>
+                    <option value="AIML">AIML — AI &amp; MACHINE LEARNING</option>
+                    <option value="CYBER SECURITY">CYBER SECURITY</option>
+                    <option value="CIVIL">CIVIL — CIVIL ENGG</option>
+                    <option value="MECH">MECH — MECHANICAL</option>
+                    <option value="IT">IT — INFORMATION TECH</option>
+                    <option value="OTHER">OTHER</option>
+                  </select>
+                </div>
+
+                {/* 5. Interested Area */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">5. WHICH AREA ARE YOU INTERESTED IN? *</label>
+                  <select value={formData.interestedArea} onChange={e => setFormData({ ...formData, interestedArea: e.target.value })} className={selectClass}>
+                    <option value="Cinematography / Camera">CINEMATOGRAPHY / CAMERA</option>
+                    <option value="Direction">DIRECTION</option>
+                    <option value="Story & Screenwriting">STORY &amp; SCREENWRITING</option>
+                    <option value="Video Editing">VIDEO EDITING</option>
+                    <option value="Photography">PHOTOGRAPHY</option>
+                    <option value="Acting">ACTING</option>
+                    <option value="Graphic / Poster Design">GRAPHIC / POSTER DESIGN</option>
+                    <option value="Content Creation">CONTENT CREATION</option>
+                    <option value="Marketing & PR">MARKETING &amp; PR</option>
+                    <option value="Production / Event Management">PRODUCTION / EVENT MANAGEMENT</option>
+                  </select>
+                </div>
+
+                {/* 6. Previous Experience */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">6. DO YOU HAVE ANY PREVIOUS EXPERIENCE? *</label>
+                  <select value={formData.previousExperience} onChange={e => setFormData({ ...formData, previousExperience: e.target.value })} className={selectClass}>
+                    <option value="No">NO</option>
+                    <option value="Yes">YES</option>
+                    <option value="A little / Beginner">A LITTLE / BEGINNER</option>
+                  </select>
+                </div>
+
+                {/* 7. Portfolio Link */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
+                    7. IF YES, SHARE YOUR WORK / PORTFOLIO <span className="text-[#17171a]/50 text-[10px]">(OPTIONAL)</span>
+                  </label>
+                  <input type="text" placeholder="Instagram / YouTube / Drive / Portfolio link" value={formData.portfolioLink}
+                    onChange={e => setFormData({ ...formData, portfolioLink: e.target.value })} className={inputClass} />
+                </div>
+
+                {/* 8. Why Join FMC */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">8. WHY DO YOU WANT TO JOIN FMC?</label>
+                  <textarea placeholder="Share why you want to be a part of FMC..." value={formData.whyJoin}
+                    onChange={e => setFormData({ ...formData, whyJoin: e.target.value })} className={textareaClass} />
+                </div>
+
+                {/* 9. What Can You Bring */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">9. WHAT CAN YOU BRING TO FMC?</label>
+                  <textarea placeholder="Examples: Creativity, editing, ideas, leadership, photography, acting, etc." value={formData.whatYouBring}
+                    onChange={e => setFormData({ ...formData, whatYouBring: e.target.value })} className={textareaClass} />
+                </div>
+
+                {/* 10. Instagram ID */}
+                <div className="flex flex-col text-left w-full">
+                  <label className="block font-mono text-xs font-bold uppercase tracking-wider text-[#17171a] mb-2">
+                    10. INSTAGRAM ID <span className="text-[#17171a]/50 text-[10px]">(Useful to identify/contact students)</span>
+                  </label>
+                  <input type="text" placeholder="@username" value={formData.instagramId}
+                    onChange={e => setFormData({ ...formData, instagramId: e.target.value })} className={inputClass} />
+                </div>
+
                 {/* Submit Button */}
-                <div className="w-full pt-8 sm:pt-10">
+                <div className="w-full pt-6">
                   <button
                     type="submit"
                     disabled={loading}
                     className="w-full h-14 sm:h-16 rounded-2xl bg-[#e50914] text-white font-mono text-sm sm:text-base font-bold tracking-widest uppercase hover:bg-red-700 transition-all cursor-pointer border-4 border-[#17171a] shadow-xl flex items-center justify-center gap-3"
                   >
-                    <span>{loading ? 'GENERATING PASS...' : 'SUBMIT'}</span>
+                    <span>{loading ? 'SUBMITTING...' : 'SUBMIT APPLICATION'}</span>
                     <ArrowRight className="w-5 h-5 stroke-[3]" />
                   </button>
                 </div>
@@ -169,22 +207,22 @@ export default function JoinModal({ isOpen, onClose }) {
               </div>
 
               <span className="font-mono text-xs sm:text-sm text-red-600 font-bold tracking-[0.25em] uppercase block">
-                EVENT PASS GENERATED
+                APPLICATION RECEIVED
               </span>
 
               <h2 className="font-sans font-black text-3xl sm:text-5xl uppercase text-[#17171a]">
-                PASS CONFIRMED, {formData.name}
+                APPLICATION UNDER REVIEW, {formData.name}
               </h2>
 
               <p className="font-mono text-xs sm:text-sm font-bold text-[#17171a]/80 max-w-lg mx-auto mb-8 uppercase leading-relaxed">
-                YOUR OFFICIAL ENTRY PASS FOR <span className="text-red-600 font-black">NRCM.FMC INDUCTION 2026</span> HAS BEEN LOGGED FOR <span className="text-red-600 font-black">{formData.branch}</span>. SEE YOU AT MAIN AUDITORIUM!
+                THANK YOU FOR APPLYING! YOUR RECRUITMENT APPLICATION FOR <span className="text-red-600 font-black">NRCM.FMC</span> HAS BEEN RECORDED FOR <span className="text-red-600 font-black">{formData.branch}</span>. OUR TEAM WILL REVIEW YOUR RESPONSE AND CONTACT YOU SOON!
               </p>
 
               <button
                 onClick={() => { setSubmitted(false); onClose(); }}
                 className="px-10 py-4 rounded-2xl bg-[#17171a] text-[#F0ECD9] font-mono text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors border-4 border-[#17171a] cursor-pointer shadow-lg"
               >
-                DONE — CLOSE PASS
+                DONE — CLOSE
               </button>
             </div>
           )}

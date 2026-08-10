@@ -28,7 +28,7 @@ export default function MoodSection() {
           </span>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-none snap-x cursor-grab active:cursor-grabbing">
+        <div className="flex gap-6 overflow-x-auto pb-12 sm:pb-16 scrollbar-none snap-x cursor-grab active:cursor-grabbing">
           {BTS_SLIDES.map((src, idx) => (
             <figure
               key={idx}
