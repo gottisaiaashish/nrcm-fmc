@@ -44,16 +44,8 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
             ))}
           </nav>
 
-          {/* Actions: PASS CTA & Mobile Hamburger */}
+          {/* Actions: Mobile Hamburger */}
           <div className="flex items-center gap-4">
-            <button
-              onClick={onOpenPassModal}
-              className="px-5 py-2 rounded-full bg-red-600 text-white font-mono text-xs font-bold tracking-widest uppercase hover:bg-red-500 hover:shadow-[0_0_20px_#ff1e27] transition-all flex items-center gap-1.5 border border-red-500/40 cursor-pointer"
-            >
-              PASS
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
-
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
