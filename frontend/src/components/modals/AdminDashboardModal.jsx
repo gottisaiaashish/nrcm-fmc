@@ -77,6 +77,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     document.body.removeChild(link);
   };
 
+  if (!isOpen) return null;
+
   const filtered = registrations.filter(r =>
     r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
