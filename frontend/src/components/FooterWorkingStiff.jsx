@@ -52,28 +52,30 @@ export default function FooterWorkingStiff({ onOpenAdminLogin }) {
           </div>
 
           {/* Right Block: Only Instagram & YouTube Social Links */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 font-mono text-xs font-bold uppercase tracking-wider">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 font-mono text-xs font-bold uppercase tracking-wider w-full sm:w-auto">
             <span className="text-zinc-500 font-mono text-xs">// OFFICIAL SOCIALS:</span>
             
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 px-5 py-3 rounded-full bg-zinc-900 border border-zinc-800 text-[#F0ECD9] hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer shadow-md group"
-            >
-              <InstagramIcon />
-              <span>INSTAGRAM</span>
-            </a>
+            <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-zinc-900 border border-zinc-800 text-[#F0ECD9] hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer shadow-md group"
+              >
+                <InstagramIcon />
+                <span>INSTAGRAM</span>
+              </a>
 
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 px-5 py-3 rounded-full bg-zinc-900 border border-zinc-800 text-[#F0ECD9] hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer shadow-md group"
-            >
-              <YoutubeIcon />
-              <span>YOUTUBE</span>
-            </a>
+              <a
+                href={youtubeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-zinc-900 border border-zinc-800 text-[#F0ECD9] hover:bg-red-600 hover:text-white hover:border-red-600 transition-all cursor-pointer shadow-md group"
+              >
+                <YoutubeIcon />
+                <span>YOUTUBE</span>
+              </a>
+            </div>
           </div>
         </div>
 

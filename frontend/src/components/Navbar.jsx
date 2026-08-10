@@ -49,9 +49,9 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#F0ECD9] hover:text-red-500 transition-colors cursor-pointer"
+              className="md:hidden p-2 text-[#F0ECD9] hover:text-red-500 transition-colors cursor-pointer border-none bg-transparent outline-none flex items-center justify-center"
             >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
           menuOpen ? 'opacity-100 pointer-events-auto translate-y-0' : 'opacity-0 pointer-events-none -translate-y-6'
         }`}
       >
-        <div className="pt-20 max-w-5xl mx-auto w-full">
+        <div className="pt-28 sm:pt-24 max-w-5xl mx-auto w-full">
           <p className="font-mono text-xs text-red-500 tracking-widest uppercase mb-8">
             // MAIN NAVIGATION
           </p>

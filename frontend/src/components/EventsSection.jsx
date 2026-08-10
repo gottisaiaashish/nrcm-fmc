@@ -4,13 +4,13 @@ import MotionButton from './MotionButton';
 
 export default function EventsSection({ onRegisterEvent }) {
   return (
-    <section id="events" className="relative min-h-screen w-full bg-[#0f0f11] text-white overflow-hidden border-b border-zinc-900 py-16 sm:py-24 flex flex-col items-center justify-center">
+    <section id="events" className="relative min-h-screen w-full bg-[#0f0f11] text-white overflow-hidden border-b border-zinc-900 pt-10 sm:pt-20 pb-16 flex flex-col items-center justify-center">
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 w-full relative z-10 my-auto flex flex-col items-center">
         {/* Main Section Heading */}
-        <h2 className="font-display text-[22px] xs:text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase text-white text-center whitespace-nowrap mb-8 sm:mb-14">
+        <h2 className="font-display text-[22px] xs:text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight uppercase text-white text-center whitespace-nowrap mb-6 sm:mb-12">
           UPCOMING <span className="text-red-600 font-serif italic font-normal">EVENTS</span>
         </h2>
 
@@ -19,7 +19,7 @@ export default function EventsSection({ onRegisterEvent }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             
             {/* Media Visual Column */}
-            <div className="lg:col-span-7 relative min-h-[280px] sm:min-h-[400px] lg:min-h-[520px] bg-zinc-900 overflow-hidden group">
+            <div className="lg:col-span-7 relative min-h-[260px] sm:min-h-[400px] lg:min-h-[520px] bg-zinc-900 overflow-hidden group">
               <img
                 src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80"
                 alt="Junior Induction 2026"
@@ -29,7 +29,7 @@ export default function EventsSection({ onRegisterEvent }) {
             </div>
 
             {/* Event Info Drawer */}
-            <div className="lg:col-span-5 p-6 sm:p-12 lg:p-14 flex flex-col justify-between items-center text-center bg-zinc-950 relative">
+            <div className="lg:col-span-5 p-6 pb-12 sm:p-12 lg:p-14 flex flex-col justify-between items-center text-center bg-zinc-950 relative">
 
               {/* Centered Event Title & Specs Block */}
               <div className="my-auto py-4 w-full flex flex-col items-center justify-center text-center">
