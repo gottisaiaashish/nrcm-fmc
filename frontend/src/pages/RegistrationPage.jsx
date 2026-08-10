@@ -25,28 +25,56 @@ export default function RegistrationPage() {
     setSubmitted(true);
   };
 
+  /* ── all styles inline to bypass dark global CSS ── */
+  const S = {
+    page:    { fontFamily: "'Space Grotesk', -apple-system, sans-serif", minHeight: '100vh', backgroundColor: '#0f0f11', color: '#fff' },
+    hero:    { position: 'relative', width: '100%', height: 'clamp(240px, 55vw, 420px)', overflow: 'hidden' },
+    heroImg: { width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3) contrast(1.1)', transform: 'scale(1.05)' },
+    heroGrad:{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0f0f11 0%, transparent 50%)' },
+    backBtn: { position: 'absolute', top: 16, left: 16, fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 },
+    heroCont:{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px', paddingBottom: 16 },
+    eventTag:{ fontFamily: 'monospace', fontSize: 10, color: '#ef4444', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 700, marginBottom: 12 },
+    heroTitle:{ fontWeight: 900, textTransform: 'uppercase', color: '#fff', lineHeight: 0.9, letterSpacing: '-0.02em', fontSize: 'clamp(2rem, 9vw, 5rem)', margin: 0 },
+    heroYear:{ fontStyle: 'italic', color: '#ef4444', lineHeight: 1, marginTop: 6, fontSize: 'clamp(2.4rem, 10vw, 5.5rem)', fontFamily: "'Instrument Serif', serif" },
+
+    metaBar: { backgroundColor: '#111114', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' },
+    metaGrid:{ maxWidth: 480, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', divideX: '1px solid rgba(255,255,255,0.05)' },
+    metaCell:{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '14px 8px', gap: 5, borderRight: '1px solid rgba(255,255,255,0.05)' },
+    metaLbl: { fontFamily: 'monospace', fontSize: 9, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em' },
+    metaVal: { fontFamily: 'monospace', fontSize: 11, color: '#fff', fontWeight: 700, textAlign: 'center', lineHeight: 1.3 },
+
+    /* separator line between meta bar and form */
+    divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.06)', margin: '0' },
+
+    formWrap:{ maxWidth: 480, margin: '0 auto', padding: '36px 20px 40px' },
+    heading: { textAlign: 'center', marginBottom: 32 },
+    h2:      { fontWeight: 900, textTransform: 'uppercase', color: '#fff', lineHeight: 0.9, letterSpacing: '-0.02em', fontSize: 'clamp(2rem, 8vw, 3rem)', margin: '0 0 10px' },
+    subtext: { fontFamily: 'monospace', fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.2em' },
+
+    fieldWrap:{ marginBottom: 16 },
+    label:   { display: 'block', fontFamily: 'monospace', fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, marginBottom: 8 },
+    input:   { width: '100%', height: 50, backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '0 16px', color: '#fff', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, background 0.2s' },
+    select:  { width: '100%', height: 50, backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14, padding: '0 40px 0 16px', color: '#fff', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer', transition: 'border-color 0.2s' },
+    grid2:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 },
+    submitBtn:{ width: '100%', padding: '15px 0', borderRadius: 14, backgroundColor: '#e50914', color: '#fff', fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.15em', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 8, boxShadow: '0 8px 30px rgba(229,9,20,0.3)', transition: 'background 0.15s' },
+    footer:  { textAlign: 'center', fontFamily: 'monospace', fontSize: 10, color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 32 },
+  };
+
   if (submitted) {
     return (
-      <div style={{ fontFamily: "'Space Grotesk', -apple-system, sans-serif" }}
-        className="min-h-screen bg-[#0f0f11] flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-24 h-24 rounded-full bg-red-600 border-4 border-white/10 flex items-center justify-center shadow-[0_0_60px_rgba(229,9,20,0.4)] mb-8">
-          <Check className="w-12 h-12 text-white stroke-[3]" />
+      <div style={{ ...S.page, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{ width: 88, height: 88, borderRadius: '50%', backgroundColor: '#e50914', border: '3px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 60px rgba(229,9,20,0.4)', marginBottom: 28 }}>
+          <Check size={44} color="#fff" strokeWidth={3} />
         </div>
-        <span className="font-mono text-xs text-red-500 tracking-[0.3em] uppercase font-bold mb-3 block">
-          ✦ PASS GENERATED ✦
-        </span>
-        <h1 className="font-black text-4xl sm:text-5xl text-white uppercase leading-tight mb-4">
-          PASS CONFIRMED,<br />
-          <span className="text-red-500">{formData.name}</span>
+        <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#ef4444', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: 12 }}>✦ PASS GENERATED ✦</span>
+        <h1 style={{ fontWeight: 900, fontSize: 'clamp(2rem, 9vw, 3.5rem)', textTransform: 'uppercase', color: '#fff', lineHeight: 1, letterSpacing: '-0.02em', marginBottom: 16 }}>
+          PASS CONFIRMED,<br /><span style={{ color: '#ef4444' }}>{formData.name}</span>
         </h1>
-        <p className="font-mono text-xs sm:text-sm text-white/50 max-w-sm uppercase leading-loose mb-10">
-          Your official entry pass for <span className="text-red-500 font-bold">NRCM.FMC Induction 2026</span> has been logged
-          for <span className="text-white font-bold">{formData.branch}</span>.
-          See you at Main Auditorium!
+        <p style={{ fontFamily: 'monospace', fontSize: 12, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', lineHeight: 2, maxWidth: 320, marginBottom: 36 }}>
+          Your entry for <span style={{ color: '#ef4444', fontWeight: 700 }}>NRCM.FMC Induction 2026</span> has been logged for <span style={{ color: '#fff', fontWeight: 700 }}>{formData.branch}</span>. See you at Main Auditorium!
         </p>
-        <button
-          onClick={() => navigate('/')}
-          className="px-10 py-4 rounded-full bg-white text-[#0f0f11] font-mono text-sm font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all cursor-pointer shadow-xl">
+        <button onClick={() => navigate('/')}
+          style={{ padding: '14px 36px', borderRadius: 40, backgroundColor: '#fff', color: '#0f0f11', fontFamily: 'monospace', fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', border: 'none', cursor: 'pointer' }}>
           ← BACK TO SITE
         </button>
       </div>
@@ -54,154 +82,109 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div style={{ fontFamily: "'Space Grotesk', -apple-system, sans-serif" }}
-      className="min-h-screen bg-[#0f0f11] text-white overflow-x-hidden">
+    <div style={S.page}>
 
-      {/* ── HERO BANNER ── */}
-      <div className="relative w-full h-[55vw] min-h-[220px] max-h-[420px] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80"
-          alt="Junior Induction 2026"
-          className="w-full h-full object-cover scale-105"
-          style={{ filter: 'brightness(0.35) contrast(1.1)' }}
-        />
-        {/* gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f11] via-[#0f0f11]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f11]/60 to-transparent h-20" />
-
-        {/* Back */}
-        <button onClick={() => navigate('/')}
-          className="absolute top-5 left-5 font-mono text-[11px] text-white/60 hover:text-white uppercase tracking-widest cursor-pointer transition-colors flex items-center gap-1.5">
-          ← NRCM.FMC
-        </button>
-
-        {/* Center Title */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-4">
-          <span className="font-mono text-[10px] text-red-500 tracking-[0.4em] uppercase font-bold mb-3">
-            NRCM.FMC · OFFICIAL EVENT
-          </span>
-          <h1 className="font-black uppercase leading-none text-white"
-            style={{ fontSize: 'clamp(2.2rem, 9vw, 5.5rem)', letterSpacing: '-0.02em' }}>
-            JUNIOR<br />INDUCTION
-          </h1>
-          <div className="font-serif italic text-red-500 mt-1"
-            style={{ fontSize: 'clamp(2.5rem, 10vw, 6rem)', lineHeight: 1 }}>
-            2026
-          </div>
+      {/* HERO */}
+      <div style={S.hero}>
+        <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80" alt="Junior Induction" style={S.heroImg} />
+        <div style={S.heroGrad} />
+        <button onClick={() => navigate('/')} style={S.backBtn}>← NRCM.FMC</button>
+        <div style={S.heroCont}>
+          <span style={S.eventTag}>NRCM.FMC · Official Event</span>
+          <h1 style={S.heroTitle}>JUNIOR<br />INDUCTION</h1>
+          <div style={S.heroYear}>2026</div>
         </div>
       </div>
 
-      {/* ── EVENT META BAR ── */}
-      <div className="bg-[#17171a] border-y border-white/5">
-        <div className="max-w-lg mx-auto grid grid-cols-3 divide-x divide-white/5">
+      {/* META BAR */}
+      <div style={S.metaBar}>
+        <div style={S.metaGrid}>
           {[
-            { icon: <Calendar className="w-3.5 h-3.5 text-red-500" />, label: 'DATE', val: 'AUG 11, 2026' },
-            { icon: <Clock className="w-3.5 h-3.5 text-red-500" />, label: 'TIME', val: '03:30 PM IST' },
-            { icon: <MapPin className="w-3.5 h-3.5 text-red-500" />, label: 'VENUE', val: 'MAIN AUDI' },
+            { icon: <Calendar size={14} color="#ef4444" />, label: 'DATE', val: 'AUG 11, 2026' },
+            { icon: <Clock size={14} color="#ef4444" />, label: 'TIME', val: '03:30 PM IST' },
+            { icon: <MapPin size={14} color="#ef4444" />, label: 'VENUE', val: 'MAIN AUDI' },
           ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center justify-center py-4 px-3 gap-1.5">
+            <div key={i} style={{ ...S.metaCell, borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
               {item.icon}
-              <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">{item.label}</span>
-              <span className="font-mono text-[11px] sm:text-xs text-white font-bold tracking-wide text-center leading-tight">{item.val}</span>
+              <span style={S.metaLbl}>{item.label}</span>
+              <span style={S.metaVal}>{item.val}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── FORM SECTION ── */}
-      <div className="max-w-lg mx-auto px-5 sm:px-8 py-10">
-        {/* Heading */}
-        <div className="text-center mb-8">
-          <h2 className="font-black uppercase text-white leading-none mb-2"
-            style={{ fontSize: 'clamp(2rem, 8vw, 3.5rem)', letterSpacing: '-0.02em' }}>
-            REACH OUT
-          </h2>
-          <p className="font-mono text-[11px] text-white/40 uppercase tracking-[0.2em]">
-            Secure your entry pass below
-          </p>
+      {/* DIVIDER */}
+      <div style={S.divider} />
+
+      {/* FORM */}
+      <div style={S.formWrap}>
+        <div style={S.heading}>
+          <h2 style={S.h2}>REACH OUT</h2>
+          <p style={S.subtext}>Secure your entry pass below</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
 
-          {/* Name */}
-          <div>
-            <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">FULL NAME *</label>
-            <input
-              type="text" required
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 focus:bg-white/8 transition-all"
-            />
+          <div style={S.fieldWrap}>
+            <label style={S.label}>FULL NAME *</label>
+            <input type="text" required placeholder="Enter your full name" value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })} style={S.input}
+              onFocus={e => { e.target.style.borderColor = 'rgba(239,68,68,0.5)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.07)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'; }} />
           </div>
 
-          {/* Branch */}
-          <div>
-            <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">BRANCH / DEPT *</label>
-            <div className="relative">
-              <select
-                value={formData.branch}
-                onChange={e => setFormData({ ...formData, branch: e.target.value })}
-                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all appearance-none cursor-pointer"
-              >
-                <option value="CSE" className="bg-[#17171a]">CSE — Computer Science</option>
-                <option value="ECE" className="bg-[#17171a]">ECE — Electronics &amp; Comm</option>
-                <option value="IT" className="bg-[#17171a]">IT — Information Tech</option>
-                <option value="CSM/CSD" className="bg-[#17171a]">CSM / CSD — AI &amp; Data</option>
-                <option value="MECH" className="bg-[#17171a]">MECH — Mechanical</option>
-                <option value="CIVIL" className="bg-[#17171a]">CIVIL — Civil Engg</option>
+          <div style={S.fieldWrap}>
+            <label style={S.label}>BRANCH / DEPT *</label>
+            <div style={{ position: 'relative' }}>
+              <select value={formData.branch} onChange={e => setFormData({ ...formData, branch: e.target.value })} style={S.select}
+                onFocus={e => e.target.style.borderColor = 'rgba(239,68,68,0.5)'}
+                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}>
+                <option value="CSE" style={{ background: '#17171a' }}>CSE — Computer Science</option>
+                <option value="ECE" style={{ background: '#17171a' }}>ECE — Electronics &amp; Comm</option>
+                <option value="IT" style={{ background: '#17171a' }}>IT — Information Tech</option>
+                <option value="CSM/CSD" style={{ background: '#17171a' }}>CSM / CSD — AI &amp; Data</option>
+                <option value="MECH" style={{ background: '#17171a' }}>MECH — Mechanical</option>
+                <option value="CIVIL" style={{ background: '#17171a' }}>CIVIL — Civil Engg</option>
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+              <ChevronDown size={16} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
             </div>
           </div>
 
-          {/* Mobile + Email side by side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div style={S.grid2}>
             <div>
-              <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">MOBILE *</label>
-              <input
-                type="tel" required
-                placeholder="+91 98765 43210"
-                value={formData.mobile}
-                onChange={e => setFormData({ ...formData, mobile: e.target.value })}
-                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all"
-              />
+              <label style={S.label}>MOBILE *</label>
+              <input type="tel" required placeholder="+91 98765 43210" value={formData.mobile}
+                onChange={e => setFormData({ ...formData, mobile: e.target.value })} style={S.input}
+                onFocus={e => { e.target.style.borderColor = 'rgba(239,68,68,0.5)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.07)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'; }} />
             </div>
             <div>
-              <label className="block font-mono text-[10px] text-white/50 uppercase tracking-widest mb-2 font-bold">EMAIL *</label>
-              <input
-                type="email" required
-                placeholder="student@nrcm.ac.in"
-                value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                className="w-full h-13 bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-white/25 font-medium text-sm focus:outline-none focus:border-red-500/60 transition-all"
-              />
+              <label style={S.label}>EMAIL *</label>
+              <input type="email" required placeholder="student@nrcm.ac.in" value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })} style={S.input}
+                onFocus={e => { e.target.style.borderColor = 'rgba(239,68,68,0.5)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.07)'; }}
+                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.1)'; e.target.style.backgroundColor = 'rgba(255,255,255,0.05)'; }} />
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="pt-3">
-            <button
-              type="submit" disabled={loading}
-              className="w-full py-4 rounded-2xl bg-red-600 text-white font-black text-sm uppercase tracking-[0.15em] hover:bg-red-500 active:scale-[0.99] transition-all cursor-pointer shadow-[0_8px_30px_rgba(229,9,20,0.35)] flex items-center justify-center gap-3 disabled:opacity-60"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2 font-mono text-xs tracking-widest">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  GENERATING PASS...
-                </span>
-              ) : (
-                <>SUBMIT <ArrowRight className="w-4 h-4 stroke-[3]" /></>
-              )}
-            </button>
-          </div>
+          <button type="submit" disabled={loading} style={{ ...S.submitBtn, opacity: loading ? 0.7 : 1 }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#cc0812'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#e50914'}>
+            {loading ? (
+              <>
+                <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                GENERATING PASS...
+              </>
+            ) : (
+              <>SUBMIT <ArrowRight size={16} strokeWidth={3} /></>
+            )}
+          </button>
         </form>
 
-        {/* Footer note */}
-        <p className="text-center font-mono text-[10px] text-white/25 uppercase tracking-wider mt-8">
-          © NRCM FILM MAKING CLUB · Junior Induction 2026
-        </p>
+        <p style={S.footer}>© NRCM Film Making Club · Junior Induction 2026</p>
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
