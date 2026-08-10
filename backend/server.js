@@ -243,8 +243,9 @@ app.post('/api/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    // Dispatch confirmation email asynchronously
-    sendConfirmationEmail(entryData).catch(err => console.error('Email Dispatch Error:', err.message));
+    // Dispatch confirmation email
+    console.log(`[DISPATCHING EMAIL] Attempting to send confirmation email to: ${email} (${name})...`);
+    await sendConfirmationEmail(entryData).catch(err => console.error('Email Dispatch Error:', err.message));
 
     if (isMongoConnected) {
       const newEntry = new Registration(entryData);
