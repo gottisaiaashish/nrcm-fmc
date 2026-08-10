@@ -134,7 +134,6 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         <div>
           {/* Brand */}
           <div style={S.brand}>
-            <div style={S.logoBox}><span style={S.logoTxt}>FMC</span></div>
             <span style={S.brandTxt}>NRCM.FMC OS</span>
           </div>
 
@@ -146,7 +145,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <div style={S.iconBox(activeTab === 'overview' ? 'rgba(255,255,255,0.2)' : '#f3f4f6')}>
                   <Home size={14} color={activeTab === 'overview' ? '#fff' : '#6b7280'} />
                 </div>
-                <span>Home Overview</span>
+                <span style={{ whiteSpace:'nowrap' }}>Overview</span>
               </div>
               <span style={S.badge(activeTab === 'overview' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'overview' ? '#fff' : '#6b7280')}>HQ</span>
             </button>
@@ -242,7 +241,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           <div style={{ ...S.card, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
             <div>
               <h1 style={{ fontSize:22, fontWeight:700, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
-                {getGreeting()}, Aashish 🌼
+                {getGreeting()} 🌼
               </h1>
               <p style={{ fontSize:13, color:'#6b7280', marginTop:4 }}>
                 Welcome to NRCM.FMC Command Center. Here is your live execution overview.
@@ -337,6 +336,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .custom-cursor, .custom-cursor-dot { display: none !important; }
       `}</style>
     </div>
   );
