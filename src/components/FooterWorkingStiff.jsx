@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Share2, Globe, Music, Film } from 'lucide-react';
+import { Share2, Globe, Music, Film, ArrowUpRight } from 'lucide-react';
 
 export default function FooterWorkingStiff({ onOpenPassModal }) {
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -9,117 +9,108 @@ export default function FooterWorkingStiff({ onOpenPassModal }) {
     e.preventDefault();
     if (newsletterEmail) {
       setSubscribed(true);
+      setNewsletterEmail('');
     }
   };
 
   return (
-    <footer className="relative bg-[#0f0f11] text-[#F0ECD9] pt-24 pb-16 px-6 md:px-12 border-t border-zinc-800/80">
-      <div className="max-w-7xl mx-auto">
-        {/* Top Footer Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
-          {/* Left Column: Footer Links */}
-          <div className="lg:col-span-5 space-y-6">
-            <h3 className="font-display text-3xl font-black uppercase text-[#F0ECD9] tracking-tight">
-              NRCM.FMC<span className="text-red-600 font-serif italic">.</span>
-            </h3>
+    <footer className="relative bg-[#0f0f11] text-[#F0ECD9] pt-16 pb-12 px-6 md:px-12 border-t border-zinc-800/80">
+      <div className="max-w-7xl mx-auto space-y-12">
+        {/* Main Footer Layout — 2 Clean Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start pb-12 border-b border-zinc-800/80">
+          {/* Left Column: Brand & Nav Links */}
+          <div className="lg:col-span-6 space-y-6">
+            <a href="#" className="inline-block group">
+              <h3 className="font-display text-3xl md:text-4xl font-black uppercase text-[#F0ECD9] tracking-tighter group-hover:text-red-500 transition-colors">
+                NRCM.FMC<span className="text-red-600 font-serif italic">.</span>
+              </h3>
+            </a>
+
+            {/* Nav Links */}
             <div className="flex flex-wrap gap-8 font-mono text-sm font-semibold tracking-widest uppercase">
               <a href="#work" className="hover:text-red-500 transition-colors">Work</a>
               <a href="#club" className="hover:text-red-500 transition-colors">Club</a>
               <a href="#events" className="hover:text-red-500 transition-colors">Events</a>
               <a href="#join" className="hover:text-red-500 transition-colors">Join</a>
             </div>
-            <p className="font-sans text-xs text-zinc-500 max-w-sm">
+
+            <p className="font-mono text-xs text-zinc-500 max-w-md leading-relaxed uppercase">
               NRCM FILM MAKING CLUB — NARSIMHA REDDY COLLEGE OF ENGINEERING & MANAGEMENT
             </p>
           </div>
 
-          {/* Right Column: "Reach Out" Heading + Curved Arrow + 3D Trigger Button */}
-          <div className="lg:col-span-7 flex flex-col md:flex-row items-center md:items-end justify-between gap-8 bg-zinc-950 p-8 sm:p-12 rounded-3xl border border-zinc-800">
+          {/* Right Column: Newsletter Subscription */}
+          <div className="lg:col-span-6 flex flex-col justify-between space-y-6 lg:pl-6">
             <div>
-              <span className="font-mono text-xs text-red-500 tracking-widest uppercase block mb-2">
-                // CREW INDUCTION & INQUIRIES
+              <span className="font-mono text-xs text-red-500 tracking-widest uppercase font-semibold block mb-2">
+                // STAY CONNECTED
               </span>
-              <h2 className="font-display f-120 uppercase tracking-tighter leading-none text-[#F0ECD9]">
-                Reach <br />
-                <span className="text-red-600 font-serif italic font-normal">out</span>
-              </h2>
-            </div>
-
-            {/* Curved Arrow & 3D Interactive Yellow/Red Button */}
-            <div className="flex items-center gap-6">
-              <svg className="w-16 h-12 text-zinc-600 hidden sm:block" viewBox="0 0 100 60" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M 10 10 Q 50 50 90 20" strokeLinecap="round" />
-                <path d="M 80 15 L 90 20 L 85 30" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-
-              <div
-                onClick={onOpenPassModal}
-                className="ws-3d-button flex items-center justify-center rounded-2xl bg-amber-400 border-4 border-amber-500 text-black font-display font-black text-center shadow-[0_8px_0_#b45309] active:shadow-none active:translate-y-2 transition-all p-3 cursor-pointer"
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-xs uppercase tracking-wider font-bold">CLAIM</span>
-                  <span className="text-lg uppercase font-black text-red-600">PASS</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Footer Grid: Social Links & Newsletter Signup */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end pt-12 border-t border-zinc-800/80">
-          {/* Left: Social Media */}
-          <div className="lg:col-span-6 space-y-4">
-            <h4 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
-              FOLLOW THE COLLECTIVE
-            </h4>
-            <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-zinc-300">
-              <a href="https://instagram.com/nrcm.fmc" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                <Share2 className="w-4 h-4 text-red-500" />
-                <span>Instagram</span>
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                <Globe className="w-4 h-4 text-red-500" />
-                <span>LinkedIn</span>
-              </a>
-              <a href="https://spotify.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                <Music className="w-4 h-4 text-red-500" />
-                <span>Spotify</span>
-              </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-red-500 transition-colors">
-                <Film className="w-4 h-4 text-red-500" />
-                <span>YouTube</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Right: Working Stiff Style Newsletter Subscription */}
-          <div className="lg:col-span-6">
-            <form onSubmit={handleSubscribe} className="space-y-2">
-              <h4 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
-                Sign up for updates {subscribed && <span className="text-red-500 font-bold">/ Subscription successful!</span>}
+              <h4 className="font-display text-2xl font-bold uppercase text-[#F0ECD9] tracking-tight">
+                SUBSCRIBE FOR UPDATES
               </h4>
-              <div className="flex items-center gap-2">
+            </div>
+
+            <form onSubmit={handleSubscribe} className="space-y-3">
+              <div className="flex items-center gap-3">
                 <input
                   type="email"
                   required
-                  placeholder="Your email..."
+                  placeholder="ENTER YOUR EMAIL..."
                   value={newsletterEmail}
                   onChange={(e) => setNewsletterEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-[#F0ECD9] font-mono text-xs focus:outline-none focus:border-red-600 transition-colors"
+                  className="w-full h-12 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-[#F0ECD9] placeholder-zinc-500 font-mono text-xs font-semibold focus:outline-none focus:border-red-600 transition-colors"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 rounded-xl bg-red-600 text-white font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-colors cursor-pointer"
+                  className="h-12 px-6 rounded-xl bg-red-600 text-white font-mono text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-colors shrink-0 cursor-pointer shadow-md"
                 >
-                  Go
+                  SUBSCRIBE
                 </button>
               </div>
+              {subscribed && (
+                <p className="font-mono text-xs text-red-500 font-bold uppercase tracking-wider">
+                  ✓ THANK YOU FOR SUBSCRIBING!
+                </p>
+              )}
             </form>
           </div>
         </div>
 
+        {/* Socials & Pass CTA Row */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-zinc-900">
+          {/* Social Links */}
+          <div className="flex flex-wrap items-center gap-6 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+            <span className="text-zinc-600 me-2">// FOLLOW:</span>
+            <a href="https://instagram.com/nrcm.fmc" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+              <Share2 className="w-3.5 h-3.5 text-red-500" />
+              <span>INSTAGRAM</span>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+              <Globe className="w-3.5 h-3.5 text-red-500" />
+              <span>LINKEDIN</span>
+            </a>
+            <a href="https://spotify.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+              <Music className="w-3.5 h-3.5 text-red-500" />
+              <span>SPOTIFY</span>
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+              <Film className="w-3.5 h-3.5 text-red-500" />
+              <span>YOUTUBE</span>
+            </a>
+          </div>
+
+          {/* Quick Event Pass Trigger */}
+          <button
+            onClick={onOpenPassModal}
+            className="font-mono text-xs font-bold uppercase text-red-500 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <span>GET EVENT PASS</span>
+            <ArrowUpRight className="w-4 h-4" />
+          </button>
+        </div>
+
         {/* Sub-Footer Copyright */}
-        <div className="pt-12 mt-12 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between font-mono text-[10px] text-zinc-600 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between font-mono text-[10px] text-zinc-500 font-semibold uppercase tracking-widest gap-3 text-center sm:text-left">
           <div>WEBSITE BY NRCM.FMC DIGITAL STUDIO</div>
           <div>© 2026 NRCM FILM MAKING CLUB. ALL RIGHTS RESERVED.</div>
         </div>
