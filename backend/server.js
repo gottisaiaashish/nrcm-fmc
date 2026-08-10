@@ -74,7 +74,7 @@ const sendConfirmationEmail = async (applicant) => {
       <p style="margin-bottom: 16px;">Dear ${name},</p>
 
       <p style="margin-bottom: 16px;">
-        Your recruitment application for <strong>NRCM.FMC</strong> has been received and is currently <strong>under review</strong>.
+        Your recruitment application for <strong>NRCM FMC</strong> has been received and is currently <strong>under review</strong>.
       </p>
 
       <p style="margin-bottom: 16px;">
@@ -93,7 +93,7 @@ const sendConfirmationEmail = async (applicant) => {
 
       <p style="margin-top: 24px; color: #333333;">
         Regards,<br />
-        <strong>NRCM Film Making Club (NRCM.FMC)</strong><br />
+        <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
         Narsimha Reddy Engineering College
       </p>
     </div>
@@ -102,7 +102,7 @@ const sendConfirmationEmail = async (applicant) => {
   const textContent = `
 Dear ${name},
 
-Your recruitment application for NRCM.FMC has been received and is currently under review.
+Your recruitment application for NRCM FMC has been received and is currently under review.
 
 Application Details:
 • Application ID: ${passId}
@@ -115,7 +115,7 @@ Application Details:
 Our team is currently reviewing your application. If your application is shortlisted, we will contact you directly via Mobile or WhatsApp.
 
 Regards,
-NRCM Film Making Club (NRCM.FMC)
+NRCM Film Making Club (NRCM FMC)
 Narsimha Reddy Engineering College
 `;
 
@@ -133,7 +133,7 @@ Narsimha Reddy Engineering College
           sender: { name: 'NRCM Film Making Club', email: EMAIL_USER },
           replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER },
           to: [{ email: email, name: name }],
-          subject: `NRCM.FMC Application Under Review - ${name}`,
+          subject: `NRCM FMC Application Under Review - ${name}`,
           htmlContent: htmlContent,
           textContent: textContent
         })
@@ -153,7 +153,7 @@ Narsimha Reddy Engineering College
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
         replyTo: EMAIL_USER,
         to: email,
-        subject: `NRCM.FMC Application Under Review - ${name}`,
+        subject: `NRCM FMC Application Under Review - ${name}`,
         text: textContent,
         html: htmlContent
       });
@@ -167,7 +167,7 @@ Narsimha Reddy Engineering College
           from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
           replyTo: EMAIL_USER,
           to: email,
-          subject: `NRCM.FMC Application Under Review - ${name}`,
+          subject: `NRCM FMC Application Under Review - ${name}`,
           text: textContent,
           html: htmlContent,
           headers: {
