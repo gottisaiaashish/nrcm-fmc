@@ -20,14 +20,16 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-// Brevo Configuration (REST API & SMTP Relay)
+// Brevo Configuration (Sends exclusively from nrcmfmc@gmail.com)
 const rawBrevoKey = (process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY || '').trim().replace(/^['"]|['"]$/g, '');
 const BREVO_LOGIN = (process.env.BREVO_LOGIN || 'b510f6001@smtp-brevo.com').trim();
+const EMAIL_USER = (process.env.EMAIL_USER || 'nrcmfmc@gmail.com').trim();
+const EMAIL_PASS = (process.env.EMAIL_PASS || '').trim();
 
 if (rawBrevoKey) {
-  console.log(`⚡ [BREVO INITIALIZED] Brevo SMTP Relay ready with key: ${rawBrevoKey.substring(0, 12)}...`);
+  console.log(`⚡ [BREVO INITIALIZED] Brevo Relay active for ${EMAIL_USER} with key: ${rawBrevoKey.substring(0, 12)}...`);
 } else {
-  console.log(`ℹ️ [BREVO NOTICE] BREVO_API_KEY not found in environment.`);
+  console.log(`ℹ️ [BREVO NOTICE] BREVO_API_KEY / BREVO_SMTP_KEY not set in environment.`);
 }
 
 const brevoTransporter = rawBrevoKey
@@ -45,42 +47,26 @@ const brevoTransporter = rawBrevoKey
     })
   : null;
 
-// Resend HTTP API Configuration (Preferred for Render Cloud Host)
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const resendClient = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
-
-// Nodemailer Transporter Configuration (Fallback)
-const EMAIL_USER = process.env.EMAIL_USER || '';
-const EMAIL_PASS = process.env.EMAIL_PASS || '';
-
-const transporter = nodemailer.createTransport(
-  EMAIL_USER && EMAIL_PASS
-    ? {
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use STARTTLS
-        requireTLS: true,
-        auth: {
-          user: EMAIL_USER,
-          pass: EMAIL_PASS,
-        },
-        tls: {
-          rejectUnauthorized: false,
-          ciphers: 'SSLv3'
-        },
-        connectionTimeout: 15000,
-        greetingTimeout: 15000,
-        socketTimeout: 15000,
-      }
-    : {
-        host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        auth: {
-          user: process.env.SMTP_USER || '',
-          pass: process.env.SMTP_PASS || '',
-        },
-      }
-);
+// Nodemailer Transporter Configuration (Direct Gmail Fallback)
+const transporter = EMAIL_USER && EMAIL_PASS
+  ? nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // Use STARTTLS
+      requireTLS: true,
+      auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 15000,
+    })
+  : null;
 
 const sendConfirmationEmail = async (applicant) => {
   const { passId, name, email, branch, interestedArea, mobile } = applicant;
@@ -90,12 +76,13 @@ const sendConfirmationEmail = async (applicant) => {
       <p style="margin-bottom: 16px;">Dear ${name},</p>
 
       <p style="margin-bottom: 16px;">
-        Your recruitment application for <strong>NRCM FMC</strong> has been received and is currently <strong>under review</strong>.
+        Your recruitment application for <strong>NRCM.FMC</strong> has been received and is currently <strong>under review</strong>.
       </p>
 
       <p style="margin-bottom: 16px;">
         <strong>Application Details:</strong><br />
         • Application ID: ${passId}<br />
+        <br />
         • Full Name: ${name}<br />
         • Branch & Year: ${branch}<br />
         • Interested Area: ${interestedArea || 'N/A'}<br />
@@ -108,7 +95,7 @@ const sendConfirmationEmail = async (applicant) => {
 
       <p style="margin-top: 24px; color: #333333;">
         Regards,<br />
-        <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
+        <strong>NRCM Film Making Club (NRCM.FMC)</strong><br />
         Narsimha Reddy Engineering College
       </p>
     </div>
@@ -117,10 +104,11 @@ const sendConfirmationEmail = async (applicant) => {
   const textContent = `
 Dear ${name},
 
-Your recruitment application for NRCM FMC has been received and is currently under review.
+Your recruitment application for NRCM.FMC has been received and is currently under review.
 
 Application Details:
 • Application ID: ${passId}
+
 • Full Name: ${name}
 • Branch & Year: ${branch}
 • Interested Area: ${interestedArea || 'N/A'}
@@ -129,69 +117,36 @@ Application Details:
 Our team is currently reviewing your application. If your application is shortlisted, we will contact you directly via Mobile or WhatsApp.
 
 Regards,
-NRCM Film Making Club (NRCM FMC)
+NRCM Film Making Club (NRCM.FMC)
 Narsimha Reddy Engineering College
 `;
 
   try {
     if (brevoTransporter) {
       await brevoTransporter.sendMail({
-        from: `"NRCM Film Making Club" <${EMAIL_USER || 'nrcmfmc@gmail.com'}>`,
-        replyTo: EMAIL_USER || 'nrcmfmc@gmail.com',
+        from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
+        replyTo: EMAIL_USER,
         to: email,
-        subject: `NRCM FMC Application Under Review - ${name}`,
+        subject: `NRCM.FMC Application Under Review - ${name}`,
         text: textContent,
         html: htmlContent
       });
-      console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from nrcmfmc@gmail.com`);
-    } else if (BREVO_API_KEY) {
-      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'api-key': BREVO_API_KEY,
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          sender: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
-          replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
-          to: [{ email: email, name: name }],
-          subject: `NRCM FMC Application Under Review - ${name}`,
-          htmlContent: htmlContent,
-          textContent: textContent
-        })
-      });
-      const resData = await resp.json();
-      if (resp.ok) {
-        console.log(`✉️ [BREVO EMAIL SENT] Confirmation email sent to ${email} (${name}) from nrcmfmc@gmail.com - MessageID: ${resData.messageId}`);
-      } else {
-        console.error(`⚠️ [BREVO API ERROR]`, resData);
-      }
-    } else if (resendClient) {
-      const resp = await resendClient.emails.send({
-        from: 'NRCM Film Making Club <onboarding@resend.dev>',
-        replyTo: EMAIL_USER || 'nrcmfmc@gmail.com',
-        to: [email],
-        subject: `NRCM FMC Application Under Review - ${name}`,
-        text: textContent,
-        html: htmlContent
-      });
-      console.log(`✉️ [RESEND EMAIL SENT] Confirmation email sent to ${email} (${name}) - Resend ID: ${resp.data?.id || 'OK'}`);
-    } else if (EMAIL_USER && EMAIL_PASS) {
+      console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
+    } else if (transporter) {
       await transporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
         replyTo: EMAIL_USER,
         to: email,
-        subject: `NRCM FMC Application Under Review - ${name}`,
+        subject: `NRCM.FMC Application Under Review - ${name}`,
         text: textContent,
         html: htmlContent,
         headers: {
           'X-Entity-Ref-ID': passId,
         }
       });
-      console.log(`✉️ [GMAIL SMTP SENT] Confirmation email sent to ${email} (${name})`);
+      console.log(`✉️ [GMAIL SMTP SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
     } else {
-      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure BREVO_API_KEY or RESEND_API_KEY in environment variables to dispatch live emails.`);
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure BREVO_API_KEY or EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
     }
   } catch (err) {
     console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
