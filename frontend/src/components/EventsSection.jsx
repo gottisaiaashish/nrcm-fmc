@@ -14,7 +14,7 @@ export default function EventsSection({ onRegisterEvent }) {
         </h2>
 
         {/* Hero Upcoming Event Visual Focus Card */}
-        <div className="relative w-full rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden shadow-2xl transition-all duration-500">
+        <div className="relative w-full mx-4 sm:mx-0 rounded-3xl bg-zinc-950 border border-zinc-800 overflow-hidden shadow-2xl transition-all duration-500">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* Full-Bleed Media Visual */}
             <div className="lg:col-span-7 relative min-h-[340px] sm:min-h-[420px] lg:min-h-[500px] bg-zinc-900 overflow-hidden">

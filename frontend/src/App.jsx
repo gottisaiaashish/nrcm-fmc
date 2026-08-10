@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import IntroSequence from './components/IntroSequence';
 import CustomCursor from './components/CustomCursor';
 import FilmGrain from './components/FilmGrain';
@@ -16,7 +17,11 @@ import ProjectModal from './components/modals/ProjectModal';
 import AdminLoginModal from './components/modals/AdminLoginModal';
 import AdminDashboardModal from './components/modals/AdminDashboardModal';
 
-export default function App() {
+// Pages
+import RegistrationPage from './pages/RegistrationPage';
+
+function MainSite() {
+  const navigate = useNavigate();
   const [passModalOpen, setPassModalOpen] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
@@ -25,11 +30,8 @@ export default function App() {
 
   const handleOpenAdmin = () => {
     const token = localStorage.getItem('nrcmfmc_admin_token');
-    if (token) {
-      setAdminDashboardOpen(true);
-    } else {
-      setAdminLoginOpen(true);
-    }
+    if (token) setAdminDashboardOpen(true);
+    else setAdminLoginOpen(true);
   };
 
   const handleLoginSuccess = () => {
@@ -44,54 +46,32 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen bg-[#0f0f11] text-[#F0ECD9] selection:bg-red-600 selection:text-white font-sans overflow-x-hidden">
-      {/* 00. Opening Intro Sequence Animation */}
       <IntroSequence />
-
-      {/* Trailing Cursor & Grain Overlay */}
       <CustomCursor />
       <FilmGrain />
 
-      {/* Floating Navbar */}
       <Navbar
         onOpenPassModal={() => setPassModalOpen(true)}
         onOpenJoinModal={() => setJoinModalOpen(true)}
         onOpenAdminLogin={handleOpenAdmin}
       />
 
-      {/* Main Working Stiff Flow Sections */}
       <main className="relative w-full">
-        {/* Section 00: Working Stiff Hero */}
         <HeroWorkingStiff />
-
-        {/* Section 01: Working Stiff Quote */}
         <QuoteSection />
-
-        {/* Section 02: BTS Mood & Drag Slider */}
         <MoodSection />
-
-        {/* Section 03: Events */}
-        <EventsSection onRegisterEvent={() => setJoinModalOpen(true)} />
+        {/* Pass /registration to navigate there directly */}
+        <EventsSection onRegisterEvent={() => navigate('/registration')} />
       </main>
 
-      {/* Footer */}
       <FooterWorkingStiff
         onOpenPassModal={() => setPassModalOpen(true)}
         onOpenAdminLogin={handleOpenAdmin}
       />
 
-      {/* Modals */}
-      <PassModal
-        isOpen={passModalOpen}
-        onClose={() => setPassModalOpen(false)}
-      />
-      <JoinModal
-        isOpen={joinModalOpen}
-        onClose={() => setJoinModalOpen(false)}
-      />
-      <ProjectModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-      />
+      <PassModal isOpen={passModalOpen} onClose={() => setPassModalOpen(false)} />
+      <JoinModal isOpen={joinModalOpen} onClose={() => setJoinModalOpen(false)} />
+      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
       <AdminLoginModal
         isOpen={adminLoginOpen}
         onClose={() => setAdminLoginOpen(false)}
@@ -103,5 +83,16 @@ export default function App() {
         onLogout={handleLogout}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainSite />} />
+        <Route path="/registration" element={<RegistrationPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
