@@ -15,8 +15,8 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
     setLoading(true);
 
     try {
-      // Try backend endpoint first
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      // Live Render URL with local dev fallback
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       const response = await fetch(`${apiUrl}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

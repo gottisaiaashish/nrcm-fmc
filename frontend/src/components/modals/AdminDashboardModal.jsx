@@ -16,7 +16,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const fetchRegistrations = async () => {
     setLoading(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       const response = await fetch(`${apiUrl}/api/admin/registrations`);
       const data = await response.json();
 
@@ -42,7 +42,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     if (!window.confirm('Are you sure you want to delete this registration entry?')) return;
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
       await fetch(`${apiUrl}/api/admin/registrations/${id}`, { method: 'DELETE' });
 
       // Filter locally as well
