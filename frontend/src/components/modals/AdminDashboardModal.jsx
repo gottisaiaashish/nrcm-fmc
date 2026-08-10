@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText } from 'lucide-react';
+import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye } from 'lucide-react';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [registrations, setRegistrations] = useState([]);
@@ -9,6 +9,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedApp, setSelectedApp] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,14 +77,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     document.body.removeChild(link);
   };
 
-  if (!isOpen) return null;
-
   const filtered = registrations.filter(r =>
     r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.mobile?.includes(searchQuery) ||
     r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.interestedArea?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.whyJoin?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.whatYouBring?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.instagramId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     r.passId?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -283,8 +284,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
                 <thead>
                   <tr style={S.tHead}>
-                    {['#','App ID','Full Name','Branch','Mobile','Email','Interested Area','Prev Exp','Insta ID','Portfolio / Links','Action'].map((h, i) => (
-                      <th key={i} style={{ ...S.tHeadTh, textAlign: i === 10 ? 'right' : 'left' }}>{h}</th>
+                    {['#','App ID','Full Name','Branch','Mobile','Email','Interested Area','Prev Exp','Why Join FMC','What You Bring','Insta ID','Portfolio / Links','Action'].map((h, i) => (
+                      <th key={i} style={{ ...S.tHeadTh, textAlign: i === 12 ? 'right' : 'left' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -303,22 +304,41 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                       <td style={{ ...S.tCell, color:'#6b7280', fontSize:12 }}>{item.email}</td>
                       <td style={{ ...S.tCell, fontWeight:600, color:'#ef4444', fontSize:12 }}>{item.interestedArea || 'N/A'}</td>
                       <td style={{ ...S.tCell, fontSize:12 }}>{item.previousExperience || 'N/A'}</td>
-                      <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
-                      <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        {item.portfolioLink || item.whyJoin || 'N/A'}
+                      <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whyJoin}>
+                        {item.whyJoin || 'N/A'}
                       </td>
-                      <td style={{ ...S.tCell, textAlign:'right' }}>
-                        <button onClick={() => handleDelete(item._id || item.passId)}
-                          style={{ padding:'6px', borderRadius:8, backgroundColor:'#fef2f2', border:'none', color:'#ef4444', cursor:'pointer', display:'inline-flex', alignItems:'center' }}
-                          onMouseEnter={e => { e.currentTarget.style.backgroundColor='#ef4444'; e.currentTarget.style.color='#fff'; }}
-                          onMouseLeave={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}>
-                          <Trash2 size={14} />
-                        </button>
+                      <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whatYouBring}>
+                        {item.whatYouBring || 'N/A'}
+                      </td>
+                      <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
+                      <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        {item.portfolioLink ? (
+                          <a href={item.portfolioLink.startsWith('http') ? item.portfolioLink : `https://${item.portfolioLink}`} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'underline' }}>
+                            {item.portfolioLink}
+                          </a>
+                        ) : 'N/A'}
+                      </td>
+                      <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
+                          <button onClick={() => setSelectedApp(item)} title="View Full Application Details"
+                            style={{ padding:'6px 10px', borderRadius:8, backgroundColor:'#eff6ff', border:'none', color:'#2563eb', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600 }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor='#2563eb'; e.currentTarget.style.color='#fff'; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor='#eff6ff'; e.currentTarget.style.color='#2563eb'; }}>
+                            <Eye size={13} />
+                            <span>View</span>
+                          </button>
+                          <button onClick={() => handleDelete(item._id || item.passId)} title="Delete Entry"
+                            style={{ padding:'6px', borderRadius:8, backgroundColor:'#fef2f2', border:'none', color:'#ef4444', cursor:'pointer', display:'inline-flex', alignItems:'center' }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor='#ef4444'; e.currentTarget.style.color='#fff'; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}>
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan="11" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
+                      <td colSpan="13" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
                         {loading ? 'Loading applications...' : 'No recruitment applications found'}
                       </td>
                     </tr>
@@ -330,6 +350,89 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
         </div>
       </main>
+
+      {/* Application Detail View Modal */}
+      {selectedApp && (
+        <div style={{ position:'fixed', inset:0, zIndex:10000, backgroundColor:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)', display:'flex', alignItems:'center', justifyCenter:'center', padding:20 }} onClick={() => setSelectedApp(null)}>
+          <div style={{ backgroundColor:'#ffffff', color:'#1c1c1e', borderRadius:16, width:'100%', maxWidth:650, maxHeight:'90vh', overflowY:'auto', margin:'auto', padding:24, boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.25)', border:'1px solid #e5e7eb' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display:'flex', alignItems:'center', justifyBetween:'space-between', pb:16, borderBottom:'1px solid #f3f4f6', marginBottom:20 }}>
+              <div>
+                <span style={{ fontSize:11, fontWeight:700, fontFamily:'monospace', color:'#ef4444', textTransform:'uppercase', letterSpacing:'0.1em' }}>
+                  RECRUITMENT APPLICATION #{selectedApp.passId || selectedApp._id}
+                </span>
+                <h2 style={{ fontSize:22, fontWeight:800, color:'#1c1c1e', margin:'2px 0 0' }}>
+                  {selectedApp.name}
+                </h2>
+              </div>
+              <button onClick={() => setSelectedApp(null)} style={{ background:'none', border:'none', padding:6, cursor:'pointer', color:'#6b7280', borderRadius:8 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16, marginBottom:20 }}>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>BRANCH & YEAR</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.branch || 'N/A'}</span>
+              </div>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>INTERESTED AREA</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#ef4444', marginTop:2, display:'block' }}>{selectedApp.interestedArea || 'N/A'}</span>
+              </div>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PHONE NUMBER</span>
+                <span style={{ fontSize:13, fontWeight:600, fontFamily:'monospace', color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.mobile || 'N/A'}</span>
+              </div>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>EMAIL ID</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block', wordBreak:'break-all' }}>{selectedApp.email || 'N/A'}</span>
+              </div>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PREVIOUS EXPERIENCE</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.previousExperience || 'N/A'}</span>
+              </div>
+              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>INSTAGRAM HANDLE</span>
+                <span style={{ fontSize:13, fontWeight:600, fontFamily:'monospace', color:'#2563eb', marginTop:2, display:'block' }}>{selectedApp.instagramId || 'N/A'}</span>
+              </div>
+            </div>
+
+            {selectedApp.portfolioLink && (
+              <div style={{ backgroundColor:'#eff6ff', padding:'12px 14px', borderRadius:10, border:'1px solid #bfdbfe', marginBottom:20 }}>
+                <span style={{ fontSize:10, fontWeight:700, color:'#1e40af', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PORTFOLIO / DRIVE LINK</span>
+                <a href={selectedApp.portfolioLink.startsWith('http') ? selectedApp.portfolioLink : `https://${selectedApp.portfolioLink}`} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:'#2563eb', textDecoration:'underline', marginTop:2, display:'block', wordBreak:'break-all' }}>
+                  {selectedApp.portfolioLink}
+                </a>
+              </div>
+            )}
+
+            {/* Paragraph 1: Why Join FMC */}
+            <div style={{ marginBottom:20 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:'#374151', textTransform:'uppercase', letterSpacing:'0.05em', display:'block', marginBottom:6 }}>
+                WHY DO YOU WANT TO JOIN NRCM FILM MAKING CLUB?
+              </span>
+              <div style={{ backgroundColor:'#f9fafb', padding:14, borderRadius:12, border:'1px solid #e5e7eb', fontSize:13, color:'#1c1c1e', lineHeight:1.6, whiteSpace:'pre-wrap' }}>
+                {selectedApp.whyJoin || 'No response provided.'}
+              </div>
+            </div>
+
+            {/* Paragraph 2: What You Bring */}
+            <div style={{ marginBottom:20 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:'#374151', textTransform:'uppercase', letterSpacing:'0.05em', display:'block', marginBottom:6 }}>
+                WHAT UNIQUE SKILLS OR PERSPECTIVE WILL YOU BRING TO FMC?
+              </span>
+              <div style={{ backgroundColor:'#f9fafb', padding:14, borderRadius:12, border:'1px solid #e5e7eb', fontSize:13, color:'#1c1c1e', lineHeight:1.6, whiteSpace:'pre-wrap' }}>
+                {selectedApp.whatYouBring || 'No response provided.'}
+              </div>
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:12, borderTop:'1px solid #f3f4f6' }}>
+              <button onClick={() => setSelectedApp(null)} style={{ padding:'8px 20px', borderRadius:10, backgroundColor:'#1c1c1e', color:'#ffffff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
