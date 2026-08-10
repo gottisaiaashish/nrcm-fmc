@@ -306,8 +306,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             </div>
           </div>
 
-          {/* Stat Cards */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
+          {/* Stat Cards & Controls */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
             {[
               { label:'Total Applications', value: registrations.length, sub:'↑ Live FMC Recruitment Applications', subColor:'#10b981' },
               { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Review', subColor:'#3b82f6' },
@@ -318,6 +318,26 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <span style={S.statSub(c.subColor)}>{c.sub}</span>
               </div>
             ))}
+
+            {/* 3rd Card: Direct Recruitment Switch */}
+            <div style={{ ...S.card, display:'flex', flexDirection:'column', justifyContent:'space-between' }}>
+              <div>
+                <span style={S.statLabel}>RECRUITMENT CONTROL</span>
+                <div style={{ fontSize:18, fontWeight:800, color: recruitmentOpen ? '#16a34a' : '#dc2626', marginTop:6 }}>
+                  {recruitmentOpen ? 'ONLINE (ACCEPTING)' : 'OFFLINE (CLOSED)'}
+                </div>
+              </div>
+              <button onClick={toggleRecruitmentStatus}
+                style={{
+                  marginTop:12, padding:'8px 14px', borderRadius:10,
+                  backgroundColor: recruitmentOpen ? '#16a34a' : '#dc2626',
+                  color:'#ffffff', border:'none', fontWeight:700, fontSize:12,
+                  cursor:'pointer', transition:'all 0.2s ease', display:'flex', alignItems:'center', justifyContent:'center', gap:6,
+                  boxShadow: recruitmentOpen ? '0 4px 12px rgba(22, 163, 74, 0.3)' : '0 4px 12px rgba(220, 38, 38, 0.3)'
+                }}>
+                <span>SWITCH TO {recruitmentOpen ? 'OFF (CLOSE)' : 'ON (OPEN)'}</span>
+              </button>
+            </div>
           </div>
 
           {/* Table */}
