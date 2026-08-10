@@ -23,11 +23,14 @@ const EMAIL_PASS = process.env.EMAIL_PASS || '';
 const transporter = nodemailer.createTransport(
   EMAIL_USER && EMAIL_PASS
     ? {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
           user: EMAIL_USER,
           pass: EMAIL_PASS,
         },
+        family: 4, // Force IPv4 to prevent ENETUNREACH on Render containers
       }
     : {
         host: process.env.SMTP_HOST || 'smtp.ethereal.email',
