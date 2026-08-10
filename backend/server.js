@@ -31,10 +31,17 @@ const EMAIL_PASS = process.env.EMAIL_PASS || '';
 const transporter = nodemailer.createTransport(
   EMAIL_USER && EMAIL_PASS
     ? {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // Use STARTTLS
+        requireTLS: true,
         auth: {
           user: EMAIL_USER,
           pass: EMAIL_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+          ciphers: 'SSLv3'
         },
         connectionTimeout: 15000,
         greetingTimeout: 15000,
