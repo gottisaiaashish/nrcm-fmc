@@ -80,14 +80,38 @@ const sendConfirmationEmail = async (applicant) => {
     </div>
   `;
 
+  const textContent = `
+NRCM.FMC - FILM MAKING CLUB RECRUITMENT 2026
+
+Dear ${name},
+
+Thank you for applying to join the NRCM Film Making Club crew! Your recruitment application has been successfully logged into our system.
+
+APPLICATION DETAILS:
+- Application ID: ${passId}
+- Full Name: ${name}
+- Branch & Year: ${branch}
+- Interested Area: ${interestedArea || 'N/A'}
+- Mobile: ${mobile}
+
+Our FMC core team is currently reviewing all applications. If your profile is shortlisted, our team will contact you via Mobile / WhatsApp / Instagram.
+
+Best regards,
+NRCM Film Making Club Team
+`;
+
   try {
     if (EMAIL_USER && EMAIL_PASS) {
       await transporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
         replyTo: EMAIL_USER,
         to: email,
-        subject: `[NRCM.FMC] Application Received - ${name}`,
+        subject: `NRCM.FMC Application Confirmation - ${name}`,
+        text: textContent,
         html: htmlContent,
+        headers: {
+          'X-Entity-Ref-ID': passId,
+        }
       });
       console.log(`✉️ [EMAIL SENT] Confirmation email sent to ${email} (${name})`);
     } else {
