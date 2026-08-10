@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import dns from 'dns';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 // Configure DNS fallback for MongoDB Atlas SRV resolution and force IPv4 for SMTP
 try {
@@ -19,7 +20,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-// Nodemailer Transporter Configuration
+// Resend HTTP API Configuration (Preferred for Render Cloud Host)
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const resendClient = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+// Nodemailer Transporter Configuration (Fallback)
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASS = process.env.EMAIL_PASS || '';
 
@@ -97,7 +102,17 @@ Narsimha Reddy Engineering College
 `;
 
   try {
-    if (EMAIL_USER && EMAIL_PASS) {
+    if (resendClient) {
+      const resp = await resendClient.emails.send({
+        from: 'NRCM Film Making Club <onboarding@resend.dev>',
+        replyTo: EMAIL_USER || 'nrcmfmc@gmail.com',
+        to: [email],
+        subject: `NRCM FMC Application Under Review - ${name}`,
+        text: textContent,
+        html: htmlContent
+      });
+      console.log(`✉️ [RESEND EMAIL SENT] Confirmation email sent to ${email} (${name}) - Resend ID: ${resp.data?.id || 'OK'}`);
+    } else if (EMAIL_USER && EMAIL_PASS) {
       await transporter.sendMail({
         from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
         replyTo: EMAIL_USER,
@@ -109,9 +124,9 @@ Narsimha Reddy Engineering College
           'X-Entity-Ref-ID': passId,
         }
       });
-      console.log(`✉️ [EMAIL SENT] Confirmation email sent to ${email} (${name})`);
+      console.log(`✉️ [GMAIL SMTP SENT] Confirmation email sent to ${email} (${name})`);
     } else {
-      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure RESEND_API_KEY or EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
     }
   } catch (err) {
     console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
