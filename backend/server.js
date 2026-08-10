@@ -20,6 +20,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
+// Brevo HTTP API Configuration (Sends from nrcmfmc@gmail.com over HTTPS Port 443)
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
+
 // Resend HTTP API Configuration (Preferred for Render Cloud Host)
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const resendClient = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
@@ -109,7 +112,30 @@ Narsimha Reddy Engineering College
 `;
 
   try {
-    if (resendClient) {
+    if (BREVO_API_KEY) {
+      const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
+          replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
+          to: [{ email: email, name: name }],
+          subject: `NRCM FMC Application Under Review - ${name}`,
+          htmlContent: htmlContent,
+          textContent: textContent
+        })
+      });
+      const resData = await resp.json();
+      if (resp.ok) {
+        console.log(`✉️ [BREVO EMAIL SENT] Confirmation email sent to ${email} (${name}) from nrcmfmc@gmail.com - MessageID: ${resData.messageId}`);
+      } else {
+        console.error(`⚠️ [BREVO API ERROR]`, resData);
+      }
+    } else if (resendClient) {
       const resp = await resendClient.emails.send({
         from: 'NRCM Film Making Club <onboarding@resend.dev>',
         replyTo: EMAIL_USER || 'nrcmfmc@gmail.com',
@@ -133,7 +159,7 @@ Narsimha Reddy Engineering College
       });
       console.log(`✉️ [GMAIL SMTP SENT] Confirmation email sent to ${email} (${name})`);
     } else {
-      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure RESEND_API_KEY or EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
+      console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure BREVO_API_KEY or RESEND_API_KEY in environment variables to dispatch live emails.`);
     }
   } catch (err) {
     console.error(`⚠️ [EMAIL ERROR] Failed to send email to ${email}:`, err.message);
