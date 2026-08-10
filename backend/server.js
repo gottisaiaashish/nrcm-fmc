@@ -120,6 +120,19 @@ Narsimha Reddy Engineering College
 `;
 
   try {
+    if (brevoTransporter) {
+      await brevoTransporter.sendMail({
+        from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
+        replyTo: EMAIL_USER,
+        to: email,
+        subject: `NRCM.FMC Application Under Review - ${name}`,
+        text: textContent,
+        html: htmlContent
+      });
+      console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
+      return;
+    }
+
     if (gmailTransporter) {
       try {
         await gmailTransporter.sendMail({
@@ -134,22 +147,9 @@ Narsimha Reddy Engineering College
           }
         });
         console.log(`✉️ [GMAIL DIRECT SENT] Confirmation email sent directly from ${EMAIL_USER} to ${email} (${name})`);
-        return;
       } catch (gmailErr) {
-        console.warn(`⚠️ [GMAIL DIRECT FAILED, FALLING BACK TO BREVO]:`, gmailErr.message);
+        console.warn(`⚠️ [GMAIL DIRECT FAILED]:`, gmailErr.message);
       }
-    }
-
-    if (brevoTransporter) {
-      await brevoTransporter.sendMail({
-        from: `"NRCM Film Making Club" <${EMAIL_USER}>`,
-        replyTo: EMAIL_USER,
-        to: email,
-        subject: `NRCM.FMC Application Under Review - ${name}`,
-        text: textContent,
-        html: htmlContent
-      });
-      console.log(`✉️ [BREVO RELAY SENT] Confirmation email sent to ${email} (${name}) from ${EMAIL_USER}`);
     } else {
       console.log(`ℹ️ [EMAIL NOTICE] Registration received for ${email} (${name}). Configure EMAIL_USER & EMAIL_PASS in environment variables to dispatch live emails.`);
     }
@@ -286,9 +286,9 @@ app.post('/api/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    // Dispatch confirmation email
-    console.log(`[DISPATCHING EMAIL] Attempting to send confirmation email to: ${email} (${name})...`);
-    await sendConfirmationEmail(entryData).catch(err => console.error('Email Dispatch Error:', err.message));
+    // Dispatch confirmation email asynchronously in background
+    console.log(`[DISPATCHING EMAIL BACKGROUND] Sending confirmation email to: ${email} (${name})...`);
+    sendConfirmationEmail(entryData).catch(err => console.error('Background Email Dispatch Error:', err.message));
 
     if (isMongoConnected) {
       const newEntry = new Registration(entryData);
