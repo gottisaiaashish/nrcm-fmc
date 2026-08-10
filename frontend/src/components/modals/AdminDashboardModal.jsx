@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye } from 'lucide-react';
+import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, UserCheck } from 'lucide-react';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [registrations, setRegistrations] = useState([]);
@@ -13,6 +13,17 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [recruitmentOpen, setRecruitmentOpen] = useState(() => {
     return localStorage.getItem('nrcmfmc_recruitment_open') !== 'false';
   });
+  const [shortlistedIds, setShortlistedIds] = useState(() => {
+    return JSON.parse(localStorage.getItem('nrcmfmc_shortlisted_ids') || '[]');
+  });
+
+  const toggleShortlist = (id) => {
+    const updated = shortlistedIds.includes(id)
+      ? shortlistedIds.filter(item => item !== id)
+      : [...shortlistedIds, id];
+    setShortlistedIds(updated);
+    localStorage.setItem('nrcmfmc_shortlisted_ids', JSON.stringify(updated));
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -111,17 +122,24 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   if (!isOpen) return null;
 
-  const filtered = registrations.filter(r =>
-    r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.mobile?.includes(searchQuery) ||
-    r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.interestedArea?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.whyJoin?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.whatYouBring?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.instagramId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.passId?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = registrations.filter(r => {
+    const isMatch =
+      r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.mobile?.includes(searchQuery) ||
+      r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.interestedArea?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.whyJoin?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.whatYouBring?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.instagramId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.passId?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!isMatch) return false;
+    if (activeTab === 'shortlisted') {
+      return shortlistedIds.includes(r._id) || shortlistedIds.includes(r.passId);
+    }
+    return true;
+  });
 
   const getGreeting = () => {
     const h = new Date().getHours();
@@ -189,17 +207,32 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
               <span style={S.badge(activeTab === 'overview' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'overview' ? '#fff' : '#6b7280')}>HQ</span>
             </button>
 
-            {/* Event Passes */}
-            <button style={S.navBtn(false)} onClick={() => setActiveTab('overview')}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor='#f9fafb'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}>
+            {/* Applications */}
+            <button style={S.navBtn(activeTab === 'applications')} onClick={() => setActiveTab('applications')}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor= activeTab === 'applications' ? '#1c1c1e' : '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor= activeTab === 'applications' ? '#1c1c1e' : 'transparent'}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <div style={S.iconBox('#fff1f2')}>
-                  <Users size={14} color="#ef4444" />
+                <div style={S.iconBox(activeTab === 'applications' ? 'rgba(255,255,255,0.2)' : '#fff1f2')}>
+                  <Users size={14} color={activeTab === 'applications' ? '#fff' : '#ef4444'} />
                 </div>
                 <span>Applications</span>
               </div>
-              <span style={S.badge('#ef4444', '#fff')}>{registrations.length}</span>
+              <span style={S.badge(activeTab === 'applications' ? 'rgba(255,255,255,0.25)' : '#ef4444', activeTab === 'applications' ? '#fff' : '#fff')}>{registrations.length}</span>
+            </button>
+
+            {/* Shortlisted */}
+            <button style={S.navBtn(activeTab === 'shortlisted')} onClick={() => setActiveTab('shortlisted')}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : 'transparent'}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.2)' : '#fef9c3')}>
+                  <Star size={14} color={activeTab === 'shortlisted' ? '#fff' : '#eab308'} fill={activeTab === 'shortlisted' ? '#fff' : '#eab308'} />
+                </div>
+                <span style={{ whiteSpace:'nowrap' }}>Shortlisted</span>
+              </div>
+              <span style={S.badge(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.25)' : '#fef08a', activeTab === 'shortlisted' ? '#fff' : '#854d0e')}>
+                {shortlistedIds.length}
+              </span>
             </button>
 
             {/* Export */}
@@ -362,53 +395,77 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.length > 0 ? filtered.map((item, index) => (
-                    <tr key={item._id || index} style={S.tRow}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor='#fafafa'}
-                      onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}>
-                      <td style={{ ...S.tCell, color:'#9ca3af', fontWeight:500, fontSize:12 }}>{index + 1}</td>
-                      <td style={{ ...S.tCell, color:'#ef4444', fontFamily:'monospace', fontWeight:600, fontSize:12 }}>{item.passId || item._id}</td>
-                      <td style={{ ...S.tCell, fontWeight:600, color:'#1c1c1e' }}>{item.name}</td>
-                      <td style={S.tCell}>
-                        <span style={{ padding:'3px 8px', borderRadius:6, backgroundColor:'#f3f4f6', color:'#4b5563', fontSize:11, fontWeight:600 }}>{item.branch}</span>
-                      </td>
-                      <td style={{ ...S.tCell, fontFamily:'monospace', fontSize:12 }}>{item.mobile}</td>
-                      <td style={{ ...S.tCell, color:'#6b7280', fontSize:12 }}>{item.email}</td>
-                      <td style={{ ...S.tCell, fontWeight:600, color:'#ef4444', fontSize:12 }}>{item.interestedArea || 'N/A'}</td>
-                      <td style={{ ...S.tCell, fontSize:12 }}>{item.previousExperience || 'N/A'}</td>
-                      <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whyJoin}>
-                        {item.whyJoin || 'N/A'}
-                      </td>
-                      <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whatYouBring}>
-                        {item.whatYouBring || 'N/A'}
-                      </td>
-                      <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
-                      <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                        {item.portfolioLink ? (
-                          <a href={item.portfolioLink.startsWith('http') ? item.portfolioLink : `https://${item.portfolioLink}`} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'underline' }}>
-                            {item.portfolioLink}
-                          </a>
-                        ) : 'N/A'}
-                      </td>
-                      <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
-                        <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-                          <button onClick={() => setSelectedApp(item)} title="View Full Application Details"
-                            style={{ padding:'6px 10px', borderRadius:8, backgroundColor:'#eff6ff', border:'none', color:'#2563eb', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600 }}
-                            onMouseEnter={e => { e.currentTarget.style.backgroundColor='#2563eb'; e.currentTarget.style.color='#fff'; }}
-                            onMouseLeave={e => { e.currentTarget.style.backgroundColor='#eff6ff'; e.currentTarget.style.color='#2563eb'; }}>
-                            <Eye size={13} />
-                            <span>View</span>
-                          </button>
-                          <button onClick={() => handleDelete(item._id || item.passId)} title="Delete Entry"
-                            style={{ padding:'6px', borderRadius:8, backgroundColor:'#fef2f2', border:'none', color:'#ef4444', cursor:'pointer', display:'inline-flex', alignItems:'center' }}
-                            onMouseEnter={e => { e.currentTarget.style.backgroundColor='#ef4444'; e.currentTarget.style.color='#fff'; }}
-                            onMouseLeave={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}>
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )) : (
+                  {filtered.length > 0 ? filtered.map((item, index) => {
+                    const isShortlisted = shortlistedIds.includes(item._id) || shortlistedIds.includes(item.passId);
+                    return (
+                      <tr key={item._id || index} style={S.tRow}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor='#fafafa'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}>
+                        <td style={{ ...S.tCell, color:'#9ca3af', fontWeight:500, fontSize:12 }}>{index + 1}</td>
+                        <td style={{ ...S.tCell, color:'#ef4444', fontFamily:'monospace', fontWeight:600, fontSize:12 }}>{item.passId || item._id}</td>
+                        <td style={{ ...S.tCell, fontWeight:600, color:'#1c1c1e' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                            <span>{item.name}</span>
+                            {isShortlisted && (
+                              <span style={{ fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:4, backgroundColor:'#fef9c3', color:'#ca8a04', border:'1px solid #fde047', display:'inline-flex', alignItems:'center', gap:3 }}>
+                                <Star size={10} fill="#ca8a04" color="#ca8a04" /> SHORTLISTED
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td style={S.tCell}>
+                          <span style={{ padding:'3px 8px', borderRadius:6, backgroundColor:'#f3f4f6', color:'#4b5563', fontSize:11, fontWeight:600 }}>{item.branch}</span>
+                        </td>
+                        <td style={{ ...S.tCell, fontFamily:'monospace', fontSize:12 }}>{item.mobile}</td>
+                        <td style={{ ...S.tCell, color:'#6b7280', fontSize:12 }}>{item.email}</td>
+                        <td style={{ ...S.tCell, fontWeight:600, color:'#ef4444', fontSize:12 }}>{item.interestedArea || 'N/A'}</td>
+                        <td style={{ ...S.tCell, fontSize:12 }}>{item.previousExperience || 'N/A'}</td>
+                        <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whyJoin}>
+                          {item.whyJoin || 'N/A'}
+                        </td>
+                        <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whatYouBring}>
+                          {item.whatYouBring || 'N/A'}
+                        </td>
+                        <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
+                        <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                          {item.portfolioLink ? (
+                            <a href={item.portfolioLink.startsWith('http') ? item.portfolioLink : `https://${item.portfolioLink}`} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'underline' }}>
+                              {item.portfolioLink}
+                            </a>
+                          ) : 'N/A'}
+                        </td>
+                        <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
+                          <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
+                            <button onClick={() => toggleShortlist(item._id || item.passId)} title={isShortlisted ? "Remove from Shortlist" : "Shortlist Applicant"}
+                              style={{
+                                padding:'6px 10px', borderRadius:8,
+                                backgroundColor: isShortlisted ? '#fef9c3' : '#f9fafb',
+                                border: `1px solid ${isShortlisted ? '#fde047' : '#e5e7eb'}`,
+                                color: isShortlisted ? '#ca8a04' : '#4b5563',
+                                cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600
+                              }}>
+                              <Star size={13} fill={isShortlisted ? '#ca8a04' : 'none'} color={isShortlisted ? '#ca8a04' : '#6b7280'} />
+                              <span>{isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                            </button>
+
+                            <button onClick={() => setSelectedApp(item)} title="View Full Application Details"
+                              style={{ padding:'6px 10px', borderRadius:8, backgroundColor:'#eff6ff', border:'none', color:'#2563eb', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600 }}
+                              onMouseEnter={e => { e.currentTarget.style.backgroundColor='#2563eb'; e.currentTarget.style.color='#fff'; }}
+                              onMouseLeave={e => { e.currentTarget.style.backgroundColor='#eff6ff'; e.currentTarget.style.color='#2563eb'; }}>
+                              <Eye size={13} />
+                              <span>View</span>
+                            </button>
+                            <button onClick={() => handleDelete(item._id || item.passId)} title="Delete Entry"
+                              style={{ padding:'6px', borderRadius:8, backgroundColor:'#fef2f2', border:'none', color:'#ef4444', cursor:'pointer', display:'inline-flex', alignItems:'center' }}
+                              onMouseEnter={e => { e.currentTarget.style.backgroundColor='#ef4444'; e.currentTarget.style.color='#fff'; }}
+                              onMouseLeave={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }) : (
                     <tr>
                       <td colSpan="13" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
                         {loading ? 'Loading applications...' : 'No recruitment applications found'}
@@ -425,9 +482,9 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
       {/* Application Detail View Modal */}
       {selectedApp && (
-        <div style={{ position:'fixed', inset:0, zIndex:10000, backgroundColor:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)', display:'flex', alignItems:'center', justifyCenter:'center', padding:20 }} onClick={() => setSelectedApp(null)}>
+        <div style={{ position:'fixed', inset:0, zIndex:10000, backgroundColor:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={() => setSelectedApp(null)}>
           <div style={{ backgroundColor:'#ffffff', color:'#1c1c1e', borderRadius:16, width:'100%', maxWidth:650, maxHeight:'90vh', overflowY:'auto', margin:'auto', padding:24, boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.25)', border:'1px solid #e5e7eb' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display:'flex', alignItems:'center', justifyBetween:'space-between', pb:16, borderBottom:'1px solid #f3f4f6', marginBottom:20 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingBottom:16, borderBottom:'1px solid #f3f4f6', marginBottom:20 }}>
               <div>
                 <span style={{ fontSize:11, fontWeight:700, fontFamily:'monospace', color:'#ef4444', textTransform:'uppercase', letterSpacing:'0.1em' }}>
                   RECRUITMENT APPLICATION #{selectedApp.passId || selectedApp._id}
@@ -436,9 +493,23 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   {selectedApp.name}
                 </h2>
               </div>
-              <button onClick={() => setSelectedApp(null)} style={{ background:'none', border:'none', padding:6, cursor:'pointer', color:'#6b7280', borderRadius:8 }}>
-                <X size={18} />
-              </button>
+
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <button onClick={() => toggleShortlist(selectedApp._id || selectedApp.passId)}
+                  style={{
+                    padding:'6px 12px', borderRadius:8,
+                    backgroundColor: shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#fef9c3' : '#f3f4f6',
+                    border: `1px solid ${shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#fde047' : '#e5e7eb'}`,
+                    color: shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : '#374151',
+                    cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700
+                  }}>
+                  <Star size={14} fill={shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : 'none'} color={shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : '#6b7280'} />
+                  <span>{shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? 'SHORTLISTED' : 'SHORTLIST'}</span>
+                </button>
+                <button onClick={() => setSelectedApp(null)} style={{ background:'none', border:'none', padding:6, cursor:'pointer', color:'#6b7280', borderRadius:8 }}>
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16, marginBottom:20 }}>
