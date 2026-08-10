@@ -14,7 +14,7 @@ export default function HeroWorkingStiff() {
           <div className="f-240 text-red-600 font-serif italic font-normal my-1 drop-shadow-[0_0_40px_rgba(229,9,20,0.5)]">
             Cinema
           </div>
-          <div className="f-120 text-[#F0ECD9] tracking-tight">Since 2026</div>
+          <div className="f-120 text-[#F0ECD9] tracking-tight">Since 2025</div>
         </h1>
       </div>
 
