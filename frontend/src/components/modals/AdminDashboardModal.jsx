@@ -178,15 +178,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           </nav>
         </div>
 
-        {/* User + Logout */}
+        {/* Logout only */}
         <div style={{ padding:'12px 12px 16px', borderTop:'1px solid #f3f4f6' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10, padding:'0 4px', marginBottom:12 }}>
-            <div style={{ width:32, height:32, borderRadius:'50%', backgroundColor:'#1c1c1e', color:'#fff', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>GA</div>
-            <div>
-              <p style={{ fontSize:12, fontWeight:600, color:'#1c1c1e', lineHeight:1.3 }}>Gotti Aashish</p>
-              <p style={{ fontSize:10, color:'#9ca3af', fontFamily:'monospace' }}>STUDIO HEAD</p>
-            </div>
-          </div>
           <button onClick={onLogout}
             style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'8px 0', borderRadius:10, backgroundColor:'#f9fafb', border:'1px solid #e5e7eb', fontSize:12, fontWeight:600, color:'#ef4444', cursor:'pointer' }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor='#fef2f2'}
@@ -257,16 +250,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           </div>
 
           {/* Stat Cards */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
             {[
               { label:'Total Registrations', value: registrations.length, sub:'↑ Live Event Passes', subColor:'#10b981' },
               { label:'Active Departments', value: new Set(registrations.map(r => r.branch)).size || 1, sub:'In Active Sprint', subColor:'#3b82f6' },
-              { label:'MongoDB Status', value: dbStatus || 'Connected', isText: true, sub:'Atlas Cloud Active', subColor:'#f59e0b' },
-              { label:'Export Ready', value:'100%', sub:'CSV Ready ⚡', subColor:'#10b981' },
             ].map((c, i) => (
               <div key={i} style={S.card}>
                 <span style={S.statLabel}>{c.label}</span>
-                <div style={{ ...S.statNum, fontSize: c.isText ? 16 : 30, paddingTop: c.isText ? 4 : 0 }}>{c.value}</div>
+                <div style={S.statNum}>{c.value}</div>
                 <span style={S.statSub(c.subColor)}>{c.sub}</span>
               </div>
             ))}
