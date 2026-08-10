@@ -5,9 +5,12 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 import nodemailer from 'nodemailer';
 
-// Configure DNS fallback for MongoDB Atlas SRV resolution on Windows Node.js
+// Configure DNS fallback for MongoDB Atlas SRV resolution and force IPv4 for SMTP
 try {
   dns.setServers(['8.8.8.8', '1.1.1.1']);
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+  }
 } catch (_) {}
 
 dotenv.config();
@@ -23,14 +26,14 @@ const EMAIL_PASS = process.env.EMAIL_PASS || '';
 const transporter = nodemailer.createTransport(
   EMAIL_USER && EMAIL_PASS
     ? {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+        service: 'gmail',
         auth: {
           user: EMAIL_USER,
           pass: EMAIL_PASS,
         },
-        family: 4, // Force IPv4 to prevent ENETUNREACH on Render containers
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 15000,
       }
     : {
         host: process.env.SMTP_HOST || 'smtp.ethereal.email',
