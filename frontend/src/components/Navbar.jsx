@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Lock } from 'lucide-react';
 
-export default function Navbar({ onOpenPassModal, onOpenJoinModal }) {
+export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLogin }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navLinks = [
@@ -15,15 +15,20 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal }) {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0f0f11]/90 backdrop-blur-md border-b border-zinc-800/80 py-4 px-6 md:px-12 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo Working Stiff Style */}
-          <a href="#" className="flex flex-col items-start group focus:outline-none">
-            <span className="font-display text-xl md:text-2xl font-black tracking-tighter text-[#F0ECD9] group-hover:text-red-500 transition-colors">
+          {/* Logo NRCM.FMC — Clicking triggers Admin Portal Login */}
+          <button
+            onClick={onOpenAdminLogin}
+            title="Click to access Admin Portal"
+            className="flex flex-col items-start group focus:outline-none cursor-pointer border-none bg-transparent text-left"
+          >
+            <span className="font-display text-xl md:text-2xl font-black tracking-tighter text-[#F0ECD9] group-hover:text-red-500 transition-colors flex items-center gap-1">
               NRCM.FMC<span className="text-red-600 font-serif italic">.</span>
+              <Lock className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-red-500 transition-opacity" />
             </span>
             <span className="font-mono text-[9px] tracking-widest text-zinc-500 uppercase">
               FILMMAKING CLUB
             </span>
-          </a>
+          </button>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 font-mono text-sm font-semibold text-[#F0ECD9]">
@@ -52,7 +57,7 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal }) {
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#F0ECD9] hover:text-red-500 transition-colors"
+              className="md:hidden w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[#F0ECD9] hover:text-red-500 transition-colors cursor-pointer"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -88,8 +93,11 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal }) {
         </div>
 
         <div className="max-w-5xl mx-auto w-full pt-8 border-t border-zinc-900 flex items-center justify-between font-mono text-xs text-zinc-500">
-          <div>NRCM FILM MAKING CLUB</div>
-          <button onClick={() => { setMenuOpen(false); onOpenJoinModal(); }} className="hover:text-red-500 uppercase">
+          <button onClick={() => { setMenuOpen(false); onOpenAdminLogin(); }} className="hover:text-red-500 uppercase flex items-center gap-1.5 cursor-pointer">
+            <Lock className="w-3.5 h-3.5 text-red-500" />
+            <span>ADMIN PORTAL</span>
+          </button>
+          <button onClick={() => { setMenuOpen(false); onOpenJoinModal(); }} className="hover:text-red-500 uppercase cursor-pointer">
             JOIN CREW
           </button>
         </div>

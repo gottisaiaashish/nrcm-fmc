@@ -13,11 +13,34 @@ import FooterWorkingStiff from './components/FooterWorkingStiff';
 import PassModal from './components/modals/PassModal';
 import JoinModal from './components/modals/JoinModal';
 import ProjectModal from './components/modals/ProjectModal';
+import AdminLoginModal from './components/modals/AdminLoginModal';
+import AdminDashboardModal from './components/modals/AdminDashboardModal';
 
 export default function App() {
   const [passModalOpen, setPassModalOpen] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+
+  const handleOpenAdmin = () => {
+    const token = localStorage.getItem('nrcmfmc_admin_token');
+    if (token) {
+      setAdminDashboardOpen(true);
+    } else {
+      setAdminLoginOpen(true);
+    }
+  };
+
+  const handleLoginSuccess = () => {
+    setAdminLoginOpen(false);
+    setAdminDashboardOpen(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('nrcmfmc_admin_token');
+    setAdminDashboardOpen(false);
+  };
 
   return (
     <div className="relative min-h-screen bg-[#0f0f11] text-[#F0ECD9] selection:bg-red-600 selection:text-white font-sans overflow-x-hidden">
@@ -32,6 +55,7 @@ export default function App() {
       <Navbar
         onOpenPassModal={() => setPassModalOpen(true)}
         onOpenJoinModal={() => setJoinModalOpen(true)}
+        onOpenAdminLogin={handleOpenAdmin}
       />
 
       {/* Main Working Stiff Flow Sections */}
@@ -49,8 +73,11 @@ export default function App() {
         <EventsSection onRegisterEvent={() => setJoinModalOpen(true)} />
       </main>
 
-      {/* Footer with 3D Yellow/Red Button Trigger */}
-      <FooterWorkingStiff onOpenPassModal={() => setPassModalOpen(true)} />
+      {/* Footer */}
+      <FooterWorkingStiff
+        onOpenPassModal={() => setPassModalOpen(true)}
+        onOpenAdminLogin={handleOpenAdmin}
+      />
 
       {/* Modals */}
       <PassModal
@@ -64,6 +91,16 @@ export default function App() {
       <ProjectModal
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
+      />
+      <AdminLoginModal
+        isOpen={adminLoginOpen}
+        onClose={() => setAdminLoginOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+      <AdminDashboardModal
+        isOpen={adminDashboardOpen}
+        onClose={() => setAdminDashboardOpen(false)}
+        onLogout={handleLogout}
       />
     </div>
   );

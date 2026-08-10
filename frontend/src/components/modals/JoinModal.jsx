@@ -3,6 +3,7 @@ import { X, Check, ArrowRight } from 'lucide-react';
 
 export default function JoinModal({ isOpen, onClose }) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     branch: 'CSE',
@@ -12,9 +13,41 @@ export default function JoinModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      await fetch(`${apiUrl}/api/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      // Save in local storage fallback
+      const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
+      existing.unshift({
+        _id: `FMC-PASS-${Date.now()}`,
+        passId: `FMC-PASS-${Date.now()}`,
+        ...formData,
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
+    } catch (err) {
+      console.warn('Backend server unreachable, saved entry to local storage fallback:', err.message);
+      const existing = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
+      existing.unshift({
+        _id: `FMC-PASS-${Date.now()}`,
+        passId: `FMC-PASS-${Date.now()}`,
+        ...formData,
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(existing));
+    } finally {
+      setLoading(false);
+      setSubmitted(true);
+    }
   };
 
   return (
@@ -115,13 +148,14 @@ export default function JoinModal({ isOpen, onClose }) {
                   </div>
                 </div>
 
-                {/* Submit Button pushed further down with pt-8 sm:pt-10 */}
+                {/* Submit Button */}
                 <div className="w-full pt-8 sm:pt-10">
                   <button
                     type="submit"
+                    disabled={loading}
                     className="w-full h-14 sm:h-16 rounded-2xl bg-[#e50914] text-white font-mono text-sm sm:text-base font-bold tracking-widest uppercase hover:bg-red-700 transition-all cursor-pointer border-4 border-[#17171a] shadow-xl flex items-center justify-center gap-3"
                   >
-                    <span>SUBMIT</span>
+                    <span>{loading ? 'GENERATING PASS...' : 'SUBMIT'}</span>
                     <ArrowRight className="w-5 h-5 stroke-[3]" />
                   </button>
                 </div>

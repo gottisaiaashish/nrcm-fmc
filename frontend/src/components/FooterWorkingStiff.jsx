@@ -1,4 +1,5 @@
 import React from 'react';
+import { Lock } from 'lucide-react';
 
 const InstagramIcon = () => (
   <svg className="w-4 h-4 text-red-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -15,7 +16,7 @@ const YoutubeIcon = () => (
   </svg>
 );
 
-export default function FooterWorkingStiff() {
+export default function FooterWorkingStiff({ onOpenAdminLogin }) {
   const instagramUrl = "https://www.instagram.com/nrcm.fmc?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
   const youtubeUrl = "https://youtube.com/@nrcmfilmmakingclub?si=tO7FV3lKgBN2R-97";
 
@@ -26,11 +27,16 @@ export default function FooterWorkingStiff() {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 pb-10 border-b border-zinc-800/80">
           {/* Left Block: Logo, Nav & Description */}
           <div className="space-y-4 max-w-xl">
-            <a href="#" className="inline-block group">
-              <h3 className="font-display text-3xl sm:text-4xl font-black uppercase text-[#F0ECD9] tracking-tighter group-hover:text-red-500 transition-colors">
+            <button
+              onClick={onOpenAdminLogin}
+              title="Click to access Admin Portal"
+              className="inline-block group border-none bg-transparent text-left cursor-pointer p-0"
+            >
+              <h3 className="font-display text-3xl sm:text-4xl font-black uppercase text-[#F0ECD9] tracking-tighter group-hover:text-red-500 transition-colors flex items-center gap-1.5">
                 NRCM.FMC<span className="text-red-600 font-serif italic">.</span>
+                <Lock className="w-4 h-4 opacity-0 group-hover:opacity-100 text-red-500 transition-opacity" />
               </h3>
-            </a>
+            </button>
 
             {/* Navigation Links */}
             <div className="flex flex-wrap gap-6 sm:gap-8 font-mono text-xs sm:text-sm font-bold tracking-widest uppercase text-[#F0ECD9]">
