@@ -27,12 +27,6 @@ export default function EventsSection({ onRegisterEvent }) {
                 className="w-full h-full object-cover filter contrast-125 brightness-75 group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-black/60 lg:bg-gradient-to-r lg:from-transparent lg:via-black/40 lg:to-[#141416]" />
-
-              {/* Status Badge on Media */}
-              <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-zinc-700/60 text-white font-mono text-[10px] tracking-widest uppercase">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span>REGISTRATION OPEN</span>
-              </div>
             </div>
 
             {/* Event Details Drawer */}
