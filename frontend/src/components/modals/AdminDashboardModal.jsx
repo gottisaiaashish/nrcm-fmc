@@ -394,9 +394,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                           <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                             <span>{item.name}</span>
                             {isShortlisted && (
-                              <span style={{ fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:4, backgroundColor:'#fef9c3', color:'#ca8a04', border:'1px solid #fde047', display:'inline-flex', alignItems:'center', gap:3 }}>
-                                <Star size={10} fill="#ca8a04" color="#ca8a04" /> SHORTLISTED
-                              </span>
+                              <Star size={13} fill="#eab308" color="#eab308" title="Shortlisted Candidate" />
                             )}
                           </div>
                         </td>
@@ -425,14 +423,13 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
                             <button onClick={() => toggleShortlist(item._id || item.passId)} title={isShortlisted ? "Remove from Shortlist" : "Shortlist Applicant"}
                               style={{
-                                padding:'6px 10px', borderRadius:8,
+                                padding:'6px', borderRadius:8,
                                 backgroundColor: isShortlisted ? '#fef9c3' : '#f9fafb',
                                 border: `1px solid ${isShortlisted ? '#fde047' : '#e5e7eb'}`,
                                 color: isShortlisted ? '#ca8a04' : '#4b5563',
-                                cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600
+                                cursor:'pointer', display:'inline-flex', alignItems:'center', justifyContent:'center'
                               }}>
-                              <Star size={13} fill={isShortlisted ? '#ca8a04' : 'none'} color={isShortlisted ? '#ca8a04' : '#6b7280'} />
-                              <span>{isShortlisted ? 'Shortlisted' : 'Shortlist'}</span>
+                              <Star size={14} fill={isShortlisted ? '#ca8a04' : 'none'} color={isShortlisted ? '#ca8a04' : '#6b7280'} />
                             </button>
 
                             <button onClick={() => setSelectedApp(item)} title="View Full Application Details"
