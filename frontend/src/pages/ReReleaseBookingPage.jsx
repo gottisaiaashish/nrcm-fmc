@@ -705,7 +705,7 @@ export default function ReReleaseBookingPage() {
                     <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Film Making Club Helpdesk • Block A</span>
                   </div>
                   <button
-                    onClick={() => setSupportModalOpen(true)}
+                    onClick={() => navigate('/support')}
                     style={{ padding: '10px 16px', borderRadius: '12px', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', flexShrink: 0 }}
                   >
                     Support
