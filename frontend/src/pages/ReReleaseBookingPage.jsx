@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, User, ChevronDown, Flame, Film, Ticket, Calendar, Clock, ArrowLeft, ShieldCheck, Check, Sparkles, CreditCard, ChevronRight, ChevronLeft, Hash, Phone, Mail, Camera, Utensils, Play, Pause, Volume2, VolumeX, Minus, Plus, Copy } from 'lucide-react';
 import TicketPassModal from '../components/modals/TicketPassModal';
 import SupportModal from '../components/modals/SupportModal';
+import AdminLoginModal from '../components/modals/AdminLoginModal';
+import AdminDashboardModal from '../components/modals/AdminDashboardModal';
 
 export default function ReReleaseBookingPage() {
   const navigate = useNavigate();
 
   const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [adminLoginOpen, setAdminLoginOpen] = useState(false);
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
 
   // Active View State: 'spotlight' (District Home), 'seats' (Date, Time & Seat Matrix), 'checkout' (Student Details & Payment)
   const [activeView, setActiveView] = useState('spotlight');
@@ -527,9 +531,21 @@ export default function ReReleaseBookingPage() {
               </div>
             </div>
 
-            <div style={{ width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#0f172a', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '13px' }}>
-              FMC
-            </div>
+            <img
+              src="/nrcm_fmc_logo.png"
+              alt="NRCM FMC Logo"
+              onClick={() => setAdminLoginOpen(true)}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                objectFit: 'cover',
+                border: '1.5px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              title="NRCM FMC - Admin Portal"
+            />
           </div>
         </div>
       </header>
@@ -1417,6 +1433,23 @@ export default function ReReleaseBookingPage() {
         onClose={handleDoneBooking}
         tickets={generatedTickets}
         bookingRef={bookingRef}
+      />
+
+      {/* Admin Credentials Login Modal */}
+      <AdminLoginModal
+        isOpen={adminLoginOpen}
+        onClose={() => setAdminLoginOpen(false)}
+        onLoginSuccess={() => {
+          setAdminLoginOpen(false);
+          setAdminDashboardOpen(true);
+        }}
+      />
+
+      {/* Admin Management Dashboard Modal */}
+      <AdminDashboardModal
+        isOpen={adminDashboardOpen}
+        onClose={() => setAdminDashboardOpen(false)}
+        onLogout={() => setAdminDashboardOpen(false)}
       />
 
     </div>
