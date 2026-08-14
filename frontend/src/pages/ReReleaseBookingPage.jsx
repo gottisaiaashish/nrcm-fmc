@@ -2,9 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, User, ChevronDown, Flame, Film, Ticket, Calendar, Clock, ArrowLeft, ShieldCheck, Check, Sparkles, CreditCard, ChevronRight, ChevronLeft, Hash, Phone, Mail, Camera, Utensils, Play, Pause, Volume2, VolumeX, Minus, Plus, Copy } from 'lucide-react';
 import TicketPassModal from '../components/modals/TicketPassModal';
+import SupportModal from '../components/modals/SupportModal';
 
 export default function ReReleaseBookingPage() {
   const navigate = useNavigate();
+
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
 
   // Active View State: 'spotlight' (District Home), 'seats' (Date, Time & Seat Matrix), 'checkout' (Student Details & Payment)
   const [activeView, setActiveView] = useState('spotlight');
@@ -702,7 +705,7 @@ export default function ReReleaseBookingPage() {
                     <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Film Making Club Helpdesk • Block A</span>
                   </div>
                   <button
-                    onClick={() => alert('FMC Helpdesk Contact: fmc.nrcm@gmail.com | Auditorium Gate Counter 1')}
+                    onClick={() => setSupportModalOpen(true)}
                     style={{ padding: '10px 16px', borderRadius: '12px', backgroundColor: '#0f172a', color: '#ffffff', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', flexShrink: 0 }}
                   >
                     Support
@@ -1401,6 +1404,12 @@ export default function ReReleaseBookingPage() {
         )}
 
       </main>
+
+      {/* Support Helpdesk Modal */}
+      <SupportModal
+        isOpen={supportModalOpen}
+        onClose={() => setSupportModalOpen(false)}
+      />
 
       {/* Ticket Pass Modal */}
       <TicketPassModal
