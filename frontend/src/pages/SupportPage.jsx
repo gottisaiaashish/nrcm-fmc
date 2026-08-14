@@ -35,7 +35,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', fontFamily: 'Inter, sans-serif', paddingBottom: '60px' }}>
+    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", paddingBottom: '60px' }}>
       
       {/* Top Fixed Navigation Header */}
       <header
@@ -88,26 +88,21 @@ export default function SupportPage() {
             padding: '24px',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 10px 25px rgba(15, 23, 42, 0.15)'
+            boxShadow: '0 10px 25px rgba(15, 23, 42, 0.12)'
           }}
         >
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.15)', border: '1px solid rgba(225, 29, 72, 0.3)', padding: '4px 10px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'inline-block', marginBottom: '10px' }}>
-              NRCM FMC HELPDESK
-            </span>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 6px 0', color: '#ffffff' }}>
-              How can we help you?
-            </h1>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>
-              Have questions about your movie passes, showtimes, or payment? Our student coordinators are here to assist!
-            </p>
-          </div>
+          <h1 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 6px 0', color: '#ffffff' }}>
+            How can we help you?
+          </h1>
+          <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>
+            Have questions about your movie passes, showtimes, or payment? Our student coordinators are here to assist!
+          </p>
         </div>
 
-        {/* 1-TAP CONTACT CARDS */}
+        {/* DIRECT CONTACT CARDS */}
         <div>
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.6px', display: 'block', marginBottom: '12px' }}>
-            DIRECT CONTACT CHANNELS
+            CONTACT US
           </span>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -120,18 +115,17 @@ export default function SupportPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justify: 'space-between',
                 padding: '16px',
                 borderRadius: '18px',
                 backgroundColor: '#ffffff',
                 border: '1.5px solid #e2e8f0',
                 textDecoration: 'none',
                 color: '#0f172a',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#dcfce7', color: '#15803d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Phone size={20} />
                 </div>
                 <div>
@@ -139,9 +133,6 @@ export default function SupportPage() {
                   <span style={{ fontSize: '12px', color: '#64748b' }}>FMC Team Lead • WhatsApp / Call</span>
                 </div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#16a34a', backgroundColor: '#f0fdf4', padding: '6px 12px', borderRadius: '10px', border: '1px solid #bbf7d0', flexShrink: 0 }}>
-                Chat / Call
-              </span>
             </a>
 
             {/* Phone 2 */}
@@ -150,18 +141,17 @@ export default function SupportPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justify: 'space-between',
                 padding: '16px',
                 borderRadius: '18px',
                 backgroundColor: '#ffffff',
                 border: '1.5px solid #e2e8f0',
                 textDecoration: 'none',
                 color: '#0f172a',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#eff6ff', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Phone size={20} />
                 </div>
                 <div>
@@ -169,9 +159,6 @@ export default function SupportPage() {
                   <span style={{ fontSize: '12px', color: '#64748b' }}>FMC Coordinator Line</span>
                 </div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#2563eb', backgroundColor: '#eff6ff', padding: '6px 12px', borderRadius: '10px', border: '1px solid #bfdbfe', flexShrink: 0 }}>
-                Call Now
-              </span>
             </a>
 
             {/* Email */}
@@ -180,18 +167,17 @@ export default function SupportPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justify: 'space-between',
                 padding: '16px',
                 borderRadius: '18px',
                 backgroundColor: '#ffffff',
                 border: '1.5px solid #e2e8f0',
                 textDecoration: 'none',
                 color: '#0f172a',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#fff1f2', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Mail size={20} />
                 </div>
                 <div>
@@ -199,9 +185,6 @@ export default function SupportPage() {
                   <span style={{ fontSize: '12px', color: '#64748b' }}>Official FMC Helpdesk Email</span>
                 </div>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#e11d48', backgroundColor: '#fff1f2', padding: '6px 12px', borderRadius: '10px', border: '1px solid #fecdd3', flexShrink: 0 }}>
-                Send Email
-              </span>
             </a>
 
           </div>
@@ -221,9 +204,9 @@ export default function SupportPage() {
               style={{
                 padding: '14px',
                 borderRadius: '16px',
-                backgroundColor: '#fdf2f8',
-                border: '1.5px solid #fbcfe8',
-                color: '#db2777',
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #e2e8f0',
+                color: '#0f172a',
                 fontSize: '13px',
                 fontWeight: 800,
                 textDecoration: 'none',
@@ -233,7 +216,7 @@ export default function SupportPage() {
                 gap: '8px'
               }}
             >
-              <Camera size={18} /> @nrcm.fmc
+              <Camera size={18} color="#0f172a" /> @nrcm.fmc
             </a>
 
             <a
@@ -243,9 +226,9 @@ export default function SupportPage() {
               style={{
                 padding: '14px',
                 borderRadius: '16px',
-                backgroundColor: '#fef2f2',
-                border: '1.5px solid #fecdd3',
-                color: '#dc2626',
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #e2e8f0',
+                color: '#0f172a',
                 fontSize: '13px',
                 fontWeight: 800,
                 textDecoration: 'none',
@@ -255,7 +238,7 @@ export default function SupportPage() {
                 gap: '8px'
               }}
             >
-              <Video size={18} /> FMC YouTube
+              <Video size={18} color="#0f172a" /> FMC YouTube
             </a>
           </div>
         </div>
@@ -263,16 +246,16 @@ export default function SupportPage() {
         {/* GATE COUNTER LOCATION CARD */}
         <div style={{ padding: '18px', borderRadius: '20px', backgroundColor: '#f8fafc', border: '1.5px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#fff1f2', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <MapPin size={20} />
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <MapPin size={20} color="#0f172a" />
             </div>
             <div>
               <strong style={{ fontSize: '14px', color: '#0f172a', fontWeight: 800 }}>Gate Counter Location</strong>
               <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>NRCM Main Auditorium, Block A Entrance</span>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#475569', backgroundColor: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #cbd5e1', marginTop: '4px' }}>
-            <Clock size={14} color="#64748b" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#475569', backgroundColor: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '4px' }}>
+            <Clock size={14} color="#0f172a" />
             <span>Counter 1 Hours: <strong>9:30 AM – 5:30 PM</strong> (Show Days)</span>
           </div>
         </div>
@@ -315,7 +298,7 @@ export default function SupportPage() {
                     }}
                   >
                     <span>{item.q}</span>
-                    <ChevronDown size={18} style={{ color: '#64748b', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }} />
+                    <ChevronDown size={18} style={{ color: '#0f172a', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }} />
                   </button>
                   {isOpen && (
                     <div style={{ padding: '12px 16px 14px 16px', fontSize: '12px', color: '#475569', borderTop: '1px dashed #e2e8f0', lineHeight: '1.6' }}>
@@ -336,13 +319,13 @@ export default function SupportPage() {
             width: '100%',
             padding: '14px',
             borderRadius: '16px',
-            backgroundColor: '#e11d48',
+            backgroundColor: '#0f172a',
             color: '#ffffff',
             fontSize: '14px',
             fontWeight: 800,
             border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(225, 29, 72, 0.35)'
+            boxShadow: '0 4px 14px rgba(15, 23, 42, 0.2)'
           }}
         >
           Return to Booking Page
