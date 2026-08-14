@@ -313,7 +313,7 @@ export default function ReReleaseBookingPage() {
       const totalAmount = subtotal + convenienceFee;
       const primaryStudent = studentsData[0];
 
-      const orderResp = await fetch('/api/tickets/create-order', {
+      const orderResp = await fetch(`${API_BASE}/api/tickets/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -324,6 +324,10 @@ export default function ReReleaseBookingPage() {
           rollNo: primaryStudent.rollNo
         })
       });
+
+      if (!orderResp.ok) {
+        throw new Error('Payment server connection failed. Please try again in a moment.');
+      }
 
       const orderData = await orderResp.json();
       if (!orderData.success) {
@@ -345,7 +349,7 @@ export default function ReReleaseBookingPage() {
       };
 
       if (orderData.isMock) {
-        const verifyResp = await fetch('/api/tickets/verify-payment', {
+        const verifyResp = await fetch(`${API_BASE}/api/tickets/verify-payment`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -355,6 +359,10 @@ export default function ReReleaseBookingPage() {
             bookingData: bookingPayload
           })
         });
+
+        if (!verifyResp.ok) {
+          throw new Error('Payment verification server failed.');
+        }
 
         const verifyData = await verifyResp.json();
         if (verifyData.success) {
@@ -369,20 +377,20 @@ export default function ReReleaseBookingPage() {
       }
 
       const sdkLoaded = await loadRazorpayScript();
-      if (!sdkLoaded) throw new Error('Razorpay SDK failed to load.');
+      if (!sdkLoaded) throw new Error('Razorpay payment gateway failed to load. Check your internet connection.');
 
       const options = {
         key: orderData.key,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'District App x NRCM FMC',
-        description: `${eventSettings.movieTitle} (${selectedSeats.length} Seats)`,
+        description: `${eventSettings.movieTitle} (${ticketQuantity} Pass${ticketQuantity > 1 ? 'es' : ''})`,
         order_id: orderData.orderId,
-        prefill: { name: formData.studentName, email: formData.email, contact: formData.mobile },
+        prefill: { name: primaryStudent.studentName, email: primaryStudent.email, contact: primaryStudent.mobile },
         theme: { color: '#e11d48' },
         handler: async function (response) {
           try {
-            const verifyResp = await fetch('/api/tickets/verify-payment', {
+            const verifyResp = await fetch(`${API_BASE}/api/tickets/verify-payment`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -392,28 +400,44 @@ export default function ReReleaseBookingPage() {
                 bookingData: bookingPayload
               })
             });
+            if (!verifyResp.ok) {
+              throw new Error('Payment verification server error.');
+            }
             const verifyData = await verifyResp.json();
             if (verifyData.success) {
               setGeneratedTickets(verifyData.tickets);
               setBookingRef(verifyData.bookingRef);
               setBookingSuccessModalOpen(true);
             } else {
-              setErrorMessage(verifyData.error || 'Payment verification failed!');
+              throw new Error(verifyData.error || 'Payment verification failed.');
             }
           } catch (err) {
-            setErrorMessage('Payment verification error: ' + err.message);
+            console.error(err);
+            setErrorMessage('Unable to verify payment. Please contact support.');
           } finally {
             setIsSubmitting(false);
           }
         },
-        modal: { ondismiss: () => setIsSubmitting(false) }
+        modal: {
+          ondismiss: function () {
+            setIsSubmitting(false);
+          }
+        }
       };
 
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (resp) {
+        console.error(resp.error);
+        setErrorMessage(resp.error.description || 'Payment was cancelled or failed.');
+        setIsSubmitting(false);
+      });
+      rzp.open();
     } catch (err) {
-      setErrorMessage(err.message || 'Payment error.');
+      console.error(err);
+      const userFriendlyMsg = err.message && !err.message.includes('Unexpected') && !err.message.includes('json')
+        ? err.message
+        : 'Payment service temporarily unavailable. Please try again shortly.';
+      setErrorMessage(userFriendlyMsg);
       setIsSubmitting(false);
     }
   };
@@ -1340,7 +1364,7 @@ export default function ReReleaseBookingPage() {
                 </div>
 
                 {errorMessage && (
-                  <div style={{ padding: '10px', backgroundColor: '#fef2f2', border: '1px solid #ef4444', borderRadius: '10px', color: '#b91c1c', fontSize: '12px', marginTop: '12px' }}>
+                  <div style={{ color: '#dc2626', fontSize: '12px', fontWeight: 600, marginTop: '12px', textAlign: 'center' }}>
                     {errorMessage}
                   </div>
                 )}
