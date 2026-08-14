@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus } from 'lucide-react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   // Navigation Tabs: 'overview', 'shortlisted', 'rerelease_settings', 'rerelease_tickets', 'gate_scanner'
@@ -255,27 +255,57 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     }
   };
 
+  const stopCameraScanner = () => {
+    if (scannerRef.current) {
+      try {
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().then(() => {
+            try { scannerRef.current.clear(); } catch (_) {}
+            scannerRef.current = null;
+            setCameraActive(false);
+          }).catch(() => setCameraActive(false));
+        } else {
+          try { scannerRef.current.clear(); } catch (_) {}
+          scannerRef.current = null;
+          setCameraActive(false);
+        }
+      } catch (_) {
+        setCameraActive(false);
+      }
+    } else {
+      setCameraActive(false);
+    }
+  };
+
   const startCameraScanner = () => {
     setCameraActive(true);
     setTimeout(() => {
       if (!scannerRef.current) {
-        const scanner = new Html5QrcodeScanner(
-          'qr-reader-container',
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          /* verbose= */ false
-        );
+        const html5QrCode = new Html5Qrcode("qr-reader-container");
+        scannerRef.current = html5QrCode;
 
-        scanner.render((decodedText) => {
-          setScanTicketIdInput(decodedText);
-          handleVerifyTicket(decodedText);
-          try {
-            scanner.clear();
-            setCameraActive(false);
-          } catch (_) {}
-        }, (error) => {
-          // ignore scan frame errors
+        html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            setScanTicketIdInput(decodedText);
+            handleVerifyTicket(decodedText);
+            stopCameraScanner();
+          },
+          () => {}
+        ).catch((err) => {
+          console.error("Error starting back camera:", err);
+          html5QrCode.start(
+            { facingMode: "user" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+              setScanTicketIdInput(decodedText);
+              handleVerifyTicket(decodedText);
+              stopCameraScanner();
+            },
+            () => {}
+          ).catch(e => console.error(e));
         });
-        scannerRef.current = scanner;
       }
     }, 200);
   };
@@ -861,8 +891,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 </button>
 
                 {cameraActive && (
-                  <div style={{ border:'2px dashed #16a34a', padding:10, borderRadius:12, backgroundColor:'#f0fdf4' }}>
-                    <div id="qr-reader-container" style={{ width:'100%' }} />
+                  <div style={{ border:'2px dashed #16a34a', padding:12, borderRadius:14, backgroundColor:'#f0fdf4', display:'flex', flexDirection:'column', gap:10 }}>
+                    <div id="qr-reader-container" style={{ width:'100%', borderRadius:10, overflow:'hidden' }} />
+                    <button
+                      onClick={stopCameraScanner}
+                      style={{ padding:'10px', borderRadius:10, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:700, border:'none', cursor:'pointer', fontSize:13 }}
+                    >
+                      Stop Camera Scanner
+                    </button>
                   </div>
                 )}
               </div>
