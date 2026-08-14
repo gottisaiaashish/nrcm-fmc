@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, ArrowUpRight, Lock } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Lock, Ticket } from 'lucide-react';
 
 export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLogin }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,6 +42,14 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
                 <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-red-600 transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
+
+            <a
+              href="/rerelease"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600 hover:text-white transition-all text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-red-600/20"
+            >
+              <Ticket className="w-4 h-4" />
+              <span>Re-Release Booking</span>
+            </a>
           </nav>
 
           {/* Actions: Mobile Hamburger */}

@@ -212,3 +212,30 @@ html, body {
   margin-bottom: 1.25rem;
   white-space: nowrap;
 }
+
+/* District App Page Font Override - Forces clean Plus Jakarta Sans font on all elements */
+.district-font,
+.district-font *,
+.district-font input,
+.district-font button,
+.district-font select,
+.district-font h1,
+.district-font h2,
+.district-font h3,
+.district-font span,
+.district-font p,
+.district-font div,
+.district-font label,
+.district-font strong,
+.district-font b {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  letter-spacing: -0.015em !important;
+  text-transform: none !important;
+}
+
+.district-font h1,
+.district-font h2,
+.district-font h3,
+.district-font strong {
+  font-weight: 700 !important;
+}

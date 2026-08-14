@@ -19,6 +19,7 @@ import AdminDashboardModal from './components/modals/AdminDashboardModal';
 
 // Pages
 import RegistrationPage from './pages/RegistrationPage';
+import ReReleaseBookingPage from './pages/ReReleaseBookingPage';
 
 function MainSite() {
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainSite />} />
         <Route path="/registration" element={<RegistrationPage />} />
+        <Route path="/rerelease" element={<ReReleaseBookingPage />} />
       </Routes>
     </BrowserRouter>
   );

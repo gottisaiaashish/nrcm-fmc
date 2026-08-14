@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 
 // Configure DNS fallback for MongoDB Atlas SRV resolution and force IPv4 for SMTP
 try {
@@ -19,6 +21,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
+
+// Razorpay Client Setup
+const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || '').trim();
+const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+
+let razorpayInstance = null;
+if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
+  razorpayInstance = new Razorpay({
+    key_id: RAZORPAY_KEY_ID,
+    key_secret: RAZORPAY_KEY_SECRET,
+  });
+  console.log('💳 [RAZORPAY INITIALIZED] Live Razorpay instance ready.');
+} else {
+  console.log('ℹ️ [RAZORPAY NOTICE] RAZORPAY_KEY_ID / SECRET not set. Running with Mock Payment Gateway mode.');
+}
 
 // Brevo Configuration (Sends exclusively from nrcmfmc@gmail.com)
 const rawBrevoKey = (process.env.BREVO_API_KEY || process.env.BREVO_SMTP_KEY || '').trim().replace(/^['"]|['"]$/g, '');
@@ -197,7 +214,26 @@ let inMemoryRegistrations = [];
 let isMongoConnected = false;
 let isRecruitmentOpen = true;
 
-// MongoDB Schema & Model
+let inMemoryEventSettings = {
+  movieTitle: 'Businessman',
+  tagline: 'Guns Don\'t Need Reasons, They Need Bullets!',
+  posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
+  venue: 'NRCM Main Auditorium, Block A',
+  releaseDate: 'MARCH 20, 2026',
+  showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'],
+  tiers: [
+    { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
+    { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
+    { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
+  ],
+  isBookingOpen: true,
+  announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
+};
+
+let inMemoryTickets = [];
+let inMemorySuggestions = [];
+
+// MongoDB Schemas & Models
 const registrationSchema = new mongoose.Schema({
   passId: { type: String, required: true, unique: true },
   name: { type: String, required: true },
@@ -214,6 +250,51 @@ const registrationSchema = new mongoose.Schema({
 });
 
 const Registration = mongoose.models.Registration || mongoose.model('Registration', registrationSchema);
+
+const eventSettingsSchema = new mongoose.Schema({
+  movieTitle: { type: String, default: 'Businessman' },
+  tagline: { type: String, default: 'Guns Don\'t Need Reasons, They Need Bullets!' },
+  posterUrl: { type: String, default: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3' },
+  venue: { type: String, default: 'NRCM Main Auditorium, Block A' },
+  releaseDate: { type: String, default: 'MARCH 20, 2026' },
+  showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'] },
+  tiers: { type: Array, default: [] },
+  isBookingOpen: { type: Boolean, default: true },
+  announcement: { type: String, default: '' },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const EventSettings = mongoose.models.EventSettings || mongoose.model('EventSettings', eventSettingsSchema);
+
+const ticketSchema = new mongoose.Schema({
+  ticketId: { type: String, required: true, unique: true },
+  bookingRef: { type: String, required: true },
+  movieTitle: { type: String, required: true },
+  showTime: { type: String, required: true },
+  tierName: { type: String, required: true },
+  price: { type: Number, required: true },
+  studentName: { type: String, required: true },
+  rollNo: { type: String, required: true },
+  branch: { type: String, required: true },
+  mobile: { type: String, required: true },
+  email: { type: String, required: true },
+  status: { type: String, default: 'VALID' },
+  usedAt: { type: String, default: null },
+  razorpayOrderId: { type: String, default: '' },
+  razorpayPaymentId: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Ticket = mongoose.models.Ticket || mongoose.model('Ticket', ticketSchema);
+
+const suggestionSchema = new mongoose.Schema({
+  suggestionId: { type: String, required: true },
+  text: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  status: { type: String, default: 'NEW' }
+});
+
+const Suggestion = mongoose.models.Suggestion || mongoose.model('Suggestion', suggestionSchema);
 
 // MongoDB Connection Attempt
 if (MONGODB_URI) {
@@ -400,6 +481,395 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
       success: false,
       error: 'Failed to delete registration.'
     });
+  }
+});
+
+// --- RE-RELEASE MOVIE EVENT & TICKET BOOKING ENDPOINTS ---
+
+// 6. Get Event Settings (Public)
+app.get('/api/event-settings', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      let settings = await EventSettings.findOne();
+      if (!settings) {
+        settings = new EventSettings(inMemoryEventSettings);
+        await settings.save();
+      }
+      return res.json({ success: true, settings });
+    } else {
+      return res.json({ success: true, settings: inMemoryEventSettings });
+    }
+  } catch (error) {
+    console.error('Fetch Event Settings Error:', error);
+    res.status(500).json({ success: false, settings: inMemoryEventSettings });
+  }
+});
+
+// 7. Update Event Settings (Admin)
+app.post('/api/admin/event-settings', async (req, res) => {
+  try {
+    const { movieTitle, tagline, posterUrl, venue, releaseDate, showTimes, tiers, isBookingOpen, announcement } = req.body;
+    const updatedData = {
+      movieTitle: movieTitle || 'NRCM RE-RELEASE 2026',
+      tagline: tagline || '',
+      posterUrl: posterUrl || '',
+      venue: venue || '',
+      releaseDate: releaseDate || '',
+      showTimes: Array.isArray(showTimes) ? showTimes : [],
+      tiers: Array.isArray(tiers) ? tiers : [],
+      isBookingOpen: typeof isBookingOpen === 'boolean' ? isBookingOpen : true,
+      announcement: announcement || '',
+      updatedAt: new Date()
+    };
+
+    if (isMongoConnected) {
+      let settings = await EventSettings.findOne();
+      if (settings) {
+        Object.assign(settings, updatedData);
+        await settings.save();
+      } else {
+        settings = new EventSettings(updatedData);
+        await settings.save();
+      }
+      inMemoryEventSettings = updatedData;
+      return res.json({ success: true, message: 'Event settings updated successfully!', settings });
+    } else {
+      inMemoryEventSettings = updatedData;
+      return res.json({ success: true, message: 'Event settings updated (In-Memory)!', settings: inMemoryEventSettings });
+    }
+  } catch (error) {
+    console.error('Update Event Settings Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update event settings.' });
+  }
+});
+
+// 8. Create Razorpay Order (or Mock Order)
+app.post('/api/tickets/create-order', async (req, res) => {
+  try {
+    const { amount, tierName, quantity, studentName, rollNo } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ success: false, error: 'Invalid order amount.' });
+    }
+
+    const orderAmountInPaise = Math.round(amount * 100);
+
+    if (razorpayInstance) {
+      const options = {
+        amount: orderAmountInPaise,
+        currency: 'INR',
+        receipt: `receipt_rerelease_${Date.now()}`,
+        notes: { studentName, rollNo, tierName, quantity }
+      };
+
+      const order = await razorpayInstance.orders.create(options);
+      console.log(`💳 [RAZORPAY ORDER CREATED] Order ID: ${order.id} | Amount: ₹${amount}`);
+
+      return res.json({
+        success: true,
+        isMock: false,
+        key: RAZORPAY_KEY_ID,
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency
+      });
+    } else {
+      // Mock Fallback Order Creation
+      const mockOrderId = `order_mock_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+      console.log(`ℹ️ [MOCK ORDER CREATED] Order ID: ${mockOrderId} | Amount: ₹${amount}`);
+
+      return res.json({
+        success: true,
+        isMock: true,
+        key: 'rzp_test_mock_key',
+        orderId: mockOrderId,
+        amount: orderAmountInPaise,
+        currency: 'INR'
+      });
+    }
+  } catch (error) {
+    console.error('Razorpay Order Creation Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to initiate payment order.' });
+  }
+});
+
+// 9. Verify Payment & Generate N Unique Tickets
+app.post('/api/tickets/verify-payment', async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      bookingData
+    } = req.body;
+
+    if (!bookingData) {
+      return res.status(400).json({ success: false, error: 'Missing booking details.' });
+    }
+
+    const {
+      studentName,
+      rollNo,
+      branch,
+      mobile,
+      email,
+      movieTitle,
+      showTime,
+      tierName,
+      price,
+      quantity
+    } = bookingData;
+
+    // Verify signature if using live Razorpay
+    if (razorpayInstance && razorpay_signature && !razorpay_order_id.startsWith('order_mock_')) {
+      const body = razorpay_order_id + '|' + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac('sha256', RAZORPAY_KEY_SECRET)
+        .update(body.toString())
+        .digest('hex');
+
+      if (expectedSignature !== razorpay_signature) {
+        console.warn(`⚠️ [PAYMENT VERIFICATION FAILED] Signature mismatch for order: ${razorpay_order_id}`);
+        return res.status(400).json({ success: false, error: 'Payment signature verification failed!' });
+      }
+    }
+
+    const bookingRef = `NRCM-BKG-${Date.now().toString().slice(-6)}`;
+    const ticketCount = parseInt(quantity, 10) || 1;
+    const generatedTickets = [];
+
+    const studentsArr = Array.isArray(bookingData.studentsData) && bookingData.studentsData.length > 0
+      ? bookingData.studentsData
+      : [{ studentName, rollNo, branch, mobile, email }];
+
+    for (let i = 1; i <= ticketCount; i++) {
+      const studentInfo = studentsArr[i - 1] || studentsArr[0] || {};
+      const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const ticketId = `NRCM-TKT-${randomCode}-${i}`;
+
+      const ticketObj = {
+        ticketId,
+        bookingRef,
+        movieTitle: movieTitle || 'Businessman',
+        showTime: showTime || '10:30 AM',
+        tierName: tierName || 'General Student Pass',
+        price: Number(price) || 50,
+        studentName: studentInfo.studentName || studentName,
+        rollNo: studentInfo.rollNo || rollNo,
+        branch: studentInfo.branch || branch,
+        mobile: studentInfo.mobile || mobile,
+        email: studentInfo.email || email,
+        status: 'VALID',
+        usedAt: null,
+        razorpayOrderId: razorpay_order_id || 'MOCK_ORDER',
+        razorpayPaymentId: razorpay_payment_id || 'MOCK_PAYMENT',
+        createdAt: new Date().toISOString()
+      };
+
+      generatedTickets.push(ticketObj);
+    }
+
+    if (isMongoConnected) {
+      await Ticket.insertMany(generatedTickets);
+      console.log(`🎟️ [MONGODB TICKETS CREATED] ${ticketCount} unique tickets issued under Ref: ${bookingRef} for ${studentName} (${rollNo})`);
+    } else {
+      inMemoryTickets.unshift(...generatedTickets);
+      console.log(`🎟️ [IN-MEMORY TICKETS CREATED] ${ticketCount} unique tickets issued under Ref: ${bookingRef} for ${studentName} (${rollNo})`);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Tickets booked successfully!',
+      bookingRef,
+      tickets: generatedTickets
+    });
+  } catch (error) {
+    console.error('Ticket Payment Processing Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process ticket booking.' });
+  }
+});
+
+// 10. Admin - Get All Tickets
+app.get('/api/admin/tickets', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const docs = await Ticket.find().sort({ createdAt: -1 });
+      return res.json({ success: true, count: docs.length, tickets: docs });
+    } else {
+      return res.json({ success: true, count: inMemoryTickets.length, tickets: inMemoryTickets });
+    }
+  } catch (error) {
+    console.error('Fetch Tickets Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch tickets.' });
+  }
+});
+
+// 11. QR Verification Endpoint - Lookup Ticket Status by Ticket ID
+app.get('/api/admin/tickets/verify/:ticketId', async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const cleanId = ticketId.trim();
+
+    let ticket = null;
+    if (isMongoConnected) {
+      ticket = await Ticket.findOne({ ticketId: cleanId });
+    } else {
+      ticket = inMemoryTickets.find(t => t.ticketId === cleanId);
+    }
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        error: `INVALID TICKET: Ticket ID '${cleanId}' was not found in the database system!`
+      });
+    }
+
+    return res.json({
+      success: true,
+      ticket
+    });
+  } catch (error) {
+    console.error('Verify Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Server error verifying ticket.' });
+  }
+});
+
+// 12. Admin Gate Scanner - Permit Entry & Mark USED (Single-Use Validation)
+app.post('/api/admin/tickets/permit', async (req, res) => {
+  try {
+    const { ticketId } = req.body;
+    if (!ticketId) {
+      return res.status(400).json({ success: false, error: 'Ticket ID is required.' });
+    }
+
+    const cleanId = ticketId.trim();
+    let ticket = null;
+
+    if (isMongoConnected) {
+      ticket = await Ticket.findOne({ ticketId: cleanId });
+    } else {
+      ticket = inMemoryTickets.find(t => t.ticketId === cleanId);
+    }
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        error: `UNAUTHORIZED / UNKNOWN TICKET: Ticket ID '${cleanId}' does not exist!`
+      });
+    }
+
+    // CHECK SINGLE-USE RULE
+    if (ticket.status === 'USED') {
+      const scanTimeStr = ticket.usedAt ? new Date(ticket.usedAt).toLocaleString('en-IN') : 'Earlier';
+      console.warn(`🚨 [ENTRY REJECTED] Ticket ${cleanId} already used at ${scanTimeStr}`);
+
+      return res.status(400).json({
+        success: false,
+        alreadyUsed: true,
+        error: `ENTRY DENIED! This ticket was ALREADY SCANNED & PERMITTED at ${scanTimeStr}. Duplicate entry is NOT allowed!`,
+        ticket
+      });
+    }
+
+    // Mark as USED
+    const timestampNow = new Date().toISOString();
+
+    if (isMongoConnected) {
+      ticket.status = 'USED';
+      ticket.usedAt = timestampNow;
+      await ticket.save();
+    } else {
+      ticket.status = 'USED';
+      ticket.usedAt = timestampNow;
+    }
+
+    console.log(`✅ [ENTRY PERMITTED] Ticket ${cleanId} marked as USED for ${ticket.studentName} (${ticket.rollNo}) at ${new Date(timestampNow).toLocaleString('en-IN')}`);
+
+    return res.json({
+      success: true,
+      message: `ENTRY PERMITTED! Ticket marked as USED for ${ticket.studentName}.`,
+      ticket
+    });
+  } catch (error) {
+    console.error('Permit Ticket Entry Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update ticket entry status.' });
+  }
+});
+
+// 13. Admin - Delete Ticket
+app.delete('/api/admin/tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isMongoConnected) {
+      await Ticket.findByIdAndDelete(id);
+    } else {
+      inMemoryTickets = inMemoryTickets.filter(t => t._id !== id && t.ticketId !== id);
+    }
+    return res.json({ success: true, message: 'Ticket deleted successfully.' });
+  } catch (error) {
+    console.error('Delete Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete ticket.' });
+  }
+});
+
+// 14. Submit Event Suggestion (Student)
+app.post('/api/suggestions', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, error: 'Suggestion text is required.' });
+    }
+
+    const newSuggestion = {
+      suggestionId: 'SUG-' + Date.now().toString().slice(-6),
+      text: text.trim(),
+      createdAt: new Date(),
+      status: 'NEW'
+    };
+
+    if (isMongoConnected) {
+      const savedDoc = await Suggestion.create(newSuggestion);
+      console.log(`💡 [NEW SUGGESTION] ${savedDoc.suggestionId}: ${savedDoc.text}`);
+      return res.json({ success: true, message: 'Suggestion saved!', suggestion: savedDoc });
+    } else {
+      inMemorySuggestions.unshift(newSuggestion);
+      console.log(`💡 [NEW SUGGESTION (IN-MEMORY)] ${newSuggestion.suggestionId}: ${newSuggestion.text}`);
+      return res.json({ success: true, message: 'Suggestion saved!', suggestion: newSuggestion });
+    }
+  } catch (error) {
+    console.error('Submit Suggestion Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to save suggestion.' });
+  }
+});
+
+// 15. Admin - Fetch All Event Suggestions
+app.get('/api/admin/suggestions', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const suggestions = await Suggestion.find().sort({ createdAt: -1 });
+      return res.json({ success: true, suggestions });
+    } else {
+      return res.json({ success: true, suggestions: inMemorySuggestions });
+    }
+  } catch (error) {
+    console.error('Fetch Suggestions Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch suggestions.' });
+  }
+});
+
+// 16. Admin - Delete Event Suggestion
+app.delete('/api/admin/suggestions/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isMongoConnected) {
+      await Suggestion.findByIdAndDelete(id);
+    } else {
+      inMemorySuggestions = inMemorySuggestions.filter(s => s._id !== id && s.suggestionId !== id);
+    }
+    return res.json({ success: true, message: 'Suggestion deleted successfully.' });
+  } catch (error) {
+    console.error('Delete Suggestion Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete suggestion.' });
   }
 });
 

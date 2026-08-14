@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, UserCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
+  // Navigation Tabs: 'overview', 'shortlisted', 'rerelease_settings', 'rerelease_tickets', 'gate_scanner'
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Recruitment Applications State
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dbStatus, setDbStatus] = useState('');
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
   const [selectedApp, setSelectedApp] = useState(null);
   const [recruitmentOpen, setRecruitmentOpen] = useState(() => {
     return localStorage.getItem('nrcmfmc_recruitment_open') !== 'false';
@@ -16,6 +20,265 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [shortlistedIds, setShortlistedIds] = useState(() => {
     return JSON.parse(localStorage.getItem('nrcmfmc_shortlisted_ids') || '[]');
   });
+
+  // Re-Release Movie Settings State
+  const [eventSettings, setEventSettings] = useState({
+    movieTitle: 'NRCM RE-RELEASE 2026',
+    tagline: 'Experience the Cult Classic on the Big Screen!',
+    posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop',
+    venue: 'NRCM Main Auditorium, Block A',
+    releaseDate: 'MARCH 20, 2026',
+    showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'],
+    tiers: [
+      { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
+      { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
+      { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
+    ],
+    isBookingOpen: true,
+    announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
+  });
+  const [saveSettingsStatus, setSaveSettingsStatus] = useState('');
+
+  // Re-Release Booked Tickets State
+  const [ticketsList, setTicketsList] = useState([]);
+  const [ticketSearchQuery, setTicketSearchQuery] = useState('');
+
+  // Event Suggestions State
+  const [suggestionsList, setSuggestionsList] = useState([]);
+  const [suggestionSearchQuery, setSuggestionSearchQuery] = useState('');
+
+  // Gate QR Scanner State
+  const [scanTicketIdInput, setScanTicketIdInput] = useState('');
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [scanActionLoading, setScanActionLoading] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const scannerRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRegistrations();
+      fetchRecruitmentStatus();
+      fetchEventSettings();
+      fetchTicketsList();
+      fetchSuggestionsList();
+      updateClock();
+      const timer = setInterval(updateClock, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isOpen]);
+
+  const fetchSuggestionsList = async () => {
+    try {
+      const res = await fetch('/api/admin/suggestions');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.suggestions)) {
+        setSuggestionsList(data.suggestions);
+      }
+    } catch (err) {
+      console.error('Error fetching suggestions list:', err);
+    }
+  };
+
+  const deleteSuggestion = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this event suggestion?')) return;
+    try {
+      await fetch(`/api/admin/suggestions/${id}`, { method: 'DELETE' });
+      setSuggestionsList(prev => prev.filter(s => s._id !== id && s.suggestionId !== id));
+    } catch (_) {}
+  };
+
+  // Clean up QR Scanner on tab change or close
+  useEffect(() => {
+    if (activeTab !== 'gate_scanner' || !cameraActive) {
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.clear();
+        } catch (_) {}
+      }
+    }
+  }, [activeTab, cameraActive]);
+
+  const updateClock = () => {
+    const now = new Date();
+    setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
+    setCurrentDate(now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
+  };
+
+  const fetchRecruitmentStatus = async () => {
+    try {
+      const res = await fetch('/api/recruitment-status');
+      const data = await res.json();
+      if (data.success && typeof data.isOpen === 'boolean') {
+        setRecruitmentOpen(data.isOpen);
+      }
+    } catch (_) {}
+  };
+
+  const toggleRecruitmentStatus = async () => {
+    const nextStatus = !recruitmentOpen;
+    setRecruitmentOpen(nextStatus);
+    try {
+      await fetch('/api/admin/recruitment-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isOpen: nextStatus })
+      });
+    } catch (_) {}
+  };
+
+  const fetchRegistrations = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/registrations');
+      const data = await response.json();
+      if (data.success) setRegistrations(data.registrations || []);
+      const healthRes = await fetch('/api/health');
+      const healthData = await healthRes.json();
+      setDbStatus(healthData.database || 'Connected');
+    } catch (err) {
+      setDbStatus('Local Mode');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEventSettings = async () => {
+    try {
+      const res = await fetch('/api/event-settings');
+      const data = await res.json();
+      if (data.success && data.settings) {
+        setEventSettings(data.settings);
+      }
+    } catch (err) {
+      console.error('Failed to fetch event settings:', err);
+    }
+  };
+
+  const fetchTicketsList = async () => {
+    try {
+      const res = await fetch('/api/admin/tickets');
+      const data = await res.json();
+      if (data.success) {
+        setTicketsList(data.tickets || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tickets:', err);
+    }
+  };
+
+  const handleSaveEventSettings = async (e) => {
+    e.preventDefault();
+    setSaveSettingsStatus('Saving...');
+    try {
+      const res = await fetch('/api/admin/event-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventSettings)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaveSettingsStatus('✅ Event Settings Updated Successfully!');
+        setTimeout(() => setSaveSettingsStatus(''), 3000);
+      } else {
+        setSaveSettingsStatus('⚠️ Failed to save settings: ' + data.error);
+      }
+    } catch (err) {
+      setSaveSettingsStatus('⚠️ Error: ' + err.message);
+    }
+  };
+
+  // Gate Scanner Actions
+  const handleVerifyTicket = async (ticketIdToTest) => {
+    const idToVerify = ticketIdToTest || scanTicketIdInput;
+    if (!idToVerify || !idToVerify.trim()) return;
+
+    setScanActionLoading(true);
+    setVerificationResult(null);
+
+    try {
+      const res = await fetch(`/api/admin/tickets/verify/${encodeURIComponent(idToVerify.trim())}`);
+      const data = await res.json();
+      if (data.success) {
+        setVerificationResult({
+          type: data.ticket.status === 'USED' ? 'ALREADY_USED' : 'VALID',
+          ticket: data.ticket
+        });
+      } else {
+        setVerificationResult({
+          type: 'INVALID',
+          error: data.error || 'Ticket ID not found in database.'
+        });
+      }
+    } catch (err) {
+      setVerificationResult({
+        type: 'INVALID',
+        error: 'Network error verifying ticket: ' + err.message
+      });
+    } finally {
+      setScanActionLoading(false);
+    }
+  };
+
+  const handlePermitEntry = async (ticketIdToPermit) => {
+    if (!ticketIdToPermit) return;
+    setScanActionLoading(true);
+
+    try {
+      const res = await fetch('/api/admin/tickets/permit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticketId: ticketIdToPermit })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setVerificationResult({
+          type: 'PERMITTED_SUCCESS',
+          ticket: data.ticket,
+          message: data.message
+        });
+        fetchTicketsList(); // refresh list
+      } else {
+        setVerificationResult({
+          type: 'ALREADY_USED',
+          ticket: data.ticket,
+          error: data.error
+        });
+      }
+    } catch (err) {
+      setVerificationResult({
+        type: 'INVALID',
+        error: 'Failed to permit entry: ' + err.message
+      });
+    } finally {
+      setScanActionLoading(false);
+    }
+  };
+
+  const startCameraScanner = () => {
+    setCameraActive(true);
+    setTimeout(() => {
+      if (!scannerRef.current) {
+        const scanner = new Html5QrcodeScanner(
+          'qr-reader-container',
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          /* verbose= */ false
+        );
+
+        scanner.render((decodedText) => {
+          setScanTicketIdInput(decodedText);
+          handleVerifyTicket(decodedText);
+          try {
+            scanner.clear();
+            setCameraActive(false);
+          } catch (_) {}
+        }, (error) => {
+          // ignore scan frame errors
+        });
+        scannerRef.current = scanner;
+      }
+    }, 200);
+  };
 
   const toggleShortlist = (id) => {
     const updated = shortlistedIds.includes(id)
@@ -25,79 +288,23 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     localStorage.setItem('nrcmfmc_shortlisted_ids', JSON.stringify(updated));
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchRegistrations();
-      fetchRecruitmentStatus();
-      updateClock();
-      const timer = setInterval(updateClock, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isOpen]);
-
-  const fetchRecruitmentStatus = async () => {
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
-      const res = await fetch(`${apiUrl}/api/recruitment-status`);
-      const data = await res.json();
-      if (data.success && typeof data.isOpen === 'boolean') {
-        setRecruitmentOpen(data.isOpen);
-        localStorage.setItem('nrcmfmc_recruitment_open', data.isOpen ? 'true' : 'false');
-      }
-    } catch (_) {}
-  };
-
-  const toggleRecruitmentStatus = async () => {
-    const nextStatus = !recruitmentOpen;
-    setRecruitmentOpen(nextStatus);
-    localStorage.setItem('nrcmfmc_recruitment_open', nextStatus ? 'true' : 'false');
-    window.dispatchEvent(new Event('recruitment_status_changed'));
-
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
-      await fetch(`${apiUrl}/api/admin/recruitment-status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isOpen: nextStatus })
-      });
-    } catch (_) {}
-  };
-
-  const updateClock = () => {
-    const now = new Date();
-    setCurrentTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }));
-    setCurrentDate(now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
-  };
-
-  const fetchRegistrations = async () => {
-    setLoading(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
-      const response = await fetch(`${apiUrl}/api/admin/registrations`);
-      const data = await response.json();
-      if (data.success) setRegistrations(data.registrations || []);
-      const healthRes = await fetch(`${apiUrl}/api/health`);
-      const healthData = await healthRes.json();
-      setDbStatus(healthData.database || 'Connected');
-    } catch (err) {
-      const localData = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      setRegistrations(localData);
-      setDbStatus('Local Storage');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this registration?')) return;
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
-      await fetch(`${apiUrl}/api/admin/registrations/${id}`, { method: 'DELETE' });
+      await fetch(`/api/admin/registrations/${id}`, { method: 'DELETE' });
       setRegistrations(prev => prev.filter(item => item._id !== id && item.passId !== id));
-      const localData = JSON.parse(localStorage.getItem('nrcmfmc_local_registrations') || '[]');
-      localStorage.setItem('nrcmfmc_local_registrations', JSON.stringify(localData.filter(item => item._id !== id && item.passId !== id)));
     } catch (err) {
       console.error('Delete failed:', err);
+    }
+  };
+
+  const handleDeleteTicket = async (id) => {
+    if (!window.confirm('Delete this ticket pass?')) return;
+    try {
+      await fetch(`/api/admin/tickets/${id}`, { method: 'DELETE' });
+      setTicketsList(prev => prev.filter(t => t._id !== id && t.ticketId !== id));
+    } catch (err) {
+      console.error('Delete ticket failed:', err);
     }
   };
 
@@ -122,25 +329,28 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   if (!isOpen) return null;
 
-  const filtered = registrations.filter(r => {
+  const filteredRegistrations = registrations.filter(r => {
     const isMatch =
       r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.mobile?.includes(searchQuery) ||
       r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.interestedArea?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.whyJoin?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.whatYouBring?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.instagramId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.passId?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!isMatch) return false;
     const isShortlisted = shortlistedIds.includes(r._id) || shortlistedIds.includes(r.passId);
-    if (activeTab === 'shortlisted') {
-      return isShortlisted;
-    }
-    // Overview tab shows ONLY non-shortlisted candidates
+    if (activeTab === 'shortlisted') return isShortlisted;
     return !isShortlisted;
+  });
+
+  const filteredTickets = ticketsList.filter(t => {
+    return (
+      t.ticketId?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
+      t.studentName?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
+      t.rollNo?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
+      t.bookingRef?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
+      t.showTime?.toLowerCase().includes(ticketSearchQuery.toLowerCase())
+    );
   });
 
   const getGreeting = () => {
@@ -150,18 +360,16 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     return 'Good Evening';
   };
 
-  /* ── reusable inline style tokens ── */
+  /* Inline Styling Tokens */
   const S = {
     wrap:    { position:'fixed', inset:0, zIndex:9999, display:'flex', width:'100vw', height:'100vh', overflow:'hidden', fontFamily:"'Inter', -apple-system, BlinkMacSystemFont, sans-serif", backgroundColor:'#F2F2F7', color:'#1c1c1e' },
-    sidebar: { width:185, minWidth:185, maxWidth:185, backgroundColor:'#ffffff', borderRight:'1px solid #e5e7eb', display:'flex', flexDirection:'column', justifyContent:'space-between', height:'100%', overflowY:'auto' },
+    sidebar: { width:220, minWidth:220, maxWidth:220, backgroundColor:'#ffffff', borderRight:'1px solid #e5e7eb', display:'flex', flexDirection:'column', justifyContent:'space-between', height:'100%', overflowY:'auto' },
     brand:   { padding:'20px 16px 16px', display:'flex', alignItems:'center', gap:10 },
-    logoBox: { width:32, height:32, borderRadius:8, backgroundColor:'#1c1c1e', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 },
-    logoTxt: { color:'#fff', fontSize:10, fontWeight:900, letterSpacing:'-0.5px' },
-    brandTxt:{ fontSize:13, fontWeight:700, color:'#1c1c1e', letterSpacing:'-0.3px', lineHeight:1.2 },
-    nav:     { padding:'0 8px', display:'flex', flexDirection:'column', gap:2 },
+    brandTxt:{ fontSize:14, fontWeight:900, color:'#1c1c1e', letterSpacing:'-0.3px' },
+    nav:     { padding:'0 10px', display:'flex', flexDirection:'column', gap:4 },
     navBtn:  (active) => ({
       width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between',
-      padding:'9px 12px', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer',
+      padding:'9px 12px', borderRadius:10, fontSize:12, fontWeight:600, cursor:'pointer',
       border:'none', outline:'none', transition:'background 0.15s',
       backgroundColor: active ? '#1c1c1e' : 'transparent',
       color: active ? '#ffffff' : '#3a3a3c',
@@ -171,14 +379,9 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     main:    { flex:1, height:'100%', overflowY:'auto', display:'flex', flexDirection:'column' },
     topbar:  { backgroundColor:'#ffffff', borderBottom:'1px solid #e5e7eb', padding:'10px 24px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexShrink:0 },
     breadcrumb: { fontSize:13, color:'#6b7280', fontWeight:500, display:'flex', alignItems:'center', gap:6 },
-    searchWrap: { position:'relative', flex:1, maxWidth:320, margin:'0 16px' },
-    searchInput: { width:'100%', height:36, paddingLeft:32, paddingRight:36, borderRadius:10, backgroundColor:'#F2F2F7', border:'1px solid #e5e7eb', fontSize:13, color:'#1c1c1e', outline:'none', fontFamily:'inherit' },
     topBtn:  { display:'flex', alignItems:'center', gap:6, padding:'0 14px', height:36, borderRadius:10, backgroundColor:'#ffffff', border:'1px solid #e5e7eb', fontSize:13, fontWeight:500, color:'#374151', cursor:'pointer', whiteSpace:'nowrap' },
     body:    { flex:1, padding:24, display:'flex', flexDirection:'column', gap:20 },
     card:    { backgroundColor:'#ffffff', borderRadius:16, border:'1px solid #e5e7eb', padding:'20px 24px' },
-    statLabel: { fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:6 },
-    statNum: { fontSize:30, fontWeight:700, color:'#1c1c1e', lineHeight:1 },
-    statSub: (color) => ({ fontSize:12, fontWeight:600, color, marginTop:6, display:'block' }),
     tHead:   { backgroundColor:'#F9F9FB', borderBottom:'1px solid #f3f4f6' },
     tHeadTh: { padding:'10px 16px', fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' },
     tRow:    { borderBottom:'1px solid #f9f9fb', transition:'background 0.1s' },
@@ -188,386 +391,664 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   return (
     <div style={S.wrap}>
 
-      {/* ── SIDEBAR ── */}
+      {/* ── SIDEBAR NAV ── */}
       <aside style={S.sidebar}>
         <div>
-          {/* Brand */}
           <div style={S.brand}>
             <span style={S.brandTxt}>NRCM.FMC OS</span>
           </div>
 
-          {/* Nav */}
           <nav style={S.nav}>
-            {/* Home / All Applications */}
+            {/* Section 1: Recruitment */}
+            <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', padding:'8px 12px 2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>RECRUITMENT</span>
+
             <button style={S.navBtn(activeTab === 'overview')} onClick={() => setActiveTab('overview')}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <div style={S.iconBox(activeTab === 'overview' ? 'rgba(255,255,255,0.2)' : '#f3f4f6')}>
                   <Home size={14} color={activeTab === 'overview' ? '#fff' : '#6b7280'} />
                 </div>
-                <span style={{ whiteSpace:'nowrap' }}>Overview</span>
+                <span>Applications</span>
               </div>
-              <span style={S.badge(activeTab === 'overview' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'overview' ? '#fff' : '#6b7280')}>HQ</span>
+              <span style={S.badge(activeTab === 'overview' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'overview' ? '#fff' : '#6b7280')}>
+                {registrations.filter(r => !shortlistedIds.includes(r._id) && !shortlistedIds.includes(r.passId)).length}
+              </span>
             </button>
 
-            {/* Shortlisted */}
-            <button style={S.navBtn(activeTab === 'shortlisted')} onClick={() => setActiveTab('shortlisted')}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : '#f9fafb'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor= activeTab === 'shortlisted' ? '#1c1c1e' : 'transparent'}>
+            <button style={S.navBtn(activeTab === 'shortlisted')} onClick={() => setActiveTab('shortlisted')}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <div style={S.iconBox(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.2)' : '#f3f4f6')}>
                   <Star size={14} color={activeTab === 'shortlisted' ? '#fff' : '#1c1c1e'} fill={activeTab === 'shortlisted' ? '#fff' : 'none'} />
                 </div>
-                <span style={{ whiteSpace:'nowrap' }}>Shortlisted</span>
+                <span>Shortlisted</span>
               </div>
               <span style={S.badge(activeTab === 'shortlisted' ? 'rgba(255,255,255,0.25)' : '#e5e7eb', activeTab === 'shortlisted' ? '#fff' : '#374151')}>
                 {shortlistedIds.length}
               </span>
             </button>
 
-            {/* Export */}
-            <button style={S.navBtn(false)} onClick={exportCSV}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor='#f9fafb'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}>
+            {/* Section 2: Re-Release Movie */}
+            <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', padding:'16px 12px 2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>RE-RELEASE EVENT</span>
+
+            <button style={S.navBtn(activeTab === 'rerelease_settings')} onClick={() => setActiveTab('rerelease_settings')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox(activeTab === 'rerelease_settings' ? 'rgba(255,255,255,0.2)' : '#fef2f2')}>
+                  <Settings size={14} color={activeTab === 'rerelease_settings' ? '#fff' : '#dc2626'} />
+                </div>
+                <span>Event Settings</span>
+              </div>
+            </button>
+
+            <button style={S.navBtn(activeTab === 'rerelease_tickets')} onClick={() => setActiveTab('rerelease_tickets')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox(activeTab === 'rerelease_tickets' ? 'rgba(255,255,255,0.2)' : '#fef2f2')}>
+                  <Ticket size={14} color={activeTab === 'rerelease_tickets' ? '#fff' : '#dc2626'} />
+                </div>
+                <span>Booked Tickets</span>
+              </div>
+              <span style={S.badge(activeTab === 'rerelease_tickets' ? 'rgba(255,255,255,0.25)' : '#fee2e2', activeTab === 'rerelease_tickets' ? '#fff' : '#dc2626')}>
+                {ticketsList.length}
+              </span>
+            </button>
+
+            <button style={S.navBtn(activeTab === 'rerelease_suggestions')} onClick={() => setActiveTab('rerelease_suggestions')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox(activeTab === 'rerelease_suggestions' ? 'rgba(255,255,255,0.2)' : '#fefce8')}>
+                  <Film size={14} color={activeTab === 'rerelease_suggestions' ? '#fff' : '#ca8a04'} />
+                </div>
+                <span>Event Suggestions</span>
+              </div>
+              <span style={S.badge(activeTab === 'rerelease_suggestions' ? 'rgba(255,255,255,0.25)' : '#fef08a', activeTab === 'rerelease_suggestions' ? '#fff' : '#ca8a04')}>
+                {suggestionsList.length}
+              </span>
+            </button>
+
+            <button style={S.navBtn(activeTab === 'gate_scanner')} onClick={() => setActiveTab('gate_scanner')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox(activeTab === 'gate_scanner' ? 'rgba(255,255,255,0.2)' : '#f0fdf4')}>
+                  <QrCode size={14} color={activeTab === 'gate_scanner' ? '#fff' : '#16a34a'} />
+                </div>
+                <span>Gate QR Scanner</span>
+              </div>
+              <span style={S.badge(activeTab === 'gate_scanner' ? 'rgba(255,255,255,0.25)' : '#dcfce7', activeTab === 'gate_scanner' ? '#fff' : '#16a34a')}>GATE</span>
+            </button>
+
+            {/* Section 3: Data Export */}
+            <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', padding:'16px 12px 2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>TOOLS</span>
+
+            <button style={S.navBtn(false)} onClick={exportCSV}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <div style={S.iconBox('#f0fdf4')}>
                   <Download size={14} color="#16a34a" />
                 </div>
-                <span>Export Data</span>
+                <span>Export CSV</span>
               </div>
-              <span style={S.badge('#f3f4f6', '#9ca3af')}>CSV</span>
             </button>
           </nav>
         </div>
 
-        {/* Logout only */}
         <div style={{ padding:'12px 12px 16px', borderTop:'1px solid #f3f4f6' }}>
           <button onClick={onLogout}
-            style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'8px 0', borderRadius:10, backgroundColor:'#f9fafb', border:'1px solid #e5e7eb', fontSize:12, fontWeight:600, color:'#ef4444', cursor:'pointer' }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor='#fef2f2'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor='#f9fafb'}>
+            style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'8px 0', borderRadius:10, backgroundColor:'#f9fafb', border:'1px solid #e5e7eb', fontSize:12, fontWeight:600, color:'#ef4444', cursor:'pointer' }}>
             <LogOut size={14} /><span>Logout OS</span>
           </button>
         </div>
       </aside>
 
-      {/* ── MAIN ── */}
+      {/* ── MAIN CONTENT AREA ── */}
       <main style={S.main}>
 
-        {/* Top Header */}
+        {/* Header Topbar */}
         <header style={S.topbar}>
           <div style={S.breadcrumb}>
             <span>NRCM.FMC OS</span>
             <span style={{ color:'#d1d5db', fontSize:16 }}>›</span>
-            <span style={{ color:'#1c1c1e', fontWeight:600 }}>Recruitment Applications</span>
-          </div>
-
-          <div style={S.searchWrap}>
-            <Search size={14} color="#9ca3af" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }} />
-            <input
-              type="text"
-              placeholder="Search applications..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={S.searchInput}
-            />
-            <span style={{ position:'absolute', right:8, top:'50%', transform:'translateY(-50%)', fontSize:10, color:'#d1d5db', backgroundColor:'#e5e7eb', padding:'2px 5px', borderRadius:4, fontFamily:'monospace' }}>⌘K</span>
+            <span style={{ color:'#1c1c1e', fontWeight:600 }}>
+              {activeTab === 'overview' && 'Recruitment Applications'}
+              {activeTab === 'shortlisted' && 'Shortlisted Candidates'}
+              {activeTab === 'rerelease_settings' && 'Re-Release Movie Settings'}
+              {activeTab === 'rerelease_tickets' && 'Booked Movie Tickets'}
+              {activeTab === 'gate_scanner' && 'Gate QR Ticket Scanner & Entry Verification'}
+            </span>
           </div>
 
           <div style={{ display:'flex', gap:8, flexShrink:0, alignItems:'center' }}>
-            {/* Clean iOS Style Recruitment ON/OFF Toggle Switch */}
-            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 10px', borderRadius:20, backgroundColor:'#f3f4f6', border:'1px solid #e5e7eb' }}>
-              <span style={{ fontSize:11, fontWeight:700, color:'#374151', fontFamily:'monospace' }}>RECRUITMENT:</span>
-              <button
-                onClick={toggleRecruitmentStatus}
-                title={`Click to turn recruitment ${recruitmentOpen ? 'OFF' : 'ON'}`}
-                style={{
-                  width:44,
-                  height:24,
-                  borderRadius:12,
-                  backgroundColor: recruitmentOpen ? '#16a34a' : '#d1d5db',
-                  border:'none',
-                  cursor:'pointer',
-                  position:'relative',
-                  transition:'background-color 0.2s ease',
-                  padding:0,
-                  display:'flex',
-                  alignItems:'center'
-                }}
-              >
-                <span
-                  style={{
-                    width:18,
-                    height:18,
-                    borderRadius:'50%',
-                    backgroundColor:'#ffffff',
-                    position:'absolute',
-                    left: recruitmentOpen ? 23 : 3,
-                    transition:'left 0.2s ease',
-                    boxShadow:'0 1px 3px rgba(0,0,0,0.3)'
-                  }}
-                />
-              </button>
-              <span style={{ fontSize:11, fontWeight:800, color: recruitmentOpen ? '#16a34a' : '#dc2626', minWidth:26 }}>
-                {recruitmentOpen ? 'ON' : 'OFF'}
-              </span>
-            </div>
-
-            <button onClick={fetchRegistrations} disabled={loading} style={S.topBtn}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor='#f9fafb'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor='#ffffff'}>
-              <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-              <span>Refresh</span>
+            <button onClick={() => { fetchRegistrations(); fetchEventSettings(); fetchTicketsList(); }} style={S.topBtn}>
+              <RefreshCw size={14} /><span>Refresh All</span>
             </button>
-            <button onClick={onClose} style={{ ...S.topBtn }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; e.currentTarget.style.borderColor='#fecaca'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor='#ffffff'; e.currentTarget.style.color='#374151'; e.currentTarget.style.borderColor='#e5e7eb'; }}>
+            <button onClick={onClose} style={S.topBtn}>
               <X size={14} /><span>Close OS</span>
             </button>
           </div>
         </header>
 
-        {/* Body */}
-        <div style={S.body}>
-
-          {/* Welcome */}
-          <div style={{ ...S.card, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <div>
-              <h1 style={{ fontSize:22, fontWeight:700, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
-                {getGreeting()} 🌼
-              </h1>
-              <p style={{ fontSize:13, color:'#6b7280', marginTop:4 }}>
-                Welcome to NRCM.FMC Command Center. Reviewing live student recruitment applications.
-              </p>
-            </div>
-            <div style={{ textAlign:'right', flexShrink:0, marginLeft:24 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'flex-end', fontSize:15, fontWeight:600, color:'#1c1c1e' }}>
-                <span style={{ width:8, height:8, borderRadius:'50%', backgroundColor:'#10b981', display:'inline-block', animation:'pulse 2s infinite' }} />
-                <span>{currentTime || '00:00:00 am'}</span>
+        {/* TAB 1 & TAB 2: RECRUITMENT APPLICATIONS */}
+        {(activeTab === 'overview' || activeTab === 'shortlisted') && (
+          <div style={S.body}>
+            {/* Stat Cards & Recruitment Toggle */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
+              <div style={S.card}>
+                <span style={{ fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase' }}>Applications Queue</span>
+                <div style={{ fontSize:28, fontWeight:700, color:'#1c1c1e', marginTop:4 }}>{registrations.length}</div>
               </div>
-              <p style={{ fontSize:11, color:'#9ca3af', fontWeight:500, marginTop:3 }}>{currentDate}</p>
+              <div style={S.card}>
+                <span style={{ fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase' }}>Shortlisted</span>
+                <div style={{ fontSize:28, fontWeight:700, color:'#2563eb', marginTop:4 }}>{shortlistedIds.length}</div>
+              </div>
+              <div style={S.card}>
+                <span style={{ fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase' }}>Recruitment Status</span>
+                <button
+                  onClick={toggleRecruitmentStatus}
+                  style={{
+                    marginTop:6,
+                    padding:'6px 14px',
+                    borderRadius:8,
+                    backgroundColor: recruitmentOpen ? '#dcfce7' : '#fee2e2',
+                    color: recruitmentOpen ? '#15803d' : '#b91c1c',
+                    fontWeight:700,
+                    fontSize:12,
+                    border:'none',
+                    cursor:'pointer'
+                  }}
+                >
+                  {recruitmentOpen ? 'RECRUITMENT OPEN' : 'RECRUITMENT CLOSED'}
+                </button>
+              </div>
+            </div>
+
+            {/* Applications Table */}
+            <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
+              <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6' }}>
+                <input
+                  type="text"
+                  placeholder="Search applications by name, roll no, mobile, branch..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{ width:'100%', padding:'8px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:13 }}
+                />
+              </div>
+
+              <div style={{ overflowX:'auto', overflowY:'auto', maxHeight:420 }}>
+                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+                  <thead>
+                    <tr style={S.tHead}>
+                      {['#','App ID','Full Name','Branch','Mobile','Email','Interested Area','Action'].map((h, i) => (
+                        <th key={i} style={{ ...S.tHeadTh, textAlign: i === 7 ? 'right' : 'left' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRegistrations.length > 0 ? filteredRegistrations.map((item, index) => {
+                      const isShortlisted = shortlistedIds.includes(item._id) || shortlistedIds.includes(item.passId);
+                      return (
+                        <tr key={item._id || index} style={S.tRow}>
+                          <td style={S.tCell}>{index + 1}</td>
+                          <td style={{ ...S.tCell, color:'#ef4444', fontFamily:'monospace', fontWeight:600 }}>{item.passId || item._id}</td>
+                          <td style={{ ...S.tCell, fontWeight:600 }}>{item.name}</td>
+                          <td style={S.tCell}>{item.branch}</td>
+                          <td style={{ ...S.tCell, fontFamily:'monospace' }}>{item.mobile}</td>
+                          <td style={S.tCell}>{item.email}</td>
+                          <td style={{ ...S.tCell, color:'#ef4444', fontWeight:600 }}>{item.interestedArea || 'N/A'}</td>
+                          <td style={{ ...S.tCell, textAlign:'right' }}>
+                            <button onClick={() => toggleShortlist(item._id || item.passId)} style={{ marginRight:6, padding:'4px 8px', borderRadius:6, backgroundColor: isShortlisted ? '#fef9c3' : '#f3f4f6', border:'none', cursor:'pointer' }}>
+                              <Star size={12} fill={isShortlisted ? '#ca8a04' : 'none'} color={isShortlisted ? '#ca8a04' : '#6b7280'} />
+                            </button>
+                            <button onClick={() => setSelectedApp(item)} style={{ marginRight:6, padding:'4px 8px', borderRadius:6, backgroundColor:'#eff6ff', color:'#2563eb', border:'none', cursor:'pointer' }}>View</button>
+                            <button onClick={() => handleDelete(item._id || item.passId)} style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#fef2f2', color:'#ef4444', border:'none', cursor:'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr><td colSpan="8" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No applications found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Stat Cards */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
-            {[
-              { label:'New / Pending Applications', value: registrations.filter(r => !shortlistedIds.includes(r._id) && !shortlistedIds.includes(r.passId)).length, sub:'↑ In Overview Queue', subColor:'#10b981' },
-              { label:'Shortlisted Candidates', value: shortlistedIds.length, sub:'⭐ In Shortlisted Queue', subColor:'#3b82f6' },
-            ].map((c, i) => (
-              <div key={i} style={S.card}>
-                <span style={S.statLabel}>{c.label}</span>
-                <div style={S.statNum}>{c.value}</div>
-                <span style={S.statSub(c.subColor)}>{c.sub}</span>
+        {/* TAB 3: RE-RELEASE EVENT SETTINGS */}
+        {activeTab === 'rerelease_settings' && (
+          <div style={S.body}>
+            <form onSubmit={handleSaveEventSettings} style={{ ...S.card, display:'flex', flexDirection:'column', gap:16 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyBetween:'space-between', borderBottom:'1px solid #f3f4f6', paddingBottom:12 }}>
+                <div>
+                  <h2 style={{ fontSize:18, fontWeight:800, color:'#1c1c1e' }}>Re-Release Movie & Ticket Configuration</h2>
+                  <p style={{ fontSize:12, color:'#6b7280' }}>Changes saved here will reflect live on the <strong style={{ color:'#dc2626' }}>/rerelease</strong> student booking sub-page.</p>
+                </div>
+                {saveSettingsStatus && <span style={{ fontSize:12, fontWeight:700, color:'#16a34a' }}>{saveSettingsStatus}</span>}
               </div>
-            ))}
+
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Movie Title</label>
+                  <input
+                    type="text"
+                    value={eventSettings.movieTitle}
+                    onChange={e => setEventSettings(prev => ({ ...prev, movieTitle: e.target.value }))}
+                    style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Release / Event Date</label>
+                  <input
+                    type="text"
+                    value={eventSettings.releaseDate}
+                    onChange={e => setEventSettings(prev => ({ ...prev, releaseDate: e.target.value }))}
+                    style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                  />
+                </div>
+
+                <div style={{ gridColumn:'span 2' }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Movie Poster Image URL</label>
+                  <input
+                    type="text"
+                    value={eventSettings.posterUrl}
+                    onChange={e => setEventSettings(prev => ({ ...prev, posterUrl: e.target.value }))}
+                    placeholder="https://..."
+                    style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Venue / Campus Location</label>
+                  <input
+                    type="text"
+                    value={eventSettings.venue}
+                    onChange={e => setEventSettings(prev => ({ ...prev, venue: e.target.value }))}
+                    style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Booking Open / Closed Toggle</label>
+                  <button
+                    type="button"
+                    onClick={() => setEventSettings(prev => ({ ...prev, isBookingOpen: !prev.isBookingOpen }))}
+                    style={{
+                      width:'100%',
+                      padding:'10px',
+                      borderRadius:10,
+                      backgroundColor: eventSettings.isBookingOpen ? '#dcfce7' : '#fee2e2',
+                      color: eventSettings.isBookingOpen ? '#15803d' : '#b91c1c',
+                      fontWeight:700,
+                      border:'none',
+                      cursor:'pointer'
+                    }}
+                  >
+                    {eventSettings.isBookingOpen ? 'BOOKINGS ARE LIVE (OPEN)' : 'BOOKINGS PAUSED (CLOSED)'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Show Times Editor */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:6 }}>Available Show Times (Comma Separated)</label>
+                <input
+                  type="text"
+                  value={eventSettings.showTimes ? eventSettings.showTimes.join(', ') : ''}
+                  onChange={e => {
+                    const times = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                    setEventSettings(prev => ({ ...prev, showTimes: times }));
+                  }}
+                  placeholder="10:30 AM (Morning Show), 02:30 PM (Matinee)"
+                  style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                />
+              </div>
+
+              {/* Tiers & Prices Editor */}
+              <div>
+                <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:6 }}>Ticket Categories & Pricing</label>
+                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                  {eventSettings.tiers && eventSettings.tiers.map((tier, idx) => (
+                    <div key={idx} style={{ display:'flex', gap:10, alignItems:'center', backgroundColor:'#f9fafb', padding:10, borderRadius:10, border:'1px solid #f3f4f6' }}>
+                      <input
+                        type="text"
+                        placeholder="Category Name"
+                        value={tier.name}
+                        onChange={e => {
+                          const updated = [...eventSettings.tiers];
+                          updated[idx].name = e.target.value;
+                          setEventSettings(prev => ({ ...prev, tiers: updated }));
+                        }}
+                        style={{ flex:1, padding:6, borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Price (₹)"
+                        value={tier.price}
+                        onChange={e => {
+                          const updated = [...eventSettings.tiers];
+                          updated[idx].price = Number(e.target.value);
+                          setEventSettings(prev => ({ ...prev, tiers: updated }));
+                        }}
+                        style={{ width:90, padding:6, borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Description"
+                        value={tier.description}
+                        onChange={e => {
+                          const updated = [...eventSettings.tiers];
+                          updated[idx].description = e.target.value;
+                          setEventSettings(prev => ({ ...prev, tiers: updated }));
+                        }}
+                        style={{ flex:2, padding:6, borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                style={{ padding:'12px', borderRadius:10, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:800, border:'none', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyCenter:'center', gap:8 }}
+              >
+                <Save size={16} /> Save Re-Release Settings
+              </button>
+            </form>
           </div>
+        )}
 
-          {/* Table */}
-          <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 24px', borderBottom:'1px solid #f3f4f6' }}>
-              <h2 style={{ fontSize:15, fontWeight:600, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
-                <FileText size={16} color="#ef4444" />
-                {activeTab === 'shortlisted' ? 'Shortlisted Candidates List' : 'Recruitment Applications List'}
-              </h2>
-              <span style={{ fontSize:11, fontWeight:500, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em' }}>
-                Showing {filtered.length} Entries
-              </span>
-            </div>
+        {/* TAB 4: BOOKED TICKETS LIST */}
+        {activeTab === 'rerelease_tickets' && (
+          <div style={S.body}>
+            <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
+              <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e' }}>All Booked Movie Tickets ({ticketsList.length})</h3>
+                <input
+                  type="text"
+                  placeholder="Search ticket ID, student name, roll no..."
+                  value={ticketSearchQuery}
+                  onChange={e => setTicketSearchQuery(e.target.value)}
+                  style={{ width:300, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
+                />
+              </div>
 
-            <div style={{ overflowX:'auto', overflowY:'auto', maxHeight:380 }}>
-              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
-                <thead>
-                  <tr style={S.tHead}>
-                    {['#','App ID','Full Name','Branch','Mobile','Email','Interested Area','Prev Exp','Why Join FMC','What You Bring','Insta ID','Portfolio / Links','Action'].map((h, i) => (
-                      <th key={i} style={{ ...S.tHeadTh, textAlign: i === 12 ? 'right' : 'left' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length > 0 ? filtered.map((item, index) => {
-                    const isShortlisted = shortlistedIds.includes(item._id) || shortlistedIds.includes(item.passId);
-                    return (
-                      <tr key={item._id || index} style={S.tRow}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor='#fafafa'}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}>
-                        <td style={{ ...S.tCell, color:'#9ca3af', fontWeight:500, fontSize:12 }}>{index + 1}</td>
-                        <td style={{ ...S.tCell, color:'#ef4444', fontFamily:'monospace', fontWeight:600, fontSize:12 }}>{item.passId || item._id}</td>
-                        <td style={{ ...S.tCell, fontWeight:600, color:'#1c1c1e' }}>
-                          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                            <span>{item.name}</span>
-                            {isShortlisted && (
-                              <Star size={13} fill="#eab308" color="#eab308" title="Shortlisted Candidate" />
-                            )}
-                          </div>
-                        </td>
+              <div style={{ overflowX:'auto', overflowY:'auto', maxHeight:440 }}>
+                <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+                  <thead>
+                    <tr style={S.tHead}>
+                      {['#','Ticket Pass ID','Student Name','Roll No','Branch','Show Time','Category','Price','Status','Action'].map((h, i) => (
+                        <th key={i} style={{ ...S.tHeadTh, textAlign: i === 9 ? 'right' : 'left' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTickets.length > 0 ? filteredTickets.map((t, idx) => (
+                      <tr key={t._id || idx} style={S.tRow}>
+                        <td style={S.tCell}>{idx + 1}</td>
+                        <td style={{ ...S.tCell, color:'#dc2626', fontFamily:'monospace', fontWeight:700 }}>{t.ticketId}</td>
+                        <td style={{ ...S.tCell, fontWeight:600 }}>{t.studentName}</td>
+                        <td style={{ ...S.tCell, fontFamily:'monospace' }}>{t.rollNo}</td>
+                        <td style={S.tCell}>{t.branch}</td>
+                        <td style={S.tCell}>{t.showTime}</td>
+                        <td style={{ ...S.tCell, fontWeight:600 }}>{t.tierName}</td>
+                        <td style={{ ...S.tCell, color:'#16a34a', fontWeight:700 }}>₹{t.price}</td>
                         <td style={S.tCell}>
-                          <span style={{ padding:'3px 8px', borderRadius:6, backgroundColor:'#f3f4f6', color:'#4b5563', fontSize:11, fontWeight:600 }}>{item.branch}</span>
+                          <span style={{
+                            padding:'3px 8px', borderRadius:6, fontSize:10, fontWeight:800,
+                            backgroundColor: t.status === 'USED' ? '#fee2e2' : '#dcfce7',
+                            color: t.status === 'USED' ? '#b91c1c' : '#15803d'
+                          }}>
+                            {t.status === 'USED' ? 'USED / SCANNED' : 'VALID'}
+                          </span>
                         </td>
-                        <td style={{ ...S.tCell, fontFamily:'monospace', fontSize:12 }}>{item.mobile}</td>
-                        <td style={{ ...S.tCell, color:'#6b7280', fontSize:12 }}>{item.email}</td>
-                        <td style={{ ...S.tCell, fontWeight:600, color:'#ef4444', fontSize:12 }}>{item.interestedArea || 'N/A'}</td>
-                        <td style={{ ...S.tCell, fontSize:12 }}>{item.previousExperience || 'N/A'}</td>
-                        <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whyJoin}>
-                          {item.whyJoin || 'N/A'}
-                        </td>
-                        <td style={{ ...S.tCell, fontSize:11, color:'#374151', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }} title={item.whatYouBring}>
-                          {item.whatYouBring || 'N/A'}
-                        </td>
-                        <td style={{ ...S.tCell, fontFamily:'monospace', color:'#2563eb', fontSize:12 }}>{item.instagramId || 'N/A'}</td>
-                        <td style={{ ...S.tCell, fontSize:11, color:'#6b7280', maxWidth:140, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                          {item.portfolioLink ? (
-                            <a href={item.portfolioLink.startsWith('http') ? item.portfolioLink : `https://${item.portfolioLink}`} target="_blank" rel="noreferrer" style={{ color:'#2563eb', textDecoration:'underline' }}>
-                              {item.portfolioLink}
-                            </a>
-                          ) : 'N/A'}
-                        </td>
-                        <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
-                          <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-                            <button onClick={() => toggleShortlist(item._id || item.passId)} title={isShortlisted ? "Remove from Shortlist" : "Shortlist Applicant"}
-                              style={{
-                                padding:'6px', borderRadius:8,
-                                backgroundColor: isShortlisted ? '#fef9c3' : '#f9fafb',
-                                border: `1px solid ${isShortlisted ? '#fde047' : '#e5e7eb'}`,
-                                color: isShortlisted ? '#ca8a04' : '#4b5563',
-                                cursor:'pointer', display:'inline-flex', alignItems:'center', justifyContent:'center'
-                              }}>
-                              <Star size={14} fill={isShortlisted ? '#ca8a04' : 'none'} color={isShortlisted ? '#ca8a04' : '#6b7280'} />
-                            </button>
-
-                            <button onClick={() => setSelectedApp(item)} title="View Full Application Details"
-                              style={{ padding:'6px 10px', borderRadius:8, backgroundColor:'#eff6ff', border:'none', color:'#2563eb', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:4, fontSize:11, fontWeight:600 }}
-                              onMouseEnter={e => { e.currentTarget.style.backgroundColor='#2563eb'; e.currentTarget.style.color='#fff'; }}
-                              onMouseLeave={e => { e.currentTarget.style.backgroundColor='#eff6ff'; e.currentTarget.style.color='#2563eb'; }}>
-                              <Eye size={13} />
-                              <span>View</span>
-                            </button>
-                            <button onClick={() => handleDelete(item._id || item.passId)} title="Delete Entry"
-                              style={{ padding:'6px', borderRadius:8, backgroundColor:'#fef2f2', border:'none', color:'#ef4444', cursor:'pointer', display:'inline-flex', alignItems:'center' }}
-                              onMouseEnter={e => { e.currentTarget.style.backgroundColor='#ef4444'; e.currentTarget.style.color='#fff'; }}
-                              onMouseLeave={e => { e.currentTarget.style.backgroundColor='#fef2f2'; e.currentTarget.style.color='#ef4444'; }}>
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
+                        <td style={{ ...S.tCell, textAlign:'right' }}>
+                          <button
+                            onClick={() => {
+                              setActiveTab('gate_scanner');
+                              setScanTicketIdInput(t.ticketId);
+                              handleVerifyTicket(t.ticketId);
+                            }}
+                            style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#f0fdf4', color:'#16a34a', border:'none', cursor:'pointer', fontSize:11, marginRight:6 }}
+                          >
+                            Verify & Scan
+                          </button>
+                          <button onClick={() => handleDeleteTicket(t._id || t.ticketId)} style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#fef2f2', color:'#ef4444', border:'none', cursor:'pointer' }}>Delete</button>
                         </td>
                       </tr>
-                    );
-                  }) : (
-                    <tr>
-                      <td colSpan="13" style={{ ...S.tCell, textAlign:'center', color:'#d1d5db', padding:'60px 0', fontSize:13 }}>
-                        {loading ? 'Loading applications...' : 'No recruitment applications found'}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )) : (
+                      <tr><td colSpan="10" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No booked tickets found.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+        )}
 
-        </div>
-      </main>
+        {/* TAB 5: GATE QR SCANNER & SINGLE-USE VERIFICATION */}
+        {activeTab === 'gate_scanner' && (
+          <div style={S.body}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
+              
+              {/* Left Box: QR Input / Camera trigger */}
+              <div style={{ ...S.card, display:'flex', flexDirection:'column', gap:16 }}>
+                <div style={{ borderBottom:'1px solid #f3f4f6', paddingBottom:12 }}>
+                  <h2 style={{ fontSize:18, fontWeight:800, color:'#1c1c1e', display:'flex', alignItems:'center', gap:8 }}>
+                    <QrCode size={20} color="#16a34a" /> Gate QR Ticket Scanner
+                  </h2>
+                  <p style={{ fontSize:12, color:'#6b7280', marginTop:2 }}>
+                    Scan QR code using camera or manually enter Ticket Pass ID to grant entrance permission.
+                  </p>
+                </div>
 
-      {/* Application Detail View Modal */}
-      {selectedApp && (
-        <div style={{ position:'fixed', inset:0, zIndex:10000, backgroundColor:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={() => setSelectedApp(null)}>
-          <div style={{ backgroundColor:'#ffffff', color:'#1c1c1e', borderRadius:16, width:'100%', maxWidth:650, maxHeight:'90vh', overflowY:'auto', margin:'auto', padding:24, boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.25)', border:'1px solid #e5e7eb' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingBottom:16, borderBottom:'1px solid #f3f4f6', marginBottom:20 }}>
+                <div style={{ display:'flex', gap:8 }}>
+                  <input
+                    type="text"
+                    placeholder="Enter or Scan Ticket ID (e.g. NRCM-TKT-XXXX)"
+                    value={scanTicketIdInput}
+                    onChange={e => setScanTicketIdInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleVerifyTicket()}
+                    style={{ flex:1, padding:'12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:14, fontFamily:'monospace', fontWeight:700 }}
+                  />
+                  <button
+                    onClick={() => handleVerifyTicket()}
+                    disabled={scanActionLoading}
+                    style={{ padding:'0 20px', borderRadius:10, backgroundColor:'#16a34a', color:'#ffffff', fontWeight:700, border:'none', cursor:'pointer' }}
+                  >
+                    Check
+                  </button>
+                </div>
+
+                <button
+                  onClick={startCameraScanner}
+                  style={{ padding:'12px', borderRadius:10, backgroundColor:'#f3f4f6', border:'1px solid #e5e7eb', color:'#374151', fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+                >
+                  <Camera size={18} /> Start Live Camera QR Scanner
+                </button>
+
+                {cameraActive && (
+                  <div style={{ border:'2px dashed #16a34a', padding:10, borderRadius:12, backgroundColor:'#f0fdf4' }}>
+                    <div id="qr-reader-container" style={{ width:'100%' }} />
+                  </div>
+                )}
+              </div>
+
+              {/* Right Box: Verification Result Card */}
+              <div style={{ ...S.card, display:'flex', flexDirection:'column', justifyContent:'center' }}>
+                {!verificationResult ? (
+                  <div style={{ textAlign:'center', padding:40, color:'#9ca3af' }}>
+                    <QrCode size={48} style={{ margin:'0 auto 12px', opacity:0.4 }} />
+                    <p style={{ fontSize:14, fontWeight:600 }}>Ready to Scan Ticket Pass</p>
+                    <p style={{ fontSize:12 }}>Scan or enter a Ticket ID on the left to verify authenticity.</p>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                    
+                    {/* RESULT TYPE: VALID */}
+                    {verificationResult.type === 'VALID' && (
+                      <div style={{ backgroundColor:'#f0fdf4', border:'2px solid #22c55e', borderRadius:16, padding:20, textCenter:'left' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:10, color:'#15803d', fontWeight:800, fontSize:18, marginBottom:8 }}>
+                          <CheckCircle size={24} /> VALID TICKET - ENTRY READY
+                        </div>
+
+                        <div style={{ fontSize:13, color:'#1c1c1e', spaceY:6 }}>
+                          <p>Ticket ID: <strong style={{ fontFamily:'monospace', color:'#dc2626' }}>{verificationResult.ticket.ticketId}</strong></p>
+                          <p>Attendee Name: <strong>{verificationResult.ticket.studentName}</strong> ({verificationResult.ticket.rollNo})</p>
+                          <p>Show Time: <strong>{verificationResult.ticket.showTime}</strong></p>
+                          <p>Category: <strong>{verificationResult.ticket.tierName}</strong></p>
+                        </div>
+
+                        <button
+                          onClick={() => handlePermitEntry(verificationResult.ticket.ticketId)}
+                          disabled={scanActionLoading}
+                          style={{ marginTop:16, width:'100%', padding:'14px', borderRadius:12, backgroundColor:'#16a34a', color:'#ffffff', fontSize:15, fontWeight:900, border:'none', cursor:'pointer', boxShadow:'0 4px 12px rgba(22, 163, 74, 0.3)' }}
+                        >
+                          PERMIT ENTRY & MARK USED
+                        </button>
+                      </div>
+                    )}
+
+                    {/* RESULT TYPE: PERMITTED SUCCESS */}
+                    {verificationResult.type === 'PERMITTED_SUCCESS' && (
+                      <div style={{ backgroundColor:'#f0fdf4', border:'2px solid #16a34a', borderRadius:16, padding:20, textCenter:'center' }}>
+                        <ShieldCheck size={48} color="#16a34a" style={{ margin:'0 auto 10px' }} />
+                        <h3 style={{ fontSize:20, fontWeight:900, color:'#15803d' }}>ENTRY PERMITTED!</h3>
+                        <p style={{ fontSize:13, color:'#374151', marginTop:4 }}>
+                          Ticket <strong>{verificationResult.ticket.ticketId}</strong> has been marked as <strong>USED</strong> in database.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* RESULT TYPE: ALREADY USED (ANTI-DUPLICATE WARNING) */}
+                    {verificationResult.type === 'ALREADY_USED' && (
+                      <div style={{ backgroundColor:'#fef2f2', border:'3px solid #ef4444', borderRadius:16, padding:20 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:10, color:'#b91c1c', fontWeight:900, fontSize:18, marginBottom:8 }}>
+                          <ShieldAlert size={28} color="#ef4444" /> ENTRY DENIED! ALREADY SCANNED!
+                        </div>
+
+                        <p style={{ fontSize:13, color:'#991b1b', fontWeight:700, marginBottom:12 }}>
+                          This ticket was ALREADY USED & SCANNED previously at: <br />
+                          <span style={{ fontFamily:'monospace', backgroundColor:'#fee2e2', padding:'2px 6px', borderRadius:4 }}>
+                            {verificationResult.ticket?.usedAt ? new Date(verificationResult.ticket.usedAt).toLocaleString('en-IN') : 'Earlier Today'}
+                          </span>
+                        </p>
+
+                        <div style={{ fontSize:12, color:'#374151', backgroundColor:'#ffffff', padding:12, borderRadius:10, border:'1px solid #fecaca' }}>
+                          <p>Ticket ID: <strong>{verificationResult.ticket?.ticketId}</strong></p>
+                          <p>Name: <strong>{verificationResult.ticket?.studentName}</strong></p>
+                          <p>Roll No: <strong>{verificationResult.ticket?.rollNo}</strong></p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* RESULT TYPE: INVALID TICKET */}
+                    {verificationResult.type === 'INVALID' && (
+                      <div style={{ backgroundColor:'#fef2f2', border:'2px solid #f87171', borderRadius:16, padding:20 }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:10, color:'#b91c1c', fontWeight:900, fontSize:16, marginBottom:6 }}>
+                          <AlertTriangle size={24} /> UNAUTHORIZED / UNKNOWN TICKET
+                        </div>
+                        <p style={{ fontSize:13, color:'#7f1d1d' }}>{verificationResult.error}</p>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: EVENT SUGGESTIONS RECEIVED FROM STUDENTS */}
+        {activeTab === 'rerelease_suggestions' && (
+          <div style={S.body}>
+            
+            {/* Header Stat & Search Bar */}
+            <div style={{ ...S.card, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:16 }}>
               <div>
-                <span style={{ fontSize:11, fontWeight:700, fontFamily:'monospace', color:'#ef4444', textTransform:'uppercase', letterSpacing:'0.1em' }}>
-                  RECRUITMENT APPLICATION #{selectedApp.passId || selectedApp._id}
-                </span>
-                <h2 style={{ fontSize:22, fontWeight:800, color:'#1c1c1e', margin:'2px 0 0' }}>
-                  {selectedApp.name}
+                <h2 style={{ fontSize:18, fontWeight:800, color:'#0f172a', margin:0, display:'flex', alignItems:'center', gap:8 }}>
+                  <Film size={20} color="#ca8a04" /> Student Event Suggestions ({suggestionsList.length})
                 </h2>
+                <p style={{ fontSize:12, color:'#64748b', margin:'4px 0 0 0' }}>
+                  Live list of events and movie requests submitted by students from the campus portal.
+                </p>
               </div>
 
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <button onClick={() => toggleShortlist(selectedApp._id || selectedApp.passId)}
-                  style={{
-                    padding:'6px 12px', borderRadius:8,
-                    backgroundColor: shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#fef9c3' : '#f3f4f6',
-                    border: `1px solid ${shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#fde047' : '#e5e7eb'}`,
-                    color: shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : '#374151',
-                    cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700
-                  }}>
-                  <Star size={14} fill={shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : 'none'} color={shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? '#ca8a04' : '#6b7280'} />
-                  <span>{shortlistedIds.includes(selectedApp._id) || shortlistedIds.includes(selectedApp.passId) ? 'SHORTLISTED' : 'SHORTLIST'}</span>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ position:'relative', width:240 }}>
+                  <Search size={14} color="#9ca3af" style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)' }} />
+                  <input
+                    type="text"
+                    placeholder="Search suggestions..."
+                    value={suggestionSearchQuery}
+                    onChange={(e) => setSuggestionSearchQuery(e.target.value)}
+                    style={{ width:'100%', height:36, paddingLeft:34, paddingRight:12, borderRadius:10, border:'1px solid #e5e7eb', fontSize:12, outline:'none' }}
+                  />
+                </div>
+                <button onClick={fetchSuggestionsList} style={S.topBtn}>
+                  <RefreshCw size={14} /> Refresh
                 </button>
-                <button onClick={() => setSelectedApp(null)} style={{ background:'none', border:'none', padding:6, cursor:'pointer', color:'#6b7280', borderRadius:8 }}>
-                  <X size={18} />
-                </button>
               </div>
             </div>
 
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16, marginBottom:20 }}>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>BRANCH & YEAR</span>
-                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.branch || 'N/A'}</span>
-              </div>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>INTERESTED AREA</span>
-                <span style={{ fontSize:13, fontWeight:600, color:'#ef4444', marginTop:2, display:'block' }}>{selectedApp.interestedArea || 'N/A'}</span>
-              </div>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PHONE NUMBER</span>
-                <span style={{ fontSize:13, fontWeight:600, fontFamily:'monospace', color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.mobile || 'N/A'}</span>
-              </div>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>EMAIL ID</span>
-                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block', wordBreak:'break-all' }}>{selectedApp.email || 'N/A'}</span>
-              </div>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PREVIOUS EXPERIENCE</span>
-                <span style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', marginTop:2, display:'block' }}>{selectedApp.previousExperience || 'N/A'}</span>
-              </div>
-              <div style={{ backgroundColor:'#f9fafb', padding:'12px 14px', borderRadius:10, border:'1px solid #f3f4f6' }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>INSTAGRAM HANDLE</span>
-                <span style={{ fontSize:13, fontWeight:600, fontFamily:'monospace', color:'#2563eb', marginTop:2, display:'block' }}>{selectedApp.instagramId || 'N/A'}</span>
-              </div>
+            {/* Suggestions Table / Cards View */}
+            <div style={S.card}>
+              {suggestionsList.length === 0 ? (
+                <div style={{ textAlign:'center', padding:40, color:'#64748b' }}>
+                  <Film size={40} color="#ca8a04" style={{ margin:'0 auto 12px', opacity:0.5 }} />
+                  <h3 style={{ fontSize:16, fontWeight:700, color:'#0f172a', margin:0 }}>No Event Suggestions Submitted Yet</h3>
+                  <p style={{ fontSize:12, margin:'4px 0 0 0' }}>When students submit event or movie ideas in the Events tab, they will appear here in real-time!</p>
+                </div>
+              ) : (
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', textAlign:'left' }}>
+                    <thead>
+                      <tr style={S.tHead}>
+                        <th style={S.tHeadTh}>SUGGESTION ID</th>
+                        <th style={S.tHeadTh}>SUGGESTION CONTENT / REQUEST</th>
+                        <th style={S.tHeadTh}>DATE RECEIVED</th>
+                        <th style={S.tHeadTh}>STATUS</th>
+                        <th style={{ ...S.tHeadTh, textAlign:'right' }}>ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {suggestionsList
+                        .filter(s => s.text?.toLowerCase().includes(suggestionSearchQuery.toLowerCase()))
+                        .map((s) => (
+                          <tr key={s._id || s.suggestionId} style={S.tRow}>
+                            <td style={S.tCell}>
+                              <span style={{ fontFamily:'monospace', fontWeight:700, fontSize:12, color:'#64748b' }}>
+                                {s.suggestionId || s._id?.slice(-6)}
+                              </span>
+                            </td>
+                            <td style={S.tCell}>
+                              <strong style={{ fontSize:14, color:'#0f172a' }}>{s.text}</strong>
+                            </td>
+                            <td style={S.tCell}>
+                              <span style={{ fontSize:12, color:'#64748b' }}>
+                                {new Date(s.createdAt || Date.now()).toLocaleString('en-IN', { month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true })}
+                              </span>
+                            </td>
+                            <td style={S.tCell}>
+                              <span style={{ backgroundColor:'rgba(202, 138, 4, 0.15)', color:'#ca8a04', fontSize:11, fontWeight:700, padding:'3px 8px', borderRadius:8 }}>
+                                {s.status || 'NEW'}
+                              </span>
+                            </td>
+                            <td style={{ ...S.tCell, textAlign:'right' }}>
+                              <button
+                                onClick={() => deleteSuggestion(s._id || s.suggestionId)}
+                                style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', padding:4 }}
+                                title="Delete Suggestion"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            {selectedApp.portfolioLink && (
-              <div style={{ backgroundColor:'#eff6ff', padding:'12px 14px', borderRadius:10, border:'1px solid #bfdbfe', marginBottom:20 }}>
-                <span style={{ fontSize:10, fontWeight:700, color:'#1e40af', textTransform:'uppercase', letterSpacing:'0.05em', display:'block' }}>PORTFOLIO / DRIVE LINK</span>
-                <a href={selectedApp.portfolioLink.startsWith('http') ? selectedApp.portfolioLink : `https://${selectedApp.portfolioLink}`} target="_blank" rel="noreferrer" style={{ fontSize:13, fontWeight:600, color:'#2563eb', textDecoration:'underline', marginTop:2, display:'block', wordBreak:'break-all' }}>
-                  {selectedApp.portfolioLink}
-                </a>
-              </div>
-            )}
-
-            {/* Paragraph 1: Why Join FMC */}
-            <div style={{ marginBottom:20 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:'#374151', textTransform:'uppercase', letterSpacing:'0.05em', display:'block', marginBottom:6 }}>
-                WHY DO YOU WANT TO JOIN NRCM FILM MAKING CLUB?
-              </span>
-              <div style={{ backgroundColor:'#f9fafb', padding:14, borderRadius:12, border:'1px solid #e5e7eb', fontSize:13, color:'#1c1c1e', lineHeight:1.6, whiteSpace:'pre-wrap' }}>
-                {selectedApp.whyJoin || 'No response provided.'}
-              </div>
-            </div>
-
-            {/* Paragraph 2: What You Bring */}
-            <div style={{ marginBottom:20 }}>
-              <span style={{ fontSize:11, fontWeight:700, color:'#374151', textTransform:'uppercase', letterSpacing:'0.05em', display:'block', marginBottom:6 }}>
-                WHAT UNIQUE SKILLS OR PERSPECTIVE WILL YOU BRING TO FMC?
-              </span>
-              <div style={{ backgroundColor:'#f9fafb', padding:14, borderRadius:12, border:'1px solid #e5e7eb', fontSize:13, color:'#1c1c1e', lineHeight:1.6, whiteSpace:'pre-wrap' }}>
-                {selectedApp.whatYouBring || 'No response provided.'}
-              </div>
-            </div>
-
-            <div style={{ display:'flex', justifyContent:'flex-end', paddingTop:12, borderTop:'1px solid #f3f4f6' }}>
-              <button onClick={() => setSelectedApp(null)} style={{ padding:'8px 20px', borderRadius:10, backgroundColor:'#1c1c1e', color:'#ffffff', border:'none', fontSize:13, fontWeight:600, cursor:'pointer' }}>
-                Close Details
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .custom-cursor, .custom-cursor-dot { display: none !important; }
-      `}</style>
+      </main>
     </div>
   );
 }
