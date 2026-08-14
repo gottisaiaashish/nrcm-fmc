@@ -44,11 +44,11 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
             ))}
 
             <a
-              href="/rerelease"
+              href="/booknow"
               className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600 hover:text-white transition-all text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-red-600/20"
             >
               <Ticket className="w-4 h-4" />
-              <span>Re-Release Booking</span>
+              <span>Book Now</span>
             </a>
           </nav>
 

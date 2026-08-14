@@ -614,7 +614,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
               <div style={{ display:'flex', alignItems:'center', justifyBetween:'space-between', borderBottom:'1px solid #f3f4f6', paddingBottom:12 }}>
                 <div>
                   <h2 style={{ fontSize:18, fontWeight:800, color:'#1c1c1e' }}>Re-Release Movie & Ticket Configuration</h2>
-                  <p style={{ fontSize:12, color:'#6b7280' }}>Changes saved here will reflect live on the <strong style={{ color:'#dc2626' }}>/rerelease</strong> student booking sub-page.</p>
+                  <p style={{ fontSize:12, color:'#6b7280' }}>Changes saved here will reflect live on the <strong style={{ color:'#dc2626' }}>/booknow</strong> student booking sub-page.</p>
                 </div>
                 {saveSettingsStatus && <span style={{ fontSize:12, fontWeight:700, color:'#16a34a' }}>{saveSettingsStatus}</span>}
               </div>

@@ -93,6 +93,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainSite />} />
         <Route path="/registration" element={<RegistrationPage />} />
+        <Route path="/booknow" element={<ReReleaseBookingPage />} />
         <Route path="/rerelease" element={<ReReleaseBookingPage />} />
       </Routes>
     </BrowserRouter>

@@ -23,8 +23,8 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 // Razorpay Client Setup
-const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || '').trim();
-const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || '').trim();
+const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || 'rzp_test_TPbq6LSPNOCyoY').trim();
+const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || 'sMGpPKOGqpJlWTF2UbMQ58Yy').trim();
 
 let razorpayInstance = null;
 if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
