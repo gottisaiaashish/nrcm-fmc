@@ -20,9 +20,20 @@ export default function ReReleaseBookingPage() {
   const videoRef = useRef(null);
 
   useEffect(() => {
+    // Auto-redirect old domain visits to Razorpay Approved motionbook.vercel.app domain
+    if (window.location.hostname.includes('nrcm-fmc-phi.vercel.app')) {
+      const targetUrl = 'https://motionbook.vercel.app' + window.location.pathname + window.location.search;
+      console.log('🔄 Redirecting to approved domain:', targetUrl);
+      window.location.href = targetUrl;
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+  }, []);
+
+  useEffect(() => {
     if (activeView === 'seats' && videoRef.current) {
       videoRef.current.play().catch(err => console.log('Video autoplay error:', err));
     }
