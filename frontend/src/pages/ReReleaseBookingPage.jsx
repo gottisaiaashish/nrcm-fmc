@@ -6,6 +6,8 @@ import SupportModal from '../components/modals/SupportModal';
 import AdminLoginModal from '../components/modals/AdminLoginModal';
 import AdminDashboardModal from '../components/modals/AdminDashboardModal';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export default function ReReleaseBookingPage() {
   const navigate = useNavigate();
 
