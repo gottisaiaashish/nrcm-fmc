@@ -248,6 +248,7 @@ export default function ReReleaseBookingPage() {
           setEventSettings(prev => ({
             ...prev,
             ...data.settings,
+            isBookingOpen: false,
             movieTitle: 'Businessman',
             posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3'
           }));

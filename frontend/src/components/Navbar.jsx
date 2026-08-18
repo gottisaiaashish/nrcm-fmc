@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, ArrowUpRight, Lock, Ticket } from 'lucide-react';
+import { Menu, X, ArrowUpRight, Lock, Ticket, Clock } from 'lucide-react';
 
 export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLogin }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -45,10 +45,10 @@ export default function Navbar({ onOpenPassModal, onOpenJoinModal, onOpenAdminLo
 
             <a
               href="/booknow"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-600/20 border border-red-500/50 text-red-400 hover:bg-red-600 hover:text-white transition-all text-xs font-extrabold uppercase tracking-wider shadow-lg shadow-red-600/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-200 hover:bg-slate-700 transition-all text-xs font-extrabold uppercase tracking-wider shadow-lg"
             >
-              <Ticket className="w-4 h-4" />
-              <span>Book Now</span>
+              <Clock className="w-4 h-4 text-amber-400" />
+              <span>Bookings Opening Soon</span>
             </a>
           </nav>
 
