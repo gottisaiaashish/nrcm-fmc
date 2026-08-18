@@ -226,7 +226,7 @@ let inMemoryEventSettings = {
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
     { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
   ],
-  isBookingOpen: false,
+  isBookingOpen: true,
   announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
 };
 
@@ -259,7 +259,7 @@ const eventSettingsSchema = new mongoose.Schema({
   releaseDate: { type: String, default: 'MARCH 20, 2026' },
   showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'] },
   tiers: { type: Array, default: [] },
-  isBookingOpen: { type: Boolean, default: false },
+  isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
   updatedAt: { type: Date, default: Date.now }
 });
