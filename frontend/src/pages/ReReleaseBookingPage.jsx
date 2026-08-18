@@ -1200,17 +1200,11 @@ export default function ReReleaseBookingPage() {
                           </div>
                         </div>
 
-                        <div>
-                          {isHousefull ? (
-                            <span style={{ fontSize: '11px', fontWeight: 900, backgroundColor: '#dc2626', color: '#ffffff', padding: '5px 12px', borderRadius: '12px', letterSpacing: '0.5px' }}>
-                              HOUSEFULL
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: isSelected ? '#e11d48' : '#f1f5f9', color: isSelected ? '#ffffff' : '#475569', padding: '5px 12px', borderRadius: '12px' }}>
-                              Available
-                            </span>
-                          )}
-                        </div>
+                        {isHousefull && (
+                          <span style={{ fontSize: '11px', fontWeight: 900, backgroundColor: '#dc2626', color: '#ffffff', padding: '5px 12px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                            HOUSEFULL
+                          </span>
+                        )}
                       </div>
                     );
                   })}
