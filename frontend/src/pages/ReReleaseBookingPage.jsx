@@ -40,7 +40,7 @@ export default function ReReleaseBookingPage() {
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front rows stage area with high energy crowd', badge: 'Popular' },
       { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium middle seating', badge: 'Available' }
     ],
-    isBookingOpen: true
+    isBookingOpen: false
   });
 
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
@@ -650,26 +650,32 @@ export default function ReReleaseBookingPage() {
                       </p>
 
                       <button
-                        onClick={() => setActiveView('seats')}
+                        onClick={() => {
+                          if (!eventSettings.isBookingOpen) {
+                            alert('Bookings Opening Soon! Online ticket pass bookings will open shortly. Stay tuned!');
+                            return;
+                          }
+                          setActiveView('seats');
+                        }}
                         style={{
                           width: '100%',
                           padding: '14px',
                           borderRadius: '14px',
-                          backgroundColor: '#e11d48',
+                          backgroundColor: eventSettings.isBookingOpen ? '#e11d48' : '#0f172a',
                           color: '#ffffff',
                           fontSize: '14px',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           border: 'none',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justify: 'center',
                           gap: '8px',
-                          boxShadow: '0 4px 12px rgba(225, 29, 72, 0.3)'
+                          boxShadow: eventSettings.isBookingOpen ? '0 4px 12px rgba(225, 29, 72, 0.3)' : '0 4px 12px rgba(15, 23, 42, 0.2)'
                         }}
                       >
-                        <Ticket size={18} />
-                        <span>Book Now</span>
+                        {eventSettings.isBookingOpen ? <Ticket size={18} /> : <Clock size={18} />}
+                        <span>{eventSettings.isBookingOpen ? 'Book Now' : 'Booking Will Be Open Soon'}</span>
                       </button>
                     </div>
 
