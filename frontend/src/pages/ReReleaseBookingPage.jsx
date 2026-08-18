@@ -598,43 +598,21 @@ export default function ReReleaseBookingPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button
-                type="button"
-                onClick={() => setFindTicketOpen(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '7px 12px',
-                  borderRadius: '14px',
-                  backgroundColor: '#fff1f2',
-                  border: '1px solid #fecdd3',
-                  color: '#e11d48',
-                  fontSize: '12px',
-                  fontWeight: 800,
-                  cursor: 'pointer'
-                }}
-              >
-                <Ticket size={14} /> Find Ticket
-              </button>
-
-              <img
-                src="/nrcm_fmc_logo.png"
-                alt="NRCM FMC Logo"
-                onClick={() => setAdminLoginOpen(true)}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  objectFit: 'cover',
-                  border: '1.5px solid #e2e8f0',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}
-                title="NRCM FMC - Admin Portal"
-              />
-            </div>
+            <img
+              src="/nrcm_fmc_logo.png"
+              alt="NRCM FMC Logo"
+              onClick={() => setAdminLoginOpen(true)}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                objectFit: 'cover',
+                border: '1.5px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              title="NRCM FMC - Admin Portal"
+            />
           </div>
         </div>
       </header>
@@ -810,22 +788,17 @@ export default function ReReleaseBookingPage() {
                 </div>
 
                 {/* Already Booked / Forgot to Download Ticket Card */}
-                <div style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff1f2', border: '1.5px solid #fecdd3', gap: '12px', borderRadius: '18px', padding: '16px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
-                      <Ticket size={22} />
-                    </div>
-                    <div>
-                      <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block', fontWeight: 800 }}>Forgot to Download Ticket?</strong>
-                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Retrieve & print your pass anytime using Roll No or Phone</span>
-                    </div>
+                <div style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff1f2', border: '1px solid #fecdd3', gap: '12px', padding: '16px 18px', borderRadius: '18px', marginBottom: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block', fontWeight: 800 }}>Forgot to Download Ticket?</strong>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Retrieve your pass using Roll No or Phone</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFindTicketOpen(true)}
-                    style={{ padding: '10px 18px', borderRadius: '12px', backgroundColor: '#e11d48', color: '#ffffff', fontSize: '13px', fontWeight: 800, border: 'none', cursor: 'pointer', flexShrink: 0, boxShadow: '0 4px 12px rgba(225,29,72,0.25)', whiteSpace: 'nowrap' }}
+                    style={{ padding: '10px 16px', borderRadius: '12px', backgroundColor: '#e11d48', color: '#ffffff', fontSize: '12px', fontWeight: 800, border: 'none', cursor: 'pointer', flexShrink: 0, boxShadow: '0 4px 12px rgba(225,29,72,0.25)', whiteSpace: 'nowrap' }}
                   >
-                    Download Pass
+                    Find Ticket
                   </button>
                 </div>
 
