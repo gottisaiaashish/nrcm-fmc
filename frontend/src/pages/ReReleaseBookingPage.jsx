@@ -809,6 +809,26 @@ export default function ReReleaseBookingPage() {
                   </div>
                 </div>
 
+                {/* Already Booked / Forgot to Download Ticket Card */}
+                <div style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff1f2', border: '1.5px solid #fecdd3', gap: '12px', borderRadius: '18px', padding: '16px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', flexShrink: 0 }}>
+                      <Ticket size={22} />
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block', fontWeight: 800 }}>Forgot to Download Ticket?</strong>
+                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Retrieve & print your pass anytime using Roll No or Phone</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFindTicketOpen(true)}
+                    style={{ padding: '10px 18px', borderRadius: '12px', backgroundColor: '#e11d48', color: '#ffffff', fontSize: '13px', fontWeight: 800, border: 'none', cursor: 'pointer', flexShrink: 0, boxShadow: '0 4px 12px rgba(225,29,72,0.25)', whiteSpace: 'nowrap' }}
+                  >
+                    Download Pass
+                  </button>
+                </div>
+
                 {/* Need Helpdesk Support */}
                 <div style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f8fafc', gap: '12px' }}>
                   <div>

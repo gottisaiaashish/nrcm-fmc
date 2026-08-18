@@ -51,7 +51,7 @@ export default function FindTicketModal({ isOpen, onClose, onTicketsFound }) {
         zIndex: 99999,
         display: 'flex',
         alignItems: 'center',
-        justify: 'center',
+        justifyContent: 'center',
         padding: '16px'
       }}
     >
