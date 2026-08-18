@@ -40,7 +40,7 @@ export default function ReReleaseBookingPage() {
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front rows stage area with high energy crowd', badge: 'Popular' },
       { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium middle seating', badge: 'Available' }
     ],
-    isBookingOpen: false
+    isBookingOpen: true
   });
 
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
@@ -248,7 +248,6 @@ export default function ReReleaseBookingPage() {
           setEventSettings(prev => ({
             ...prev,
             ...data.settings,
-            isBookingOpen: false,
             movieTitle: 'Businessman',
             posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3'
           }));

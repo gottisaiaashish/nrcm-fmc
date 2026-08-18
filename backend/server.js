@@ -23,8 +23,8 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
 // Razorpay Client Setup
-const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || 'rzp_test_TPbq6LSPNOCyoY').trim();
-const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || 'sMGpPKOGqpJlWTF2UbMQ58Yy').trim();
+const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || 'rzp_live_TRBG4dlunSLrqL').trim();
+const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || 'Hd3z3ad03p3jSB4zuCSUe4Jk').trim();
 
 let razorpayInstance = null;
 if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
@@ -226,7 +226,7 @@ let inMemoryEventSettings = {
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
     { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
   ],
-  isBookingOpen: false,
+  isBookingOpen: true,
   announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
 };
 
@@ -259,7 +259,7 @@ const eventSettingsSchema = new mongoose.Schema({
   releaseDate: { type: String, default: 'MARCH 20, 2026' },
   showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'] },
   tiers: { type: Array, default: [] },
-  isBookingOpen: { type: Boolean, default: false },
+  isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
   updatedAt: { type: Date, default: Date.now }
 });
