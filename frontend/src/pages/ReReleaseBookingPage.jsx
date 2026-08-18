@@ -5,6 +5,7 @@ import TicketPassModal from '../components/modals/TicketPassModal';
 import SupportModal from '../components/modals/SupportModal';
 import AdminLoginModal from '../components/modals/AdminLoginModal';
 import AdminDashboardModal from '../components/modals/AdminDashboardModal';
+import FindTicketModal from '../components/modals/FindTicketModal';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -14,6 +15,7 @@ export default function ReReleaseBookingPage() {
   const [supportModalOpen, setSupportModalOpen] = useState(false);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
   const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
+  const [findTicketOpen, setFindTicketOpen] = useState(false);
 
   // Active View State: 'spotlight' (District Home), 'seats' (Date, Time & Seat Matrix), 'checkout' (Student Details & Payment)
   const [activeView, setActiveView] = useState('spotlight');
@@ -596,21 +598,43 @@ export default function ReReleaseBookingPage() {
               </div>
             </div>
 
-            <img
-              src="/nrcm_fmc_logo.png"
-              alt="NRCM FMC Logo"
-              onClick={() => setAdminLoginOpen(true)}
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                objectFit: 'cover',
-                border: '1.5px solid #e2e8f0',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-              title="NRCM FMC - Admin Portal"
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setFindTicketOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '7px 12px',
+                  borderRadius: '14px',
+                  backgroundColor: '#fff1f2',
+                  border: '1px solid #fecdd3',
+                  color: '#e11d48',
+                  fontSize: '12px',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                <Ticket size={14} /> Find Ticket
+              </button>
+
+              <img
+                src="/nrcm_fmc_logo.png"
+                alt="NRCM FMC Logo"
+                onClick={() => setAdminLoginOpen(true)}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  objectFit: 'cover',
+                  border: '1.5px solid #e2e8f0',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                title="NRCM FMC - Admin Portal"
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -1626,6 +1650,17 @@ export default function ReReleaseBookingPage() {
         isOpen={adminDashboardOpen}
         onClose={() => setAdminDashboardOpen(false)}
         onLogout={() => setAdminDashboardOpen(false)}
+      />
+
+      {/* Find & Download Ticket Pass Modal */}
+      <FindTicketModal
+        isOpen={findTicketOpen}
+        onClose={() => setFindTicketOpen(false)}
+        onTicketsFound={(foundTickets) => {
+          setGeneratedTickets(foundTickets);
+          setBookingRef(foundTickets[0]?.bookingRef || '');
+          setBookingSuccessModalOpen(true);
+        }}
       />
 
     </div>

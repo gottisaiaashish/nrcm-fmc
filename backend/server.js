@@ -756,6 +756,53 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
   }
 });
 
+// 9b. Public Ticket Lookup - Search by Roll No, Mobile, or Booking Ref
+app.get('/api/tickets/lookup', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query || !query.trim()) {
+      return res.status(400).json({ success: false, error: 'Please enter Roll Number, Phone Number, or Ticket ID.' });
+    }
+
+    const clean = query.trim().toUpperCase();
+
+    let matchedTickets = [];
+    if (isMongoConnected) {
+      matchedTickets = await Ticket.find({
+        $or: [
+          { rollNo: { $regex: clean, $options: 'i' } },
+          { mobile: { $regex: clean, $options: 'i' } },
+          { bookingRef: { $regex: clean, $options: 'i' } },
+          { ticketId: { $regex: clean, $options: 'i' } }
+        ]
+      }).sort({ createdAt: -1 });
+    } else {
+      matchedTickets = inMemoryTickets.filter(t =>
+        (t.rollNo || '').toUpperCase().includes(clean) ||
+        (t.mobile || '').includes(clean) ||
+        (t.bookingRef || '').toUpperCase().includes(clean) ||
+        (t.ticketId || '').toUpperCase().includes(clean)
+      );
+    }
+
+    if (matchedTickets.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: `No tickets found matching "${query}". Please check your Roll No or Phone Number.`
+      });
+    }
+
+    return res.json({
+      success: true,
+      count: matchedTickets.length,
+      tickets: matchedTickets
+    });
+  } catch (error) {
+    console.error('Ticket Lookup Error:', error);
+    res.status(500).json({ success: false, error: 'Server error retrieving tickets.' });
+  }
+});
+
 // 10. Admin - Get All Tickets
 app.get('/api/admin/tickets', async (req, res) => {
   try {
