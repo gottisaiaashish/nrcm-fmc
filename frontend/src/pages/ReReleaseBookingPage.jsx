@@ -59,7 +59,7 @@ export default function ReReleaseBookingPage() {
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedShowTime, setSelectedShowTime] = useState('10:00 AM to 12:30 PM');
-  const [selectedDate, setSelectedDate] = useState('MARCH 24, 2026');
+  const [selectedDate, setSelectedDate] = useState('AUGUST 24, 2026');
   const [availability, setAvailability] = useState({});
   const [selectedTier, setSelectedTier] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState(['B4']);
@@ -1107,15 +1107,12 @@ export default function ReReleaseBookingPage() {
                     <Calendar size={18} color="#e11d48" />
                     <span>Select Show Date & Time</span>
                   </h2>
-                  <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '12px' }}>
-                    300 Seats / Show
-                  </span>
                 </div>
 
                 {/* 1. DATE SELECTOR PILLS */}
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>1. Select Screening Date</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-                  {['MARCH 24, 2026', 'MARCH 25, 2026'].map((d) => {
+                  {['AUGUST 24, 2026', 'AUGUST 25, 2026'].map((d) => {
                     const isSelected = selectedDate === d;
                     return (
                       <button
@@ -1136,7 +1133,7 @@ export default function ReReleaseBookingPage() {
                           boxShadow: isSelected ? '0 4px 12px rgba(15,23,42,0.2)' : 'none'
                         }}
                       >
-                        {d === 'MARCH 24, 2026' ? 'Tue, 24 March' : 'Wed, 25 March'}
+                        {d === 'AUGUST 24, 2026' ? 'Mon, 24 Aug' : 'Tue, 25 Aug'}
                       </button>
                     );
                   })}
@@ -1151,8 +1148,7 @@ export default function ReReleaseBookingPage() {
                   ].map((st) => {
                     const isSelected = selectedShowTime === st.time;
                     const slotData = availability[selectedDate]?.[st.time] || { booked: 0, capacity: 300, remaining: 300, isHousefull: false };
-                    const remaining = slotData.remaining;
-                    const isHousefull = slotData.isHousefull || remaining <= 0;
+                    const isHousefull = slotData.isHousefull || slotData.remaining <= 0;
 
                     return (
                       <div
@@ -1186,8 +1182,8 @@ export default function ReReleaseBookingPage() {
                               HOUSEFULL
                             </span>
                           ) : (
-                            <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: isSelected ? '#e11d48' : '#e2e8f0', color: isSelected ? '#ffffff' : '#334155', padding: '5px 12px', borderRadius: '12px' }}>
-                              {remaining} Seats Left
+                            <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: isSelected ? '#e11d48' : '#f1f5f9', color: isSelected ? '#ffffff' : '#475569', padding: '5px 12px', borderRadius: '12px' }}>
+                              Available
                             </span>
                           )}
                         </div>

@@ -176,7 +176,7 @@ export default function TicketPassModal({ isOpen, onClose, tickets = [], booking
             {/* Screening Date */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Screening Date:</span>
-              <strong style={{ color: '#0f172a', fontWeight: 800 }}>{currentTicket.showDate || 'MARCH 24, 2026'}</strong>
+              <strong style={{ color: '#0f172a', fontWeight: 800 }}>{currentTicket.showDate || 'AUGUST 24, 2026'}</strong>
             </div>
 
             {/* Showtime */}

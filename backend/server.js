@@ -219,8 +219,8 @@ let inMemoryEventSettings = {
   tagline: 'Guns Don\'t Need Reasons, They Need Bullets!',
   posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
   venue: 'NRCM Main Auditorium, Block A',
-  releaseDate: 'MARCH 24, 2026',
-  dates: ['MARCH 24, 2026', 'MARCH 25, 2026'],
+  releaseDate: 'AUGUST 24, 2026',
+  dates: ['AUGUST 24, 2026', 'AUGUST 25, 2026'],
   showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
   showCapacity: 300,
   tiers: [
@@ -258,8 +258,8 @@ const eventSettingsSchema = new mongoose.Schema({
   tagline: { type: String, default: 'Guns Don\'t Need Reasons, They Need Bullets!' },
   posterUrl: { type: String, default: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3' },
   venue: { type: String, default: 'NRCM Main Auditorium, Block A' },
-  releaseDate: { type: String, default: 'MARCH 24, 2026' },
-  dates: { type: [String], default: ['MARCH 24, 2026', 'MARCH 25, 2026'] },
+  releaseDate: { type: String, default: 'AUGUST 24, 2026' },
+  dates: { type: [String], default: ['AUGUST 24, 2026', 'AUGUST 25, 2026'] },
   showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
   showCapacity: { type: Number, default: 300 },
   tiers: { type: Array, default: [] },
@@ -274,7 +274,7 @@ const ticketSchema = new mongoose.Schema({
   ticketId: { type: String, required: true, unique: true },
   bookingRef: { type: String, required: true },
   movieTitle: { type: String, required: true },
-  showDate: { type: String, required: true, default: 'MARCH 24, 2026' },
+  showDate: { type: String, required: true, default: 'AUGUST 24, 2026' },
   showTime: { type: String, required: true },
   tierName: { type: String, required: true },
   price: { type: Number, required: true },
@@ -550,7 +550,7 @@ app.post('/api/admin/event-settings', async (req, res) => {
 
 // Helper to get booked count per show date and show time
 async function getShowBookedCount(showDate, showTime) {
-  const cleanDate = (showDate || 'MARCH 24, 2026').trim();
+  const cleanDate = (showDate || 'AUGUST 24, 2026').trim();
   const cleanTime = (showTime || '10:00 AM to 12:30 PM').trim();
 
   if (isMongoConnected) {
@@ -561,7 +561,7 @@ async function getShowBookedCount(showDate, showTime) {
     });
   } else {
     return inMemoryTickets.filter(t =>
-      (t.showDate || 'MARCH 24, 2026').trim() === cleanDate &&
+      (t.showDate || 'AUGUST 24, 2026').trim() === cleanDate &&
       (t.showTime || '').trim() === cleanTime &&
       t.status !== 'CANCELLED'
     ).length;
@@ -571,7 +571,7 @@ async function getShowBookedCount(showDate, showTime) {
 // 7b. Availability Endpoint
 app.get('/api/tickets/availability', async (req, res) => {
   try {
-    const dates = ['MARCH 24, 2026', 'MARCH 25, 2026'];
+    const dates = ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
     const showTimes = ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
     const capacity = 300;
     const availability = {};
@@ -605,7 +605,7 @@ app.post('/api/tickets/create-order', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid order amount.' });
     }
 
-    const requestedDate = showDate || 'MARCH 24, 2026';
+    const requestedDate = showDate || 'AUGUST 24, 2026';
     const requestedTime = showTime || '10:00 AM to 12:30 PM';
     const currentBooked = await getShowBookedCount(requestedDate, requestedTime);
     const requestedQty = parseInt(quantity, 10) || 1;
@@ -717,7 +717,7 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
         ticketId,
         bookingRef,
         movieTitle: movieTitle || 'Businessman',
-        showDate: showDate || 'MARCH 24, 2026',
+        showDate: showDate || 'AUGUST 24, 2026',
         showTime: showTime || '10:00 AM to 12:30 PM',
         tierName: tierName || 'General Student Pass',
         price: Number(price) || 50,

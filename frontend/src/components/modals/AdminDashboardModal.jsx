@@ -813,7 +813,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                         <td style={{ ...S.tCell, fontWeight:600 }}>{t.studentName}</td>
                         <td style={{ ...S.tCell, fontFamily:'monospace' }}>{t.rollNo}</td>
                         <td style={S.tCell}>{t.branch}</td>
-                        <td style={S.tCell}>{t.showDate || 'MARCH 24, 2026'} ({t.showTime})</td>
+                        <td style={S.tCell}>{t.showDate || 'AUGUST 24, 2026'} ({t.showTime})</td>
                         <td style={{ ...S.tCell, fontWeight:600 }}>{t.tierName}</td>
                         <td style={{ ...S.tCell, color:'#16a34a', fontWeight:700 }}>₹{t.price}</td>
                         <td style={S.tCell}>
@@ -925,7 +925,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                           <p>Ticket ID: <strong style={{ fontFamily:'monospace', color:'#dc2626' }}>{verificationResult.ticket.ticketId}</strong></p>
                           <p>Attendee Name: <strong>{verificationResult.ticket.studentName}</strong> ({verificationResult.ticket.rollNo})</p>
                           <p>Branch: <strong>{verificationResult.ticket.branch}</strong></p>
-                          <p>Show Date & Time: <strong>{verificationResult.ticket.showDate || 'MARCH 24, 2026'} ({verificationResult.ticket.showTime})</strong></p>
+                          <p>Show Date & Time: <strong>{verificationResult.ticket.showDate || 'AUGUST 24, 2026'} ({verificationResult.ticket.showTime})</strong></p>
                           <p>Category: <strong>{verificationResult.ticket.tierName}</strong></p>
                         </div>
 
