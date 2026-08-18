@@ -219,15 +219,17 @@ let inMemoryEventSettings = {
   tagline: 'Guns Don\'t Need Reasons, They Need Bullets!',
   posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
   venue: 'NRCM Main Auditorium, Block A',
-  releaseDate: 'MARCH 20, 2026',
-  showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'],
+  releaseDate: 'MARCH 24, 2026',
+  dates: ['MARCH 24, 2026', 'MARCH 25, 2026'],
+  showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
+  showCapacity: 300,
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
     { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
   ],
   isBookingOpen: true,
-  announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
+  announcement: 'Limited seats available! Maximum 300 seats per show slot.'
 };
 
 let inMemoryTickets = [];
@@ -256,8 +258,10 @@ const eventSettingsSchema = new mongoose.Schema({
   tagline: { type: String, default: 'Guns Don\'t Need Reasons, They Need Bullets!' },
   posterUrl: { type: String, default: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3' },
   venue: { type: String, default: 'NRCM Main Auditorium, Block A' },
-  releaseDate: { type: String, default: 'MARCH 20, 2026' },
-  showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'] },
+  releaseDate: { type: String, default: 'MARCH 24, 2026' },
+  dates: { type: [String], default: ['MARCH 24, 2026', 'MARCH 25, 2026'] },
+  showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
+  showCapacity: { type: Number, default: 300 },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
@@ -270,6 +274,7 @@ const ticketSchema = new mongoose.Schema({
   ticketId: { type: String, required: true, unique: true },
   bookingRef: { type: String, required: true },
   movieTitle: { type: String, required: true },
+  showDate: { type: String, required: true, default: 'MARCH 24, 2026' },
   showTime: { type: String, required: true },
   tierName: { type: String, required: true },
   price: { type: Number, required: true },
@@ -543,13 +548,73 @@ app.post('/api/admin/event-settings', async (req, res) => {
   }
 });
 
+// Helper to get booked count per show date and show time
+async function getShowBookedCount(showDate, showTime) {
+  const cleanDate = (showDate || 'MARCH 24, 2026').trim();
+  const cleanTime = (showTime || '10:00 AM to 12:30 PM').trim();
+
+  if (isMongoConnected) {
+    return await Ticket.countDocuments({
+      showDate: cleanDate,
+      showTime: cleanTime,
+      status: { $ne: 'CANCELLED' }
+    });
+  } else {
+    return inMemoryTickets.filter(t =>
+      (t.showDate || 'MARCH 24, 2026').trim() === cleanDate &&
+      (t.showTime || '').trim() === cleanTime &&
+      t.status !== 'CANCELLED'
+    ).length;
+  }
+}
+
+// 7b. Availability Endpoint
+app.get('/api/tickets/availability', async (req, res) => {
+  try {
+    const dates = ['MARCH 24, 2026', 'MARCH 25, 2026'];
+    const showTimes = ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
+    const capacity = 300;
+    const availability = {};
+
+    for (const d of dates) {
+      availability[d] = {};
+      for (const st of showTimes) {
+        const booked = await getShowBookedCount(d, st);
+        availability[d][st] = {
+          booked,
+          capacity,
+          remaining: Math.max(0, capacity - booked),
+          isHousefull: booked >= capacity
+        };
+      }
+    }
+
+    return res.json({ success: true, availability });
+  } catch (error) {
+    console.error('Fetch Availability Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch show availability.' });
+  }
+});
+
 // 8. Create Razorpay Order (or Mock Order)
 app.post('/api/tickets/create-order', async (req, res) => {
   try {
-    const { amount, tierName, quantity, studentName, rollNo } = req.body;
+    const { amount, tierName, quantity, studentName, rollNo, showDate, showTime } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ success: false, error: 'Invalid order amount.' });
+    }
+
+    const requestedDate = showDate || 'MARCH 24, 2026';
+    const requestedTime = showTime || '10:00 AM to 12:30 PM';
+    const currentBooked = await getShowBookedCount(requestedDate, requestedTime);
+    const requestedQty = parseInt(quantity, 10) || 1;
+
+    if (currentBooked + requestedQty > 300) {
+      return res.status(400).json({
+        success: false,
+        error: `HOUSEFULL! Selected show (${requestedDate} @ ${requestedTime}) has reached maximum capacity of 300 seats!`
+      });
     }
 
     const orderAmountInPaise = Math.round(amount * 100);
@@ -559,11 +624,11 @@ app.post('/api/tickets/create-order', async (req, res) => {
         amount: orderAmountInPaise,
         currency: 'INR',
         receipt: `receipt_rerelease_${Date.now()}`,
-        notes: { studentName, rollNo, tierName, quantity }
+        notes: { studentName, rollNo, tierName, quantity, showDate: requestedDate, showTime: requestedTime }
       };
 
       const order = await razorpayInstance.orders.create(options);
-      console.log(`💳 [RAZORPAY ORDER CREATED] Order ID: ${order.id} | Amount: ₹${amount}`);
+      console.log(`💳 [RAZORPAY ORDER CREATED] Order ID: ${order.id} | Amount: ₹${amount} | Show: ${requestedDate} ${requestedTime}`);
 
       return res.json({
         success: true,
@@ -614,6 +679,7 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
       mobile,
       email,
       movieTitle,
+      showDate,
       showTime,
       tierName,
       price,
@@ -651,7 +717,8 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
         ticketId,
         bookingRef,
         movieTitle: movieTitle || 'Businessman',
-        showTime: showTime || '10:30 AM',
+        showDate: showDate || 'MARCH 24, 2026',
+        showTime: showTime || '10:00 AM to 12:30 PM',
         tierName: tierName || 'General Student Pass',
         price: Number(price) || 50,
         studentName: studentInfo.studentName || studentName,

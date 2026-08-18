@@ -173,6 +173,12 @@ export default function TicketPassModal({ isOpen, onClose, tickets = [], booking
               <strong style={{ color: '#0f172a', fontWeight: 700 }}>{currentTicket.branch || 'CSE'}</strong>
             </div>
 
+            {/* Screening Date */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Screening Date:</span>
+              <strong style={{ color: '#0f172a', fontWeight: 800 }}>{currentTicket.showDate || 'MARCH 24, 2026'}</strong>
+            </div>
+
             {/* Showtime */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Showtime:</span>

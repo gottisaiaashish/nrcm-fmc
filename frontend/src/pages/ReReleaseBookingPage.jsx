@@ -47,8 +47,9 @@ export default function ReReleaseBookingPage() {
 
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedShowTime, setSelectedShowTime] = useState('02:30 PM');
-  const [selectedDate, setSelectedDate] = useState('Fri 20 Mar');
+  const [selectedShowTime, setSelectedShowTime] = useState('10:00 AM to 12:30 PM');
+  const [selectedDate, setSelectedDate] = useState('MARCH 24, 2026');
+  const [availability, setAvailability] = useState({});
   const [selectedTier, setSelectedTier] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState(['B4']);
   const [ticketQuantity, setTicketQuantity] = useState(1);
@@ -263,6 +264,21 @@ export default function ReReleaseBookingPage() {
         }
       })
       .catch(err => console.error('Failed to load event settings:', err));
+
+    const loadAvailability = () => {
+      fetch(`${API_BASE}/api/tickets/availability`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.availability) {
+            setAvailability(data.availability);
+          }
+        })
+        .catch(err => console.error('Failed to load availability:', err));
+    };
+
+    loadAvailability();
+    const interval = setInterval(loadAvailability, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSeatToggle = (seatCode) => {
@@ -1073,6 +1089,103 @@ export default function ReReleaseBookingPage() {
                 Released 13 January 2012
               </span>
 
+              {/* SHOW DATE & TIME SELECTION SECTION */}
+              <div style={{ marginBottom: '24px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '18px', padding: '18px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Calendar size={18} color="#e11d48" />
+                    <span>Select Show Date & Time</span>
+                  </h2>
+                  <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '12px' }}>
+                    300 Seats / Show
+                  </span>
+                </div>
+
+                {/* 1. DATE SELECTOR PILLS */}
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>1. Select Screening Date</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+                  {['MARCH 24, 2026', 'MARCH 25, 2026'].map((d) => {
+                    const isSelected = selectedDate === d;
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setSelectedDate(d)}
+                        style={{
+                          padding: '12px',
+                          borderRadius: '14px',
+                          backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
+                          color: isSelected ? '#ffffff' : '#0f172a',
+                          border: isSelected ? '2px solid #0f172a' : '1px solid #cbd5e1',
+                          fontWeight: 800,
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.2s ease',
+                          boxShadow: isSelected ? '0 4px 12px rgba(15,23,42,0.2)' : 'none'
+                        }}
+                      >
+                        {d === 'MARCH 24, 2026' ? 'Tue, 24 March' : 'Wed, 25 March'}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 2. SHOW TIME SELECTOR PILLS */}
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>2. Select Show Timing</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[
+                    { label: 'Morning Show', time: '10:00 AM to 12:30 PM' },
+                    { label: 'Matinee Show', time: '01:00 PM to 03:30 PM' }
+                  ].map((st) => {
+                    const isSelected = selectedShowTime === st.time;
+                    const slotData = availability[selectedDate]?.[st.time] || { booked: 0, capacity: 300, remaining: 300, isHousefull: false };
+                    const remaining = slotData.remaining;
+                    const isHousefull = slotData.isHousefull || remaining <= 0;
+
+                    return (
+                      <div
+                        key={st.time}
+                        onClick={() => !isHousefull && setSelectedShowTime(st.time)}
+                        style={{
+                          padding: '14px 16px',
+                          borderRadius: '14px',
+                          backgroundColor: isHousefull ? '#fef2f2' : (isSelected ? '#fff1f2' : '#f8fafc'),
+                          border: isHousefull ? '1.5px solid #fecaca' : (isSelected ? '2px solid #e11d48' : '1px solid #cbd5e1'),
+                          cursor: isHousefull ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'space-between',
+                          opacity: isHousefull ? 0.8 : 1,
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: 800, color: isHousefull ? '#991b1b' : (isSelected ? '#be123c' : '#0f172a') }}>
+                            {st.time}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
+                            {st.label}
+                          </div>
+                        </div>
+
+                        <div>
+                          {isHousefull ? (
+                            <span style={{ fontSize: '11px', fontWeight: 900, backgroundColor: '#dc2626', color: '#ffffff', padding: '5px 12px', borderRadius: '12px', letterSpacing: '0.5px' }}>
+                              HOUSEFULL
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', fontWeight: 800, backgroundColor: isSelected ? '#e11d48' : '#e2e8f0', color: isSelected ? '#ffffff' : '#334155', padding: '5px 12px', borderRadius: '12px' }}>
+                              {remaining} Seats Left
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* About Section */}
               <div style={{ marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px 0' }}>
@@ -1208,22 +1321,34 @@ export default function ReReleaseBookingPage() {
                 {/* ABSOLUTE FAR RIGHT: Proceed Black Pill Button */}
                 <button
                   type="button"
-                  onClick={() => setActiveView('checkout')}
+                  onClick={() => {
+                    const slotData = availability[selectedDate]?.[selectedShowTime] || { remaining: 300, isHousefull: false };
+                    if (slotData.isHousefull || slotData.remaining <= 0) {
+                      alert(`HOUSEFULL! The show on ${selectedDate} (${selectedShowTime}) has reached maximum capacity of 300 seats. Please choose another show time.`);
+                      return;
+                    }
+                    if (ticketQuantity > slotData.remaining) {
+                      alert(`Only ${slotData.remaining} seats remaining for this show time! Please reduce ticket quantity.`);
+                      return;
+                    }
+                    setActiveView('checkout');
+                  }}
+                  disabled={availability[selectedDate]?.[selectedShowTime]?.isHousefull}
                   style={{
                     flexShrink: 0,
                     padding: '11px 22px',
                     borderRadius: '16px',
-                    backgroundColor: '#0f172a',
+                    backgroundColor: availability[selectedDate]?.[selectedShowTime]?.isHousefull ? '#94a3b8' : '#0f172a',
                     color: '#ffffff',
                     fontWeight: 800,
                     fontSize: '14px',
                     border: 'none',
-                    cursor: 'pointer',
+                    cursor: availability[selectedDate]?.[selectedShowTime]?.isHousefull ? 'not-allowed' : 'pointer',
                     boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)',
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  Proceed
+                  {availability[selectedDate]?.[selectedShowTime]?.isHousefull ? 'Housefull' : 'Proceed'}
                 </button>
               </div>
             </div>
