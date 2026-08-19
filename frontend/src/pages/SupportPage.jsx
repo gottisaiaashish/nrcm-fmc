@@ -14,7 +14,7 @@ export default function SupportPage() {
   const faqs = [
     {
       q: 'How do I enter the auditorium on show day?',
-      a: 'Present your Digital Entry Pass QR Code (on your mobile phone screen or saved PDF) at NRCM Main Auditorium Block A Entrance Gate Counter 1 for an instant single-use QR scan.'
+      a: 'Present your Digital Entry Pass QR Code (on your mobile phone screen or saved PDF) at NRCM Main Auditorium MT Block Entrance Gate Counter 1 for an instant single-use QR scan.'
     },
     {
       q: 'Can I book multiple tickets for my friends?',
@@ -251,7 +251,7 @@ export default function SupportPage() {
             </div>
             <div>
               <strong style={{ fontSize: '14px', color: '#0f172a', fontWeight: 800 }}>Gate Counter Location</strong>
-              <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>NRCM Main Auditorium, Block A Entrance</span>
+              <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>NRCM Main Auditorium, MT Block Entrance</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#475569', backgroundColor: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '4px' }}>

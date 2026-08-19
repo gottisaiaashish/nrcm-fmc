@@ -194,7 +194,7 @@ export default function TicketPassModal({ isOpen, onClose, tickets = [], booking
             {/* Venue */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ color: '#64748b', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase' }}>Venue:</span>
-              <strong style={{ color: '#0f172a', fontWeight: 700, fontSize: '11px' }}>NRCM Main Auditorium, Block A</strong>
+              <strong style={{ color: '#0f172a', fontWeight: 700, fontSize: '11px' }}>NRCM Main Auditorium, MT Block</strong>
             </div>
 
           </div>

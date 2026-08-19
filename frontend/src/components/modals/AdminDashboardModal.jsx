@@ -33,7 +33,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     movieTitle: 'NRCM RE-RELEASE 2026',
     tagline: 'Experience the Cult Classic on the Big Screen!',
     posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop',
-    venue: 'NRCM Main Auditorium, Block A',
+    venue: 'NRCM Main Auditorium, MT Block',
     releaseDate: 'MARCH 20, 2026',
     showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'],
     tiers: [

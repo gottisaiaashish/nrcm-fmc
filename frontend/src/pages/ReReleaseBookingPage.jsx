@@ -49,7 +49,7 @@ export default function ReReleaseBookingPage() {
     tagline: 'Guns Don\'t Need Reasons, They Need Bullets!',
     description: 'Surya (Mahesh Babu) arrives in Mumbai to conquer the mafia underworld. A cult high-energy action entertainer directed by Puri Jagannadh.',
     posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
-    venue: 'NRCM Main Auditorium, Block A',
+    venue: 'NRCM Main Auditorium, MT Block',
     releaseDate: 'March 20, 2026',
     showTimes: ['10:30 AM', '02:30 PM', '06:30 PM'],
     tiers: [
@@ -596,7 +596,7 @@ export default function ReReleaseBookingPage() {
                 <strong style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   NRCM Main Auditorium <ChevronDown size={16} color="#64748b" />
                 </strong>
-                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>Block A • Hyderabad</span>
+                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>MT Block • Hyderabad</span>
               </div>
             </div>
 
@@ -808,7 +808,7 @@ export default function ReReleaseBookingPage() {
                 <div style={{ ...S.card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f8fafc', gap: '12px' }}>
                   <div>
                     <strong style={{ fontSize: '14px', color: '#0f172a', display: 'block' }}>Need Help with Booking?</strong>
-                    <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Film Making Club Helpdesk • Block A</span>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Film Making Club Helpdesk • MT Block</span>
                   </div>
                   <button
                     onClick={() => navigate('/support')}
@@ -834,7 +834,7 @@ export default function ReReleaseBookingPage() {
                       No Live Events Right Now
                     </h3>
                     <p style={{ fontSize: '13px', color: '#64748b', margin: 0, maxWidth: '400px', lineHeight: 1.6 }}>
-                      NRCM Film Making Club is currently focusing on the <strong>Businessman Re-Release</strong> screening in Block A Auditorium! New workshops & events will be announced soon.
+                      NRCM Film Making Club is currently focusing on the <strong>Businessman Re-Release</strong> screening in MT Block Auditorium! New workshops & events will be announced soon.
                     </p>
                   </div>
                 </div>
@@ -953,7 +953,7 @@ export default function ReReleaseBookingPage() {
               </button>
               <div>
                 <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: 0 }}>{eventSettings.movieTitle}</h3>
-                <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Main Auditorium • Block A</span>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>NRCM Main Auditorium • MT Block</span>
               </div>
             </div>
 

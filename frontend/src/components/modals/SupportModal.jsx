@@ -9,7 +9,7 @@ export default function SupportModal({ isOpen, onClose }) {
   const faqs = [
     {
       q: 'How do I enter the auditorium on show day?',
-      a: 'Present your Digital Pass QR Code (from your phone screen or PDF) at NRCM Main Auditorium Block A Entrance Gate Counter 1 for instant single-use scan.'
+      a: 'Present your Digital Pass QR Code (from your phone screen or PDF) at NRCM Main Auditorium MT Block Entrance Gate Counter 1 for instant single-use scan.'
     },
     {
       q: 'Can I book multiple tickets for my friends?',
@@ -75,7 +75,7 @@ export default function SupportModal({ isOpen, onClose }) {
             </div>
             <div>
               <h3 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#ffffff' }}>FMC Student Helpdesk</h3>
-              <span style={{ fontSize: '11px', color: '#94a3b8' }}>NRCM FilmMaking Club • Block A</span>
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>NRCM FilmMaking Club • MT Block</span>
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export default function SupportModal({ isOpen, onClose }) {
               <strong style={{ fontSize: '13px', color: '#ffffff' }}>Gate Counter Location</strong>
             </div>
             <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>
-              NRCM Main Auditorium, Block A Entrance • Gate Counter 1 (9:30 AM - 5:30 PM on show days).
+              NRCM Main Auditorium, MT Block Entrance • Gate Counter 1 (9:30 AM - 5:30 PM on show days).
             </p>
           </div>
 
