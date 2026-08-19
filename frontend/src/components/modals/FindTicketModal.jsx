@@ -154,7 +154,7 @@ export default function FindTicketModal({ isOpen, onClose, onTicketsFound }) {
               gap: '8px'
             }}
           >
-            {loading ? 'Searching Database...' : 'Retrieve Ticket Pass'}
+            {loading ? 'Searching...' : 'Retrieve Ticket Pass'}
           </button>
         </form>
       </div>

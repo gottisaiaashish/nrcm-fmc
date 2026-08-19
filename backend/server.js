@@ -290,6 +290,12 @@ const ticketSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+ticketSchema.index({ rollNo: 1 });
+ticketSchema.index({ mobile: 1 });
+ticketSchema.index({ bookingRef: 1 });
+ticketSchema.index({ email: 1 });
+ticketSchema.index({ ticketId: 1 });
+
 const Ticket = mongoose.models.Ticket || mongoose.model('Ticket', ticketSchema);
 
 const suggestionSchema = new mongoose.Schema({
@@ -756,7 +762,7 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
   }
 });
 
-// 9b. Public Ticket Lookup - Search by Roll No, Mobile, or Booking Ref
+// 9b. Public Ticket Lookup - Search by Roll No, Mobile, Email, or Booking Ref
 app.get('/api/tickets/lookup', async (req, res) => {
   try {
     const { query } = req.query;
@@ -764,25 +770,40 @@ app.get('/api/tickets/lookup', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Please enter Roll Number, Phone Number, or Ticket ID.' });
     }
 
-    const clean = query.trim().toUpperCase();
+    const raw = query.trim();
+    const cleanUpper = raw.toUpperCase();
+    const cleanDigits = raw.replace(/\D/g, ''); // Extract digits for phone search
 
     let matchedTickets = [];
     if (isMongoConnected) {
-      matchedTickets = await Ticket.find({
-        $or: [
-          { rollNo: { $regex: clean, $options: 'i' } },
-          { mobile: { $regex: clean, $options: 'i' } },
-          { bookingRef: { $regex: clean, $options: 'i' } },
-          { ticketId: { $regex: clean, $options: 'i' } }
-        ]
-      }).sort({ createdAt: -1 });
+      const searchConditions = [
+        { rollNo: cleanUpper },
+        { rollNo: { $regex: cleanUpper, $options: 'i' } },
+        { email: { $regex: raw, $options: 'i' } },
+        { bookingRef: cleanUpper },
+        { ticketId: cleanUpper },
+        { razorpayPaymentId: raw }
+      ];
+
+      if (cleanDigits.length >= 4) {
+        const lastDigits = cleanDigits.slice(-10);
+        searchConditions.push({ mobile: { $regex: lastDigits } });
+        searchConditions.push({ mobile: { $regex: cleanDigits } });
+      }
+
+      matchedTickets = await Ticket.find({ $or: searchConditions })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
     } else {
-      matchedTickets = inMemoryTickets.filter(t =>
-        (t.rollNo || '').toUpperCase().includes(clean) ||
-        (t.mobile || '').includes(clean) ||
-        (t.bookingRef || '').toUpperCase().includes(clean) ||
-        (t.ticketId || '').toUpperCase().includes(clean)
-      );
+      matchedTickets = inMemoryTickets.filter(t => {
+        const rollMatch = (t.rollNo || '').toUpperCase().includes(cleanUpper);
+        const mobileMatch = (t.mobile || '').replace(/\D/g, '').includes(cleanDigits) || (t.mobile || '').includes(raw);
+        const refMatch = (t.bookingRef || '').toUpperCase().includes(cleanUpper);
+        const tktMatch = (t.ticketId || '').toUpperCase().includes(cleanUpper);
+        const emailMatch = (t.email || '').toLowerCase().includes(raw.toLowerCase());
+        return rollMatch || mobileMatch || refMatch || tktMatch || emailMatch;
+      });
     }
 
     if (matchedTickets.length === 0) {
