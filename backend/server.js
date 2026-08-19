@@ -926,6 +926,86 @@ app.delete('/api/admin/tickets/:id', async (req, res) => {
   }
 });
 
+// 13b. Admin - Manually Issue Ticket(s)
+app.post('/api/admin/tickets/issue', async (req, res) => {
+  try {
+    const {
+      studentName,
+      rollNo,
+      branch,
+      mobile,
+      email,
+      movieTitle,
+      showDate,
+      showTime,
+      tierName,
+      price,
+      quantity,
+      razorpayPaymentId,
+      razorpayOrderId
+    } = req.body;
+
+    if (!studentName || !rollNo || !mobile || !email) {
+      return res.status(400).json({ success: false, error: 'Student Name, Roll No, Mobile, and Email are required.' });
+    }
+
+    const bookingRef = `NRCM-BKG-ADMIN-${Date.now().toString().slice(-6)}`;
+    const count = parseInt(quantity, 10) || 1;
+    const generatedTickets = [];
+
+    for (let i = 1; i <= count; i++) {
+      const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const ticketId = `NRCM-TKT-${randomCode}-${i}`;
+
+      const ticketObj = {
+        ticketId,
+        bookingRef,
+        movieTitle: movieTitle || 'Businessman',
+        showDate: showDate || 'AUGUST 24, 2026',
+        showTime: showTime || '10:00 AM to 12:30 PM',
+        tierName: tierName || 'General Pass',
+        price: Number(price) || 50,
+        studentName: studentName.trim(),
+        rollNo: rollNo.trim().toUpperCase(),
+        branch: branch ? branch.trim() : 'CSE',
+        mobile: mobile.trim(),
+        email: email.trim().toLowerCase(),
+        status: 'VALID',
+        usedAt: null,
+        razorpayOrderId: razorpayOrderId || 'MANUAL_ADMIN_ISSUED',
+        razorpayPaymentId: razorpayPaymentId || 'MANUAL_ADMIN_ISSUED',
+        createdAt: new Date()
+      };
+
+      generatedTickets.push(ticketObj);
+    }
+
+    if (isMongoConnected) {
+      const createdDocs = await Ticket.insertMany(generatedTickets);
+      console.log(`🎟️ [ADMIN MANUAL TICKET ISSUED] ${count} tickets created for ${studentName} (${rollNo})`);
+      return res.status(201).json({
+        success: true,
+        message: `${count} Ticket(s) issued successfully!`,
+        bookingRef,
+        tickets: createdDocs
+      });
+    } else {
+      inMemoryTickets.unshift(...generatedTickets);
+      console.log(`🎟️ [IN-MEMORY ADMIN MANUAL TICKET ISSUED] ${count} tickets created for ${studentName} (${rollNo})`);
+      return res.status(201).json({
+        success: true,
+        message: `${count} Ticket(s) issued successfully!`,
+        bookingRef,
+        tickets: generatedTickets
+      });
+    }
+  } catch (error) {
+    console.error('Manual Issue Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to manually issue tickets.' });
+  }
+});
+
+
 // 14. Submit Event Suggestion (Student)
 app.post('/api/suggestions', async (req, res) => {
   try {

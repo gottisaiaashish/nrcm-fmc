@@ -43,6 +43,27 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const [ticketsList, setTicketsList] = useState([]);
   const [ticketSearchQuery, setTicketSearchQuery] = useState('');
 
+  // Manual Issue Ticket Modal State
+  const [issueModalOpen, setIssueModalOpen] = useState(false);
+  const [issueLoading, setIssueLoading] = useState(false);
+  const [issueError, setIssueError] = useState('');
+  const [issueSuccessMsg, setIssueSuccessMsg] = useState('');
+  const [issueFormData, setIssueFormData] = useState({
+    studentName: '',
+    rollNo: '',
+    branch: 'CSE - 1st Year',
+    mobile: '',
+    email: '',
+    movieTitle: 'Businessman',
+    showDate: 'AUGUST 24, 2026',
+    showTime: '10:00 AM to 12:30 PM',
+    tierName: 'General Pass',
+    price: 50,
+    quantity: 1,
+    razorpayPaymentId: '',
+    razorpayOrderId: ''
+  });
+
   // Event Suggestions State
   const [suggestionsList, setSuggestionsList] = useState([]);
   const [suggestionSearchQuery, setSuggestionSearchQuery] = useState('');
@@ -163,6 +184,51 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err);
+    }
+  };
+
+  const handleManualIssueTicket = async (e) => {
+    e.preventDefault();
+    setIssueLoading(true);
+    setIssueError('');
+    setIssueSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/admin/tickets/issue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(issueFormData)
+      });
+      const data = await res.json();
+      if (data.success && data.tickets) {
+        setTicketsList(prev => [...data.tickets, ...prev]);
+        setIssueSuccessMsg(`✅ ${data.tickets.length} Ticket(s) issued successfully! Ref: ${data.bookingRef}`);
+        setTimeout(() => {
+          setIssueModalOpen(false);
+          setIssueSuccessMsg('');
+          setIssueFormData({
+            studentName: '',
+            rollNo: '',
+            branch: 'CSE - 1st Year',
+            mobile: '',
+            email: '',
+            movieTitle: eventSettings.movieTitle || 'Businessman',
+            showDate: 'AUGUST 24, 2026',
+            showTime: '10:00 AM to 12:30 PM',
+            tierName: 'General Pass',
+            price: 50,
+            quantity: 1,
+            razorpayPaymentId: '',
+            razorpayOrderId: ''
+          });
+        }, 1500);
+      } else {
+        setIssueError(data.error || 'Failed to generate tickets.');
+      }
+    } catch (err) {
+      setIssueError('Network error issuing ticket: ' + err.message);
+    } finally {
+      setIssueLoading(false);
     }
   };
 
@@ -785,15 +851,23 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         {activeTab === 'rerelease_tickets' && (
           <div style={S.body}>
             <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
-              <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e' }}>All Booked Movie Tickets ({ticketsList.length})</h3>
-                <input
-                  type="text"
-                  placeholder="Search ticket ID, student name, roll no..."
-                  value={ticketSearchQuery}
-                  onChange={e => setTicketSearchQuery(e.target.value)}
-                  style={{ width:300, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
-                />
+              <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
+                <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e', margin:0 }}>All Booked Movie Tickets ({ticketsList.length})</h3>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <input
+                    type="text"
+                    placeholder="Search ticket ID, student name, roll no..."
+                    value={ticketSearchQuery}
+                    onChange={e => setTicketSearchQuery(e.target.value)}
+                    style={{ width:240, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
+                  />
+                  <button
+                    onClick={() => setIssueModalOpen(true)}
+                    style={{ padding:'6px 14px', borderRadius:8, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:700, border:'none', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', gap:6 }}
+                  >
+                    <Plus size={14} /> Issue Ticket Manually
+                  </button>
+                </div>
               </div>
 
               <div style={{ overflowX:'auto', overflowY:'auto', maxHeight:440 }}>
@@ -1086,6 +1160,240 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         )}
 
       </main>
+
+      {/* ── MANUAL ISSUE TICKET MODAL (ADMIN ONLY) ── */}
+      {issueModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 10000,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justify: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '560px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid #e5e7eb',
+            padding: '24px'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f3f4f6' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Ticket size={20} color="#dc2626" /> Issue Ticket Manually (Admin)
+                </h3>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
+                  Generate entry pass for offline/paid students. Reflects immediately in Total Bookings.
+                </p>
+              </div>
+              <button
+                onClick={() => setIssueModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Notifications */}
+            {issueError && (
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 600 }}>
+                {issueError}
+              </div>
+            )}
+            {issueSuccessMsg && (
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', color: '#16a34a', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 700 }}>
+                {issueSuccessMsg}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleManualIssueTicket} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              
+              {/* Row 1: Student Name & Roll No */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Student Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Sharma"
+                    value={issueFormData.studentName}
+                    onChange={e => setIssueFormData({ ...issueFormData, studentName: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Roll Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 25X01A05IS"
+                    value={issueFormData.rollNo}
+                    onChange={e => setIssueFormData({ ...issueFormData, rollNo: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Mobile & Email */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 9381501682"
+                    value={issueFormData.mobile}
+                    onChange={e => setIssueFormData({ ...issueFormData, mobile: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. 25x01a05is@nrcmec.org"
+                    value={issueFormData.email}
+                    onChange={e => setIssueFormData({ ...issueFormData, email: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Branch & Show Date */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Branch & Year
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. CSE - 1st Year"
+                    value={issueFormData.branch}
+                    onChange={e => setIssueFormData({ ...issueFormData, branch: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Show Date
+                  </label>
+                  <select
+                    value={issueFormData.showDate}
+                    onChange={e => setIssueFormData({ ...issueFormData, showDate: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="AUGUST 24, 2026">AUGUST 24, 2026</option>
+                    <option value="AUGUST 25, 2026">AUGUST 25, 2026</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 4: Show Time & Category */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Show Time
+                  </label>
+                  <select
+                    value={issueFormData.showTime}
+                    onChange={e => setIssueFormData({ ...issueFormData, showTime: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="10:00 AM to 12:30 PM">10:00 AM to 12:30 PM</option>
+                    <option value="01:00 PM to 03:30 PM">01:00 PM to 03:30 PM</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Pass Category & Price
+                  </label>
+                  <select
+                    value={issueFormData.tierName}
+                    onChange={e => {
+                      const selectedTier = e.target.value;
+                      let p = 50;
+                      if (selectedTier === 'VIP Balcony') p = 150;
+                      if (selectedTier === 'Fan Zone') p = 120;
+                      setIssueFormData({ ...issueFormData, tierName: selectedTier, price: p });
+                    }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="General Pass">General Pass (₹50)</option>
+                    <option value="VIP Balcony">VIP Balcony (₹150)</option>
+                    <option value="Fan Zone">Fan Zone (₹120)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 5: Ticket Quantity & Razorpay Payment ID */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    No. of Tickets
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={issueFormData.quantity}
+                    onChange={e => setIssueFormData({ ...issueFormData, quantity: parseInt(e.target.value, 10) || 1 })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700, boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Razorpay Payment ID (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. pay_TRclxrU4KRljMU"
+                    value={issueFormData.razorpayPaymentId}
+                    onChange={e => setIssueFormData({ ...issueFormData, razorpayPaymentId: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
+                <button
+                  type="button"
+                  onClick={() => setIssueModalOpen(false)}
+                  style={{ padding: '10px 18px', borderRadius: '10px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={issueLoading}
+                  style={{ padding: '10px 20px', borderRadius: '10px', backgroundColor: '#dc2626', color: '#ffffff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)' }}
+                >
+                  <Plus size={16} /> {issueLoading ? 'Issuing Ticket...' : 'Generate & Add Ticket'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
