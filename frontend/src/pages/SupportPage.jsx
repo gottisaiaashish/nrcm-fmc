@@ -130,7 +130,7 @@ export default function SupportPage() {
                 </div>
                 <div>
                   <strong style={{ fontSize: '15px', display: 'block', fontWeight: 800 }}>+91 82477 58835</strong>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>FMC Team Lead • WhatsApp / Call</span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>WhatsApp / Call Support</span>
                 </div>
               </div>
             </a>
