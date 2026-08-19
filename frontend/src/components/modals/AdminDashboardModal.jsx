@@ -444,6 +444,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       t.ticketId?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
       t.studentName?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
       t.rollNo?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
+      t.mobile?.includes(ticketSearchQuery) ||
       t.bookingRef?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
       t.showTime?.toLowerCase().includes(ticketSearchQuery.toLowerCase())
     );
@@ -874,8 +875,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
                   <thead>
                     <tr style={S.tHead}>
-                      {['#','Ticket Pass ID','Student Name','Roll No','Branch','Show Date & Time','Category','Price','Status','Action'].map((h, i) => (
-                        <th key={i} style={{ ...S.tHeadTh, textAlign: i === 9 ? 'right' : 'left' }}>{h}</th>
+                      {['#','Ticket Pass ID','Student Name','Mobile No','Roll No','Branch','Show Date & Time','Category','Price','Status','Action'].map((h, i) => (
+                        <th key={i} style={{ ...S.tHeadTh, textAlign: i === 10 ? 'right' : 'left' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -885,6 +886,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                         <td style={S.tCell}>{idx + 1}</td>
                         <td style={{ ...S.tCell, color:'#dc2626', fontFamily:'monospace', fontWeight:700 }}>{t.ticketId}</td>
                         <td style={{ ...S.tCell, fontWeight:600 }}>{t.studentName}</td>
+                        <td style={{ ...S.tCell, fontFamily:'monospace', fontWeight:700, color:'#0f172a' }}>{t.mobile || 'N/A'}</td>
                         <td style={{ ...S.tCell, fontFamily:'monospace' }}>{t.rollNo}</td>
                         <td style={S.tCell}>{t.branch}</td>
                         <td style={S.tCell}>{t.showDate || 'AUGUST 24, 2026'} ({t.showTime})</td>
@@ -914,7 +916,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                         </td>
                       </tr>
                     )) : (
-                      <tr><td colSpan="10" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No booked tickets found.</td></tr>
+                      <tr><td colSpan="11" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No booked tickets found.</td></tr>
                     )}
                   </tbody>
                 </table>
