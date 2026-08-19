@@ -50,8 +50,9 @@ export default function ReReleaseBookingPage() {
     description: 'Surya (Mahesh Babu) arrives in Mumbai to conquer the mafia underworld. A cult high-energy action entertainer directed by Puri Jagannadh.',
     posterUrl: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
     venue: 'NRCM Main Auditorium, MT Block',
-    releaseDate: 'March 20, 2026',
-    showTimes: ['10:30 AM', '02:30 PM', '06:30 PM'],
+    releaseDate: 'AUGUST 24, 2026',
+    dates: ['AUGUST 24, 2026'],
+    showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
     tiers: [
       { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher', badge: 'Fast Filling' },
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front rows stage area with high energy crowd', badge: 'Popular' },
@@ -59,6 +60,26 @@ export default function ReReleaseBookingPage() {
     ],
     isBookingOpen: true
   });
+
+  // Fetch Live Event Settings on Mount
+  useEffect(() => {
+    fetch('/api/event-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.settings) {
+          setEventSettings(data.settings);
+          if (data.settings.dates && data.settings.dates.length > 0) {
+            setSelectedDate(data.settings.dates[0]);
+          } else if (data.settings.releaseDate) {
+            setSelectedDate(data.settings.releaseDate);
+          }
+          if (data.settings.showTimes && data.settings.showTimes.length > 0) {
+            setSelectedShowTime(data.settings.showTimes[0]);
+          }
+        }
+      })
+      .catch(err => console.log('Error fetching event settings:', err));
+  }, []);
 
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
   const [searchQuery, setSearchQuery] = useState('');
@@ -696,27 +717,40 @@ export default function ReReleaseBookingPage() {
                       </h2>
 
                   {/* Clean White Movie Poster Card */}
-                  <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '0', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-                    
-                    <div style={{ width: '100%', height: '320px', position: 'relative', backgroundColor: '#0f172a' }}>
-                      <img
-                        src={eventSettings.posterUrl}
-                        alt={eventSettings.movieTitle}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-                      />
-                    </div>
-
-                    {/* Description under Poster */}
-                    <div style={{ padding: '20px' }}>
-                      <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: '0 0 2px 0' }}>
-                        {eventSettings.movieTitle || 'Businessman'}
+                  {!eventSettings.movieTitle ? (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '40px 24px', textAlign: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                      <Film size={36} color="#64748b" style={{ marginBottom: '12px' }} />
+                      <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
+                        No Active Movie Screening
                       </h3>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b', display: 'block', marginBottom: '10px' }}>
-                        Re-Release 2026
-                      </span>
-                      <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0', lineHeight: 1.5 }}>
-                        {eventSettings.description}
+                      <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>
+                        Currently there is no live movie screening scheduled. Stay tuned for upcoming movie re-release announcements!
                       </p>
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '0', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+                      
+                      <div style={{ width: '100%', height: '320px', position: 'relative', backgroundColor: '#0f172a' }}>
+                        <img
+                          src={eventSettings.posterUrl}
+                          alt={eventSettings.movieTitle}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+                        />
+                      </div>
+
+                      {/* Description under Poster */}
+                      <div style={{ padding: '20px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#0f172a', margin: '0 0 2px 0' }}>
+                          {eventSettings.movieTitle}
+                        </h3>
+                        {eventSettings.tagline && (
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#e11d48', display: 'block', marginBottom: '8px' }}>
+                            {eventSettings.tagline}
+                          </span>
+                        )}
+                        <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                          {eventSettings.description}
+                        </p>
 
                       <button
                         onClick={() => {
@@ -749,6 +783,7 @@ export default function ReReleaseBookingPage() {
                     </div>
 
                   </div>
+                  )}
                 </div>
 
                 {/* Auto-cycling Highlight Loop (Pure Borderless Layout) */}
@@ -1130,8 +1165,8 @@ export default function ReReleaseBookingPage() {
 
                 {/* 1. DATE SELECTOR PILLS */}
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>1. Select Screening Date</div>
-                <div style={{ marginBottom: '16px' }}>
-                  {['AUGUST 24, 2026'].map((d) => {
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                  {(eventSettings.dates && eventSettings.dates.length > 0 ? eventSettings.dates : [eventSettings.releaseDate || 'AUGUST 24, 2026']).map((d) => {
                     const isSelected = selectedDate === d;
                     return (
                       <button
@@ -1142,18 +1177,18 @@ export default function ReReleaseBookingPage() {
                           width: '100%',
                           padding: '12px',
                           borderRadius: '14px',
-                          backgroundColor: '#0f172a',
-                          color: '#ffffff',
-                          border: '2px solid #0f172a',
+                          backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
+                          color: isSelected ? '#ffffff' : '#0f172a',
+                          border: isSelected ? '2px solid #0f172a' : '1px solid #cbd5e1',
                           fontWeight: 800,
                           fontSize: '13px',
                           cursor: 'pointer',
                           textAlign: 'center',
                           transition: 'all 0.2s ease',
-                          boxShadow: '0 4px 12px rgba(15,23,42,0.2)'
+                          boxShadow: isSelected ? '0 4px 12px rgba(15,23,42,0.2)' : 'none'
                         }}
                       >
-                        Mon, 24 Aug
+                        {d}
                       </button>
                     );
                   })}
@@ -1162,18 +1197,16 @@ export default function ReReleaseBookingPage() {
                 {/* 2. SHOW TIME SELECTOR PILLS */}
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>2. Select Show Timing</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {[
-                    { label: 'Morning Show', time: '10:00 AM to 12:30 PM' },
-                    { label: 'Matinee Show', time: '01:00 PM to 03:30 PM' }
-                  ].map((st) => {
-                    const isSelected = selectedShowTime === st.time;
-                    const slotData = availability[selectedDate]?.[st.time] || { booked: 0, capacity: 300, remaining: 300, isHousefull: false };
+                  {(eventSettings.showTimes && eventSettings.showTimes.length > 0 ? eventSettings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM']).map((st) => {
+                    const timeString = typeof st === 'string' ? st : (st.time || st);
+                    const isSelected = selectedShowTime === timeString;
+                    const slotData = availability[selectedDate]?.[timeString] || { booked: 0, capacity: 300, remaining: 300, isHousefull: false };
                     const isHousefull = slotData.isHousefull || slotData.remaining <= 0;
 
                     return (
                       <div
-                        key={st.time}
-                        onClick={() => !isHousefull && setSelectedShowTime(st.time)}
+                        key={timeString}
+                        onClick={() => !isHousefull && setSelectedShowTime(timeString)}
                         style={{
                           padding: '14px 16px',
                           borderRadius: '14px',
@@ -1189,10 +1222,7 @@ export default function ReReleaseBookingPage() {
                       >
                         <div>
                           <div style={{ fontSize: '14px', fontWeight: 800, color: isHousefull ? '#991b1b' : (isSelected ? '#be123c' : '#0f172a') }}>
-                            {st.time}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
-                            {st.label}
+                            {timeString}
                           </div>
                         </div>
 

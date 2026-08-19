@@ -256,10 +256,11 @@ const Registration = mongoose.models.Registration || mongoose.model('Registratio
 const eventSettingsSchema = new mongoose.Schema({
   movieTitle: { type: String, default: 'Businessman' },
   tagline: { type: String, default: 'Guns Don\'t Need Reasons, They Need Bullets!' },
+  description: { type: String, default: 'Surya (Mahesh Babu) arrives in Mumbai to conquer the mafia underworld. A cult high-energy action entertainer directed by Puri Jagannadh.' },
   posterUrl: { type: String, default: 'https://tse3.mm.bing.net/th/id/OIP.Ws0jajMZU5CdOh0jDEgBEQHaKf?r=0&rs=1&pid=ImgDetMain&o=7&rm=3' },
   venue: { type: String, default: 'NRCM Main Auditorium, MT Block' },
   releaseDate: { type: String, default: 'AUGUST 24, 2026' },
-  dates: { type: [String], default: ['AUGUST 24, 2026', 'AUGUST 25, 2026'] },
+  dates: { type: [String], default: ['AUGUST 24, 2026'] },
   showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
   showCapacity: { type: Number, default: 300 },
   tiers: { type: Array, default: [] },
@@ -595,10 +596,81 @@ app.get('/api/tickets/availability', async (req, res) => {
       }
     }
 
-    return res.json({ success: true, availability });
+// 7c. Event Settings Endpoints
+app.get('/api/event-settings', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      let settings = await EventSettings.findOne({});
+      if (!settings) {
+        settings = await EventSettings.create(inMemoryEventSettings);
+      }
+      return res.json({ success: true, settings });
+    } else {
+      return res.json({ success: true, settings: inMemoryEventSettings });
+    }
   } catch (error) {
-    console.error('Fetch Availability Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch show availability.' });
+    console.error('Fetch Event Settings Error:', error);
+    return res.json({ success: true, settings: inMemoryEventSettings });
+  }
+});
+
+app.post('/api/admin/event-settings', async (req, res) => {
+  try {
+    const updateData = req.body;
+    updateData.updatedAt = new Date();
+
+    if (isMongoConnected) {
+      let settings = await EventSettings.findOne({});
+      if (settings) {
+        Object.assign(settings, updateData);
+        await settings.save();
+      } else {
+        settings = await EventSettings.create(updateData);
+      }
+      inMemoryEventSettings = settings.toObject ? settings.toObject() : settings;
+      return res.json({ success: true, settings });
+    } else {
+      inMemoryEventSettings = { ...inMemoryEventSettings, ...updateData };
+      return res.json({ success: true, settings: inMemoryEventSettings });
+    }
+  } catch (error) {
+    console.error('Update Event Settings Error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to save event settings.' });
+  }
+});
+
+app.post('/api/admin/event-settings/reset', async (req, res) => {
+  try {
+    const resetData = {
+      movieTitle: '',
+      tagline: '',
+      description: '',
+      posterUrl: '',
+      releaseDate: '',
+      dates: [],
+      showTimes: [],
+      isBookingOpen: false,
+      announcement: 'No active movie screening right now.',
+      updatedAt: new Date()
+    };
+
+    if (isMongoConnected) {
+      let settings = await EventSettings.findOne({});
+      if (settings) {
+        Object.assign(settings, resetData);
+        await settings.save();
+      } else {
+        settings = await EventSettings.create(resetData);
+      }
+      inMemoryEventSettings = settings.toObject ? settings.toObject() : settings;
+      return res.json({ success: true, settings });
+    } else {
+      inMemoryEventSettings = { ...inMemoryEventSettings, ...resetData };
+      return res.json({ success: true, settings: inMemoryEventSettings });
+    }
+  } catch (error) {
+    console.error('Reset Event Settings Error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to reset event settings.' });
   }
 });
 

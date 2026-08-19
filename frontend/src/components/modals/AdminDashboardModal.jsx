@@ -260,6 +260,29 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     }
   };
 
+  const handleResetMovieSettings = async () => {
+    if (!window.confirm('Are you sure you want to DELETE / CLEAR the active movie screening? This will close bookings and clear the movie details.')) {
+      return;
+    }
+    setSaveSettingsStatus('Resetting...');
+    try {
+      const res = await fetch('/api/admin/event-settings/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data.success && data.settings) {
+        setEventSettings(data.settings);
+        setSaveSettingsStatus('✅ Active Movie Screening Reset / Deleted!');
+        setTimeout(() => setSaveSettingsStatus(''), 3000);
+      } else {
+        setSaveSettingsStatus('⚠️ Failed to reset: ' + data.error);
+      }
+    } catch (err) {
+      setSaveSettingsStatus('⚠️ Error: ' + err.message);
+    }
+  };
+
   // Gate Scanner Actions
   const handleVerifyTicket = async (ticketIdToTest) => {
     const idToVerify = ticketIdToTest || scanTicketIdInput;
@@ -715,12 +738,12 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         {activeTab === 'rerelease_settings' && (
           <div style={S.body}>
             <form onSubmit={handleSaveEventSettings} style={{ ...S.card, display:'flex', flexDirection:'column', gap:16 }}>
-              <div style={{ display:'flex', alignItems:'center', justifyBetween:'space-between', borderBottom:'1px solid #f3f4f6', paddingBottom:12 }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid #f3f4f6', paddingBottom:12 }}>
                 <div>
-                  <h2 style={{ fontSize:18, fontWeight:800, color:'#1c1c1e' }}>Re-Release Movie & Ticket Configuration</h2>
-                  <p style={{ fontSize:12, color:'#6b7280' }}>Changes saved here will reflect live on the <strong style={{ color:'#dc2626' }}>/booknow</strong> student booking sub-page.</p>
+                  <h2 style={{ fontSize:18, fontWeight:800, color:'#1c1c1e', margin:0 }}>Re-Release Movie & Ticket Configuration</h2>
+                  <p style={{ fontSize:12, color:'#6b7280', margin:'4px 0 0 0' }}>Changes saved here will reflect live on the <strong style={{ color:'#dc2626' }}>/booknow</strong> student booking sub-page.</p>
                 </div>
-                {saveSettingsStatus && <span style={{ fontSize:12, fontWeight:700, color:'#16a34a' }}>{saveSettingsStatus}</span>}
+                {saveSettingsStatus && <span style={{ fontSize:12, fontWeight:700, color:'#16a34a', backgroundColor:'#f0fdf4', padding:'6px 12px', borderRadius:8, border:'1px solid #bbf7d0' }}>{saveSettingsStatus}</span>}
               </div>
 
               <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
@@ -728,29 +751,63 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Movie Title</label>
                   <input
                     type="text"
-                    value={eventSettings.movieTitle}
+                    placeholder="e.g. Businessman, Devara, OG..."
+                    value={eventSettings.movieTitle || ''}
                     onChange={e => setEventSettings(prev => ({ ...prev, movieTitle: e.target.value }))}
                     style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Release / Event Date</label>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Tagline / Subtitle</label>
                   <input
                     type="text"
-                    value={eventSettings.releaseDate}
-                    onChange={e => setEventSettings(prev => ({ ...prev, releaseDate: e.target.value }))}
+                    placeholder="e.g. Guns Don't Need Reasons, They Need Bullets!"
+                    value={eventSettings.tagline || ''}
+                    onChange={e => setEventSettings(prev => ({ ...prev, tagline: e.target.value }))}
                     style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
                   />
                 </div>
 
                 <div style={{ gridColumn:'span 2' }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Movie Description / Storyline</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Brief movie plot or event description..."
+                    value={eventSettings.description || ''}
+                    onChange={e => setEventSettings(prev => ({ ...prev, description: e.target.value }))}
+                    style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13, fontFamily:'inherit' }}
+                  />
+                </div>
+
+                <div style={{ gridColumn:'span 2' }}>
                   <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Movie Poster Image URL</label>
+                  <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+                    <input
+                      type="text"
+                      value={eventSettings.posterUrl || ''}
+                      onChange={e => setEventSettings(prev => ({ ...prev, posterUrl: e.target.value }))}
+                      placeholder="https://..."
+                      style={{ flex:1, padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
+                    />
+                    {eventSettings.posterUrl && (
+                      <img
+                        src={eventSettings.posterUrl}
+                        alt="Poster Preview"
+                        style={{ width:48, height:64, objectFit:'cover', borderRadius:8, border:'1px solid #cbd5e1', backgroundColor:'#0f172a' }}
+                        onError={e => e.target.style.display = 'none'}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Screening Date</label>
                   <input
                     type="text"
-                    value={eventSettings.posterUrl}
-                    onChange={e => setEventSettings(prev => ({ ...prev, posterUrl: e.target.value }))}
-                    placeholder="https://..."
+                    placeholder="e.g. AUGUST 24, 2026"
+                    value={eventSettings.releaseDate || ''}
+                    onChange={e => setEventSettings(prev => ({ ...prev, releaseDate: e.target.value }))}
                     style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
                   />
                 </div>
@@ -759,29 +816,30 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Venue / Campus Location</label>
                   <input
                     type="text"
-                    value={eventSettings.venue}
+                    value={eventSettings.venue || ''}
                     onChange={e => setEventSettings(prev => ({ ...prev, venue: e.target.value }))}
                     style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
                   />
                 </div>
 
-                <div>
-                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Booking Open / Closed Toggle</label>
+                <div style={{ gridColumn:'span 2' }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:4 }}>Booking Open / Closed Status</label>
                   <button
                     type="button"
                     onClick={() => setEventSettings(prev => ({ ...prev, isBookingOpen: !prev.isBookingOpen }))}
                     style={{
                       width:'100%',
-                      padding:'10px',
+                      padding:'12px',
                       borderRadius:10,
                       backgroundColor: eventSettings.isBookingOpen ? '#dcfce7' : '#fee2e2',
                       color: eventSettings.isBookingOpen ? '#15803d' : '#b91c1c',
-                      fontWeight:700,
-                      border:'none',
-                      cursor:'pointer'
+                      fontWeight:800,
+                      border: eventSettings.isBookingOpen ? '1px solid #bbf7d0' : '1px solid #fecaca',
+                      cursor:'pointer',
+                      fontSize:13
                     }}
                   >
-                    {eventSettings.isBookingOpen ? 'BOOKINGS ARE LIVE (OPEN)' : 'BOOKINGS PAUSED (CLOSED)'}
+                    {eventSettings.isBookingOpen ? '🟢 BOOKINGS ARE LIVE (OPEN)' : '🔴 BOOKINGS PAUSED (CLOSED)'}
                   </button>
                 </div>
               </div>
@@ -796,21 +854,35 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                     const times = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
                     setEventSettings(prev => ({ ...prev, showTimes: times }));
                   }}
-                  placeholder="10:30 AM (Morning Show), 02:30 PM (Matinee)"
+                  placeholder="10:00 AM to 12:30 PM, 01:00 PM to 03:30 PM"
                   style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', fontSize:13 }}
                 />
               </div>
 
               {/* Tiers & Prices Editor */}
               <div>
-                <label style={{ fontSize:12, fontWeight:700, color:'#374151', display:'block', marginBottom:6 }}>Ticket Categories & Pricing</label>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#374151', margin:0 }}>Ticket Categories & Pricing</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = eventSettings.tiers ? [...eventSettings.tiers] : [];
+                      updated.push({ id: `tier_${Date.now()}`, name: 'New Tier', price: 50, description: 'Standard pass' });
+                      setEventSettings(prev => ({ ...prev, tiers: updated }));
+                    }}
+                    style={{ fontSize:12, fontWeight:700, color:'#2563eb', backgroundColor:'#eff6ff', border:'1px solid #bfdbfe', padding:'4px 10px', borderRadius:6, cursor:'pointer' }}
+                  >
+                    + Add New Tier
+                  </button>
+                </div>
+
                 <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                   {eventSettings.tiers && eventSettings.tiers.map((tier, idx) => (
                     <div key={idx} style={{ display:'flex', gap:10, alignItems:'center', backgroundColor:'#f9fafb', padding:10, borderRadius:10, border:'1px solid #f3f4f6' }}>
                       <input
                         type="text"
                         placeholder="Category Name"
-                        value={tier.name}
+                        value={tier.name || ''}
                         onChange={e => {
                           const updated = [...eventSettings.tiers];
                           updated[idx].name = e.target.value;
@@ -821,7 +893,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                       <input
                         type="number"
                         placeholder="Price (₹)"
-                        value={tier.price}
+                        value={tier.price || 0}
                         onChange={e => {
                           const updated = [...eventSettings.tiers];
                           updated[idx].price = Number(e.target.value);
@@ -832,7 +904,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                       <input
                         type="text"
                         placeholder="Description"
-                        value={tier.description}
+                        value={tier.description || ''}
                         onChange={e => {
                           const updated = [...eventSettings.tiers];
                           updated[idx].description = e.target.value;
@@ -840,17 +912,38 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                         }}
                         style={{ flex:2, padding:6, borderRadius:6, border:'1px solid #d1d5db', fontSize:12 }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = eventSettings.tiers.filter((_, i) => i !== idx);
+                          setEventSettings(prev => ({ ...prev, tiers: updated }));
+                        }}
+                        style={{ backgroundColor:'#fef2f2', color:'#dc2626', border:'1px solid #fecaca', borderRadius:6, padding:'6px 10px', fontSize:12, cursor:'pointer', fontWeight:700 }}
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <button
-                type="submit"
-                style={{ padding:'12px', borderRadius:10, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:800, border:'none', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyCenter:'center', gap:8 }}
-              >
-                <Save size={16} /> Save Re-Release Settings
-              </button>
+              <div style={{ display:'flex', gap:12, marginTop:8 }}>
+                <button
+                  type="submit"
+                  style={{ flex:1, padding:'12px', borderRadius:10, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:800, border:'none', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
+                >
+                  <Save size={16} /> Save & Publish Movie Settings
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetMovieSettings}
+                  style={{ padding:'12px 18px', borderRadius:10, backgroundColor:'#fef2f2', color:'#dc2626', fontWeight:700, border:'1.5px solid #fecaca', cursor:'pointer', fontSize:13 }}
+                  title="Clear current movie title & details"
+                >
+                  🗑️ Delete / Clear Screening
+                </button>
+              </div>
             </form>
           </div>
         )}
