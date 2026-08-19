@@ -26,11 +26,13 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
 
       if (response.ok && data.success) {
         localStorage.setItem('nrcmfmc_admin_token', data.token);
+        localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
         setUsername(''); setPassword(''); setLoading(false);
         onLoginSuccess();
       } else {
         if (username === 'nrcmfmc' && password === 'fmc123') {
           localStorage.setItem('nrcmfmc_admin_token', 'local-admin-token');
+          localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
           setUsername(''); setPassword(''); setLoading(false);
           onLoginSuccess();
         } else {
@@ -41,6 +43,7 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }) {
     } catch (err) {
       if (username === 'nrcmfmc' && password === 'fmc123') {
         localStorage.setItem('nrcmfmc_admin_token', 'local-admin-token');
+        localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
         setUsername(''); setPassword(''); setLoading(false);
         onLoginSuccess();
       } else {

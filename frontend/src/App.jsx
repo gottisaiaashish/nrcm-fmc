@@ -27,22 +27,36 @@ function MainSite() {
   const [passModalOpen, setPassModalOpen] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
-  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(() => {
+    return localStorage.getItem('nrcmfmc_admin_dashboard_open') === 'true' && !!localStorage.getItem('nrcmfmc_admin_token');
+  });
   const [selectedProject, setSelectedProject] = useState(null);
 
   const handleOpenAdmin = () => {
     const token = localStorage.getItem('nrcmfmc_admin_token');
-    if (token) setAdminDashboardOpen(true);
-    else setAdminLoginOpen(true);
+    if (token) {
+      localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
+      setAdminDashboardOpen(true);
+    } else {
+      setAdminLoginOpen(true);
+    }
   };
 
   const handleLoginSuccess = () => {
+    localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
     setAdminLoginOpen(false);
     setAdminDashboardOpen(true);
   };
 
+  const handleCloseAdminDashboard = () => {
+    localStorage.setItem('nrcmfmc_admin_dashboard_open', 'false');
+    setAdminDashboardOpen(false);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('nrcmfmc_admin_token');
+    localStorage.removeItem('nrcmfmc_admin_dashboard_open');
+    localStorage.removeItem('nrcmfmc_admin_active_tab');
     setAdminDashboardOpen(false);
   };
 
@@ -81,7 +95,7 @@ function MainSite() {
       />
       <AdminDashboardModal
         isOpen={adminDashboardOpen}
-        onClose={() => setAdminDashboardOpen(false)}
+        onClose={handleCloseAdminDashboard}
         onLogout={handleLogout}
       />
     </div>

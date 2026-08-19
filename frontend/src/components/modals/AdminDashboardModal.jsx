@@ -4,7 +4,14 @@ import { Html5Qrcode } from 'html5-qrcode';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   // Navigation Tabs: 'overview', 'shortlisted', 'rerelease_settings', 'rerelease_tickets', 'gate_scanner'
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTabState] = useState(() => {
+    return localStorage.getItem('nrcmfmc_admin_active_tab') || 'rerelease_tickets';
+  });
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    localStorage.setItem('nrcmfmc_admin_active_tab', tab);
+  };
 
   // Recruitment Applications State
   const [registrations, setRegistrations] = useState([]);

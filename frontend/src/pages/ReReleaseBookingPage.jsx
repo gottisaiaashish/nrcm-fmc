@@ -14,7 +14,9 @@ export default function ReReleaseBookingPage() {
 
   const [supportModalOpen, setSupportModalOpen] = useState(false);
   const [adminLoginOpen, setAdminLoginOpen] = useState(false);
-  const [adminDashboardOpen, setAdminDashboardOpen] = useState(false);
+  const [adminDashboardOpen, setAdminDashboardOpen] = useState(() => {
+    return localStorage.getItem('nrcmfmc_admin_dashboard_open') === 'true' && !!localStorage.getItem('nrcmfmc_admin_token');
+  });
   const [findTicketOpen, setFindTicketOpen] = useState(false);
 
   // Active View State: 'spotlight' (District Home), 'seats' (Date, Time & Seat Matrix), 'checkout' (Student Details & Payment)
@@ -1627,6 +1629,7 @@ export default function ReReleaseBookingPage() {
         isOpen={adminLoginOpen}
         onClose={() => setAdminLoginOpen(false)}
         onLoginSuccess={() => {
+          localStorage.setItem('nrcmfmc_admin_dashboard_open', 'true');
           setAdminLoginOpen(false);
           setAdminDashboardOpen(true);
         }}
@@ -1635,8 +1638,16 @@ export default function ReReleaseBookingPage() {
       {/* Admin Management Dashboard Modal */}
       <AdminDashboardModal
         isOpen={adminDashboardOpen}
-        onClose={() => setAdminDashboardOpen(false)}
-        onLogout={() => setAdminDashboardOpen(false)}
+        onClose={() => {
+          localStorage.setItem('nrcmfmc_admin_dashboard_open', 'false');
+          setAdminDashboardOpen(false);
+        }}
+        onLogout={() => {
+          localStorage.removeItem('nrcmfmc_admin_token');
+          localStorage.removeItem('nrcmfmc_admin_dashboard_open');
+          localStorage.removeItem('nrcmfmc_admin_active_tab');
+          setAdminDashboardOpen(false);
+        }}
       />
 
       {/* Find & Download Ticket Pass Modal */}
