@@ -110,7 +110,7 @@ export default function SupportModal({ isOpen, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {/* Mobile Phone 1 & WhatsApp */}
               <a
-                href="https://wa.me/918919786462"
+                href="https://wa.me/918247758835"
                 target="_blank"
                 rel="noreferrer"
                 style={{
@@ -130,7 +130,7 @@ export default function SupportModal({ isOpen, onClose }) {
                     <Phone size={18} />
                   </div>
                   <div>
-                    <strong style={{ fontSize: '13px', display: 'block' }}>+91 89197 86462</strong>
+                    <strong style={{ fontSize: '13px', display: 'block' }}>+91 82477 58835</strong>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>WhatsApp / Call Support</span>
                   </div>
                 </div>

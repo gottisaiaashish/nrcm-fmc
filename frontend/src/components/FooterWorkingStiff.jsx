@@ -118,11 +118,11 @@ export default function FooterWorkingStiff({ onOpenAdminLogin, onOpenPassModal }
                 </span>
                 <div className="space-y-2">
                   <a 
-                    href="tel:8919786462" 
+                    href="tel:8247758835" 
                     className="hover:text-red-500 transition-colors flex items-center gap-2.5 text-zinc-200 group"
                   >
                     <Phone className="w-4 h-4 text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="font-mono tracking-wider text-xs sm:text-sm">+91 89197 86462</span>
+                    <span className="font-mono tracking-wider text-xs sm:text-sm">+91 82477 58835</span>
                   </a>
                   <a 
                     href="tel:7997639659" 

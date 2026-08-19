@@ -109,7 +109,7 @@ export default function SupportPage() {
             
             {/* Phone 1 & WhatsApp */}
             <a
-              href="https://wa.me/918919786462"
+              href="https://wa.me/918247758835"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -129,7 +129,7 @@ export default function SupportPage() {
                   <Phone size={20} />
                 </div>
                 <div>
-                  <strong style={{ fontSize: '15px', display: 'block', fontWeight: 800 }}>+91 89197 86462</strong>
+                  <strong style={{ fontSize: '15px', display: 'block', fontWeight: 800 }}>+91 82477 58835</strong>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>FMC Team Lead • WhatsApp / Call</span>
                 </div>
               </div>
