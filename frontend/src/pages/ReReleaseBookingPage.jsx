@@ -1130,8 +1130,8 @@ export default function ReReleaseBookingPage() {
 
                 {/* 1. DATE SELECTOR PILLS */}
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>1. Select Screening Date</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-                  {['AUGUST 24, 2026', 'AUGUST 25, 2026'].map((d) => {
+                <div style={{ marginBottom: '16px' }}>
+                  {['AUGUST 24, 2026'].map((d) => {
                     const isSelected = selectedDate === d;
                     return (
                       <button
@@ -1139,20 +1139,21 @@ export default function ReReleaseBookingPage() {
                         type="button"
                         onClick={() => setSelectedDate(d)}
                         style={{
+                          width: '100%',
                           padding: '12px',
                           borderRadius: '14px',
-                          backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
-                          color: isSelected ? '#ffffff' : '#0f172a',
-                          border: isSelected ? '2px solid #0f172a' : '1px solid #cbd5e1',
+                          backgroundColor: '#0f172a',
+                          color: '#ffffff',
+                          border: '2px solid #0f172a',
                           fontWeight: 800,
                           fontSize: '13px',
                           cursor: 'pointer',
                           textAlign: 'center',
                           transition: 'all 0.2s ease',
-                          boxShadow: isSelected ? '0 4px 12px rgba(15,23,42,0.2)' : 'none'
+                          boxShadow: '0 4px 12px rgba(15,23,42,0.2)'
                         }}
                       >
-                        {d === 'AUGUST 24, 2026' ? 'Mon, 24 Aug' : 'Tue, 25 Aug'}
+                        Mon, 24 Aug
                       </button>
                     );
                   })}

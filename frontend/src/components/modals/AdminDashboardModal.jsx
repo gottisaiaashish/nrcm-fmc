@@ -1311,7 +1311,6 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                     style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
                   >
                     <option value="AUGUST 24, 2026">AUGUST 24, 2026</option>
-                    <option value="AUGUST 25, 2026">AUGUST 25, 2026</option>
                   </select>
                 </div>
               </div>
