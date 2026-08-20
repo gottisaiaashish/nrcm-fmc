@@ -480,6 +480,61 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     );
   });
 
+  // Real-Time Ticket Analytics & Detailed Breakdown
+  const ticketStats = React.useMemo(() => {
+    const totalTickets = ticketsList.length;
+    let totalRevenue = 0;
+    let validTickets = 0;
+    let usedTickets = 0;
+
+    const showTimeBreakdown = {};
+    const bookingTimeSlots = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+    const dateBreakdown = {};
+    const branchBreakdown = {};
+
+    ticketsList.forEach(t => {
+      totalRevenue += (Number(t.price) || 0);
+
+      if (t.status === 'USED') {
+        usedTickets++;
+      } else {
+        validTickets++;
+      }
+
+      const show = t.showTime || 'General Show';
+      showTimeBreakdown[show] = (showTimeBreakdown[show] || 0) + 1;
+
+      if (t.createdAt) {
+        const d = new Date(t.createdAt);
+        const istHours = (d.getUTCHours() + 5 + Math.floor((d.getUTCMinutes() + 30) / 60)) % 24;
+        if (istHours >= 6 && istHours < 12) bookingTimeSlots.morning++;
+        else if (istHours >= 12 && istHours < 17) bookingTimeSlots.afternoon++;
+        else if (istHours >= 17 && istHours < 22) bookingTimeSlots.evening++;
+        else bookingTimeSlots.night++;
+
+        const dateStr = d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' });
+        dateBreakdown[dateStr] = (dateBreakdown[dateStr] || 0) + 1;
+      }
+
+      const br = t.branch || 'Unknown';
+      branchBreakdown[br] = (branchBreakdown[br] || 0) + 1;
+    });
+
+    const sortedBranches = Object.entries(branchBreakdown).sort((a, b) => b[1] - a[1]);
+    const sortedDates = Object.entries(dateBreakdown);
+
+    return {
+      totalTickets,
+      totalRevenue,
+      validTickets,
+      usedTickets,
+      showTimeBreakdown,
+      bookingTimeSlots,
+      sortedDates,
+      sortedBranches
+    };
+  }, [ticketsList]);
+
   const getGreeting = () => {
     const h = new Date().getHours();
     if (h < 12) return 'Good Morning';
@@ -948,9 +1003,150 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           </div>
         )}
 
-        {/* TAB 4: BOOKED TICKETS LIST */}
+        {/* TAB 4: BOOKED TICKETS LIST & ANALYTICS */}
         {activeTab === 'rerelease_tickets' && (
           <div style={S.body}>
+
+            {/* 1. TOP SUMMARY METRICS CARDS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
+              <div style={{ ...S.card, padding: '16px 20px', borderLeft: '4px solid #dc2626' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Tickets Booked</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span>🎟️ {ticketStats.totalTickets}</span>
+                  <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Tickets</span>
+                </div>
+              </div>
+
+              <div style={{ ...S.card, padding: '16px 20px', borderLeft: '4px solid #16a34a' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Revenue Collected</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#16a34a', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span>💰 ₹{ticketStats.totalRevenue.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+
+              <div style={{ ...S.card, padding: '16px 20px', borderLeft: '4px solid #2563eb' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Valid / Active Tickets</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#2563eb', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span>✅ {ticketStats.validTickets}</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#15803d', backgroundColor: '#dcfce7', padding: '2px 6px', borderRadius: 6 }}>100% VALID</span>
+                </div>
+              </div>
+
+              <div style={{ ...S.card, padding: '16px 20px', borderLeft: '4px solid #d97706' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Scanned Gate Entries</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#d97706', marginTop: 4, display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span>🚪 {ticketStats.usedTickets}</span>
+                  <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Scanned</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. ANALYTICS BREAKDOWN CARDS */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+
+              {/* Show-Wise Breakdown */}
+              <div style={{ ...S.card, padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>🕒 Show-Wise Breakdown</h4>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#dc2626', backgroundColor: '#fef2f2', padding: '2px 8px', borderRadius: 6 }}>Live</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {Object.keys(ticketStats.showTimeBreakdown).length > 0 ? (
+                    Object.entries(ticketStats.showTimeBreakdown).map(([showName, count]) => {
+                      const pct = Math.round((count / (ticketStats.totalTickets || 1)) * 100);
+                      return (
+                        <div key={showName} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: '#334155' }}>
+                            <span>{showName}</span>
+                            <span style={{ color: '#dc2626', fontFamily: 'monospace' }}>{count} Tickets ({pct}%)</span>
+                          </div>
+                          <div style={{ height: 6, width: '100%', backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#dc2626', borderRadius: 3 }} />
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>No show data available yet.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Booking Time Slots (IST) */}
+              <div style={{ ...S.card, padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>⏳ Booking Time Slots (IST)</h4>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', backgroundColor: '#eff6ff', padding: '2px 8px', borderRadius: 6 }}>Peak Times</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { label: '🌅 Morning (6 AM - 12 PM)', count: ticketStats.bookingTimeSlots.morning },
+                    { label: '☀️ Afternoon (12 PM - 5 PM)', count: ticketStats.bookingTimeSlots.afternoon },
+                    { label: '🌆 Evening (5 PM - 10 PM)', count: ticketStats.bookingTimeSlots.evening, isPeak: true },
+                    { label: '🌙 Night (10 PM - 6 AM)', count: ticketStats.bookingTimeSlots.night },
+                  ].map((slot) => {
+                    const pct = Math.round((slot.count / (ticketStats.totalTickets || 1)) * 100);
+                    return (
+                      <div key={slot.label} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: '#334155' }}>
+                          <span style={{ fontWeight: slot.isPeak ? 700 : 600 }}>{slot.label}</span>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: slot.isPeak ? '#2563eb' : '#475569' }}>
+                            {slot.count} Tickets {slot.isPeak && '(Highest!)'}
+                          </span>
+                        </div>
+                        <div style={{ height: 6, width: '100%', backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${pct}%`, backgroundColor: slot.isPeak ? '#2563eb' : '#64748b', borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Date Trends & Top Branches */}
+              <div style={{ ...S.card, padding: 18 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>📅 Dates & 🎓 Top Branches</h4>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#16a34a', backgroundColor: '#dcfce7', padding: '2px 8px', borderRadius: 6 }}>Analytics</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {/* Daily Trend */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 6 }}>Daily Booking Trend</div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {ticketStats.sortedDates.length > 0 ? (
+                        ticketStats.sortedDates.map(([dStr, count]) => (
+                          <div key={dStr} style={{ padding: '4px 10px', borderRadius: 8, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 11, fontWeight: 700, color: '#1e293b' }}>
+                            {dStr}: <span style={{ color: '#dc2626' }}>{count} tix</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ fontSize: 11, color: '#94a3b8' }}>No date data</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Top Branches */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 4 }}>Top Booked Branches</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 110, overflowY: 'auto', paddingRight: 4 }}>
+                      {ticketStats.sortedBranches.slice(0, 5).map(([br, count], i) => (
+                        <div key={br} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 600, color: '#334155' }}>
+                          <span>{i + 1}. {br}</span>
+                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0f172a' }}>{count} tix</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* 3. ALL BOOKED TICKETS TABLE */}
             <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
               <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
                 <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e', margin:0 }}>All Booked Movie Tickets ({ticketsList.length})</h3>

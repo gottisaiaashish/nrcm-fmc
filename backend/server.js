@@ -222,14 +222,14 @@ let inMemoryEventSettings = {
   releaseDate: 'AUGUST 24, 2026',
   dates: ['AUGUST 24, 2026'],
   showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
-  showCapacity: 300,
+  showCapacity: 250,
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
     { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
   ],
   isBookingOpen: true,
-  announcement: 'Limited seats available! Maximum 300 seats per show slot.'
+  announcement: 'Limited seats available! Maximum 250 seats per show slot.'
 };
 
 let inMemoryTickets = [];
@@ -262,7 +262,7 @@ const eventSettingsSchema = new mongoose.Schema({
   releaseDate: { type: String, default: 'AUGUST 24, 2026' },
   dates: { type: [String], default: ['AUGUST 24, 2026'] },
   showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
-  showCapacity: { type: Number, default: 300 },
+  showCapacity: { type: Number, default: 250 },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
@@ -578,9 +578,13 @@ async function getShowBookedCount(showDate, showTime) {
 // 7b. Availability Endpoint
 app.get('/api/tickets/availability', async (req, res) => {
   try {
-    const dates = ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
-    const showTimes = ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
-    const capacity = 300;
+    let settings = null;
+    if (isMongoConnected) {
+      settings = await EventSettings.findOne({});
+    }
+    const dates = settings?.dates?.length ? settings.dates : ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
+    const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
+    const capacity = settings?.showCapacity || 250;
     const availability = {};
 
     for (const d of dates) {
@@ -688,10 +692,16 @@ app.post('/api/tickets/create-order', async (req, res) => {
     const currentBooked = await getShowBookedCount(requestedDate, requestedTime);
     const requestedQty = parseInt(quantity, 10) || 1;
 
-    if (currentBooked + requestedQty > 300) {
+    let settings = null;
+    if (isMongoConnected) {
+      settings = await EventSettings.findOne({});
+    }
+    const maxCapacity = settings?.showCapacity || 250;
+
+    if (currentBooked + requestedQty > maxCapacity) {
       return res.status(400).json({
         success: false,
-        error: `HOUSEFULL! Selected show (${requestedDate} @ ${requestedTime}) has reached maximum capacity of 300 seats!`
+        error: `HOUSEFULL! Selected show (${requestedDate} @ ${requestedTime}) has reached maximum capacity of ${maxCapacity} seats!`
       });
     }
 
