@@ -63,7 +63,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     email: '',
     movieTitle: 'Businessman',
     showDate: 'AUGUST 24, 2026',
-    showTime: '10:00 AM to 12:30 PM',
+    showTime: '10:30 AM (Morning Show)',
     tierName: 'General Pass',
     price: 50,
     quantity: 1,
@@ -501,7 +501,12 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         validTickets++;
       }
 
-      const show = t.showTime || 'General Show';
+      let show = (t.showTime || '10:30 AM (Morning Show)').trim();
+      if (show.includes('10:00 AM') || show.includes('Morning')) {
+        show = '10:30 AM (Morning Show)';
+      } else if (show.includes('01:00 PM') || show.includes('02:30 PM') || show.includes('Matinee') || show.includes('Afternoon')) {
+        show = '02:30 PM (Matinee)';
+      }
       showTimeBreakdown[show] = (showTimeBreakdown[show] || 0) + 1;
 
       if (t.createdAt) {

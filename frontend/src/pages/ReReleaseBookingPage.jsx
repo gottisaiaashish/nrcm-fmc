@@ -52,7 +52,7 @@ export default function ReReleaseBookingPage() {
     venue: 'NRCM Main Auditorium, MT Block',
     releaseDate: 'AUGUST 24, 2026',
     dates: ['AUGUST 24, 2026'],
-    showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
+    showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'],
     tiers: [
       { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher', badge: 'Fast Filling' },
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front rows stage area with high energy crowd', badge: 'Popular' },
@@ -83,7 +83,7 @@ export default function ReReleaseBookingPage() {
 
   const [selectedCategoryTab, setSelectedCategoryTab] = useState('movies'); // 'movies' | 'events'
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedShowTime, setSelectedShowTime] = useState('10:00 AM to 12:30 PM');
+  const [selectedShowTime, setSelectedShowTime] = useState('10:30 AM (Morning Show)');
   const [selectedDate, setSelectedDate] = useState('AUGUST 24, 2026');
   const [availability, setAvailability] = useState({});
   const [selectedTier, setSelectedTier] = useState(null);
@@ -1197,7 +1197,7 @@ export default function ReReleaseBookingPage() {
                 {/* 2. SHOW TIME SELECTOR PILLS */}
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b', marginBottom: '8px' }}>2. Select Show Timing</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {(eventSettings.showTimes && eventSettings.showTimes.length > 0 ? eventSettings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM']).map((st) => {
+                  {(eventSettings.showTimes && eventSettings.showTimes.length > 0 ? eventSettings.showTimes : ['10:30 AM (Morning Show)', '02:30 PM (Matinee)']).map((st) => {
                     const timeString = typeof st === 'string' ? st : (st.time || st);
                     const isSelected = selectedShowTime === timeString;
                     const defaultCap = eventSettings.showCapacity || 250;

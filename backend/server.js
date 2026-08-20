@@ -221,7 +221,7 @@ let inMemoryEventSettings = {
   venue: 'NRCM Main Auditorium, MT Block',
   releaseDate: 'AUGUST 24, 2026',
   dates: ['AUGUST 24, 2026'],
-  showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
+  showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'],
   showCapacity: 250,
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
@@ -261,7 +261,7 @@ const eventSettingsSchema = new mongoose.Schema({
   venue: { type: String, default: 'NRCM Main Auditorium, MT Block' },
   releaseDate: { type: String, default: 'AUGUST 24, 2026' },
   dates: { type: [String], default: ['AUGUST 24, 2026'] },
-  showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
+  showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'] },
   showCapacity: { type: Number, default: 250 },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
@@ -558,7 +558,7 @@ app.post('/api/admin/event-settings', async (req, res) => {
 // Helper to get booked count per show date and show time
 async function getShowBookedCount(showDate, showTime) {
   const cleanDate = (showDate || 'AUGUST 24, 2026').trim();
-  const cleanTime = (showTime || '10:00 AM to 12:30 PM').trim();
+  const cleanTime = (showTime || '10:30 AM (Morning Show)').trim();
 
   if (isMongoConnected) {
     return await Ticket.countDocuments({
@@ -583,7 +583,7 @@ app.get('/api/tickets/availability', async (req, res) => {
       settings = await EventSettings.findOne({});
     }
     const dates = settings?.dates?.length ? settings.dates : ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
-    const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
+    const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'];
     const capacity = settings?.showCapacity || 250;
     const availability = {};
 
@@ -688,7 +688,7 @@ app.post('/api/tickets/create-order', async (req, res) => {
     }
 
     const requestedDate = showDate || 'AUGUST 24, 2026';
-    const requestedTime = showTime || '10:00 AM to 12:30 PM';
+    const requestedTime = showTime || '10:30 AM (Morning Show)';
     const currentBooked = await getShowBookedCount(requestedDate, requestedTime);
     const requestedQty = parseInt(quantity, 10) || 1;
 
@@ -806,7 +806,7 @@ app.post('/api/tickets/verify-payment', async (req, res) => {
         bookingRef,
         movieTitle: movieTitle || 'Businessman',
         showDate: showDate || 'AUGUST 24, 2026',
-        showTime: showTime || '10:00 AM to 12:30 PM',
+        showTime: showTime || '10:30 AM (Morning Show)',
         tierName: tierName || 'General Student Pass',
         price: Number(price) || 50,
         studentName: studentInfo.studentName || studentName,
@@ -1065,7 +1065,7 @@ app.post('/api/admin/tickets/issue', async (req, res) => {
         bookingRef,
         movieTitle: movieTitle || 'Businessman',
         showDate: showDate || 'AUGUST 24, 2026',
-        showTime: showTime || '10:00 AM to 12:30 PM',
+        showTime: showTime || '10:30 AM (Morning Show)',
         tierName: tierName || 'General Pass',
         price: Number(price) || 50,
         studentName: studentName.trim(),
