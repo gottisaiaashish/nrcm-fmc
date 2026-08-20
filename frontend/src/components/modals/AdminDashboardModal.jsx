@@ -35,7 +35,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop',
     venue: 'NRCM Main Auditorium, MT Block',
     releaseDate: 'MARCH 20, 2026',
-    showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Afternoon Show)'],
+    showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
     tiers: [
       { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
@@ -63,7 +63,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     email: '',
     movieTitle: 'Businessman',
     showDate: 'AUGUST 24, 2026',
-    showTime: '10:30 AM (Morning Show)',
+    showTime: '10:00 AM to 12:30 PM',
     tierName: 'General Pass',
     price: 50,
     quantity: 1,
@@ -501,11 +501,11 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         validTickets++;
       }
 
-      let show = (t.showTime || '10:30 AM (Morning Show)').trim();
-      if (show.includes('10:00 AM') || show.includes('Morning')) {
-        show = '10:30 AM (Morning Show)';
-      } else if (show.includes('01:00 PM') || show.includes('02:30 PM') || show.includes('Matinee') || show.includes('Afternoon')) {
-        show = '02:30 PM (Afternoon Show)';
+      let show = (t.showTime || '10:00 AM to 12:30 PM').trim();
+      if (show.includes('10:30') || show.includes('10:00 AM') || show.includes('Morning')) {
+        show = '10:00 AM to 12:30 PM';
+      } else if (show.includes('01:00 PM') || show.includes('02:30') || show.includes('Matinee') || show.includes('Afternoon')) {
+        show = '01:00 PM to 03:30 PM';
       }
       showTimeBreakdown[show] = (showTimeBreakdown[show] || 0) + 1;
 
