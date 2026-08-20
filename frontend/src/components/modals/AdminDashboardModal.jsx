@@ -35,7 +35,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop',
     venue: 'NRCM Main Auditorium, MT Block',
     releaseDate: 'MARCH 20, 2026',
-    showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)', '06:30 PM (Evening Show)'],
+    showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Afternoon Show)'],
     tiers: [
       { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
@@ -505,7 +505,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       if (show.includes('10:00 AM') || show.includes('Morning')) {
         show = '10:30 AM (Morning Show)';
       } else if (show.includes('01:00 PM') || show.includes('02:30 PM') || show.includes('Matinee') || show.includes('Afternoon')) {
-        show = '02:30 PM (Matinee)';
+        show = '02:30 PM (Afternoon Show)';
       }
       showTimeBreakdown[show] = (showTimeBreakdown[show] || 0) + 1;
 

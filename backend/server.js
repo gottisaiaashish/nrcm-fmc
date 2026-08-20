@@ -221,7 +221,7 @@ let inMemoryEventSettings = {
   venue: 'NRCM Main Auditorium, MT Block',
   releaseDate: 'AUGUST 24, 2026',
   dates: ['AUGUST 24, 2026'],
-  showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'],
+  showTimes: ['10:30 AM (Morning Show)', '02:30 PM (Afternoon Show)'],
   showCapacity: 250,
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
@@ -261,7 +261,7 @@ const eventSettingsSchema = new mongoose.Schema({
   venue: { type: String, default: 'NRCM Main Auditorium, MT Block' },
   releaseDate: { type: String, default: 'AUGUST 24, 2026' },
   dates: { type: [String], default: ['AUGUST 24, 2026'] },
-  showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'] },
+  showTimes: { type: [String], default: ['10:30 AM (Morning Show)', '02:30 PM (Afternoon Show)'] },
   showCapacity: { type: Number, default: 250 },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
@@ -583,7 +583,7 @@ app.get('/api/tickets/availability', async (req, res) => {
       settings = await EventSettings.findOne({});
     }
     const dates = settings?.dates?.length ? settings.dates : ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
-    const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:30 AM (Morning Show)', '02:30 PM (Matinee)'];
+    const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:30 AM (Morning Show)', '02:30 PM (Afternoon Show)'];
     const capacity = settings?.showCapacity || 250;
     const availability = {};
 
