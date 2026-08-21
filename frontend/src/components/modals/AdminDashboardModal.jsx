@@ -1406,9 +1406,9 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                             <button
                               onClick={() => handleOpenEditModal(t)}
                               style={{ padding:'4px 10px', borderRadius:6, backgroundColor:'#eff6ff', color:'#2563eb', border:'1px solid #bfdbfe', cursor:'pointer', fontSize:11, marginRight:6, fontWeight:700, display:'inline-flex', alignItems:'center', gap:4 }}
-                              title="Change Show Timing & Details"
+                              title="Edit Ticket Details"
                             >
-                              <Clock size={12} /> Edit Timing
+                              <Edit size={12} /> Edit
                             </button>
                             <button
                               onClick={() => {
@@ -1933,10 +1933,10 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f3f4f6' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Clock size={20} color="#2563eb" /> Change Ticket Show Timing
+                  <Edit size={20} color="#2563eb" /> Edit Ticket Details
                 </h3>
                 <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
-                  Update show date & time for Ticket: <strong style={{ color: '#dc2626', fontFamily: 'monospace' }}>{editingTicket.ticketId}</strong>
+                  Update details for Ticket: <strong style={{ color: '#dc2626', fontFamily: 'monospace' }}>{editingTicket.ticketId}</strong>
                 </p>
               </div>
               <button
@@ -1949,9 +1949,9 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
             {/* Ticket Brief Card */}
             <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px' }}>
-              <div style={{ fontWeight: 700, color: '#0f172a' }}>{editingTicket.studentName} ({editingTicket.rollNo})</div>
+              <div style={{ fontWeight: 700, color: '#0f172a' }}>{editingTicket.studentName || 'Student'} ({editingTicket.rollNo || 'No Roll No'})</div>
               <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                Branch: {editingTicket.branch || 'N/A'} | Current: <span style={{ color: '#dc2626', fontWeight: 600 }}>{editingTicket.showDate || 'AUGUST 24, 2026'} ({editingTicket.showTime})</span>
+                Branch: <strong style={{ color: '#0f172a' }}>{editingTicket.branch || 'N/A'}</strong> | Show: <span style={{ color: '#dc2626', fontWeight: 600 }}>{editingTicket.showDate || 'AUGUST 24, 2026'} ({editingTicket.showTime})</span>
               </div>
             </div>
 
@@ -1996,18 +1996,62 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 </div>
               </div>
 
-              {/* Row 2: Branch & Year (Crucial requested fix) */}
+              {/* Row 2: Branch & Year Selection */}
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
-                  🎓 Branch & Year (Edit Branch Mistakes) *
+                  🎓 Branch & Year Selection *
                 </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '6px' }}>
+                  <select
+                    value={[
+                      'CSE', 'CSE (AI & ML)', 'CSE (Data Science)', 'CSE (Cyber Security)',
+                      'ECE', 'EEE', 'IT', 'MECH', 'CIVIL', 'MBA / M.Tech'
+                    ].find(b => editFormData.branch.startsWith(b)) || ''}
+                    onChange={e => {
+                      const selB = e.target.value;
+                      const curY = ['1st Year', '2nd Year', '3rd Year', '4th Year'].find(y => editFormData.branch.includes(y)) || '1st Year';
+                      setEditFormData({ ...editFormData, branch: selB ? `${selB} - ${curY}` : editFormData.branch });
+                    }}
+                    style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff', boxSizing: 'border-box' }}
+                  >
+                    <option value="">Select Branch...</option>
+                    <option value="CSE">CSE</option>
+                    <option value="CSE (AI & ML)">CSE (AI & ML)</option>
+                    <option value="CSE (Data Science)">CSE (Data Science)</option>
+                    <option value="CSE (Cyber Security)">CSE (Cyber Security)</option>
+                    <option value="ECE">ECE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="IT">IT</option>
+                    <option value="MECH">MECH</option>
+                    <option value="CIVIL">CIVIL</option>
+                    <option value="MBA / M.Tech">MBA / M.Tech</option>
+                  </select>
+                  <select
+                    value={['1st Year', '2nd Year', '3rd Year', '4th Year'].find(y => editFormData.branch.includes(y)) || ''}
+                    onChange={e => {
+                      const selY = e.target.value;
+                      const curB = [
+                        'CSE', 'CSE (AI & ML)', 'CSE (Data Science)', 'CSE (Cyber Security)',
+                        'ECE', 'EEE', 'IT', 'MECH', 'CIVIL', 'MBA / M.Tech'
+                      ].find(b => editFormData.branch.startsWith(b)) || (editFormData.branch.split(' - ')[0] || 'CSE');
+                      setEditFormData({ ...editFormData, branch: selY ? `${curB} - ${selY}` : editFormData.branch });
+                    }}
+                    style={{ width: '100%', padding: '9px 10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff', boxSizing: 'border-box' }}
+                  >
+                    <option value="">Select Year...</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. CSE - 1st Year, ECE - 2nd Year..."
+                  placeholder="Or type custom branch/year (e.g. CSE - 1st Year)"
                   value={editFormData.branch}
                   onChange={e => setEditFormData({ ...editFormData, branch: e.target.value })}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #2563eb', fontSize: '13px', fontWeight: 600, boxSizing: 'border-box', backgroundColor: '#eff6ff' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #2563eb', fontSize: '13px', fontWeight: 600, boxSizing: 'border-box', backgroundColor: '#eff6ff' }}
                 />
               </div>
 
@@ -2037,23 +2081,24 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 </div>
               </div>
 
-              {/* Show Time Select / Custom Input */}
+              {/* Show Time Select (Businessman Movie Timings) */}
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
-                  Show Time *
+                  Show Time (Businessman Movie) *
                 </label>
                 <select
                   value={editFormData.showTime}
                   onChange={e => setEditFormData({ ...editFormData, showTime: e.target.value })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box', marginBottom: '6px' }}
                 >
-                  {eventSettings.showTimes && eventSettings.showTimes.map((st, i) => (
+                  {Array.from(new Set([
+                    ...(eventSettings.showTimes || []),
+                    '10:00 AM to 12:30 PM',
+                    '01:00 PM to 03:30 PM',
+                    editFormData.showTime
+                  ])).filter(Boolean).map((st, i) => (
                     <option key={i} value={st}>{st}</option>
                   ))}
-                  <option value="10:00 AM to 12:30 PM">10:00 AM to 12:30 PM</option>
-                  <option value="01:00 PM to 03:30 PM">01:00 PM to 03:30 PM</option>
-                  <option value="04:00 PM to 06:30 PM">04:00 PM to 06:30 PM</option>
-                  <option value="07:00 PM to 09:30 PM">07:00 PM to 09:30 PM</option>
                 </select>
                 <input
                   type="text"
