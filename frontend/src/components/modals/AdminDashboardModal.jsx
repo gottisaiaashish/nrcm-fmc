@@ -308,24 +308,38 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         email: editFormData.email
       };
 
-      // Direct Render URL on Vercel deployment, or relative URL on local dev
-      const apiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
-        ? 'https://nrcm-fmc.onrender.com/api/admin/tickets/update'
-        : '/api/admin/tickets/update';
-
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const contentType = res.headers.get('content-type') || '';
+      let res = null;
       let data = null;
-      if (contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        const text = await res.text();
-        throw new Error(`Server returned non-JSON response (${res.status}): ${text.substring(0, 100)}`);
+
+      try {
+        res = await fetch('/api/admin/tickets/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const contentType = res ? (res.headers.get('content-type') || '') : '';
+        if (res && res.ok && contentType.includes('application/json')) {
+          data = await res.json();
+        }
+      } catch (_) {}
+
+      if (!data || !data.success) {
+        try {
+          res = await fetch('https://nrcm-fmc.onrender.com/api/admin/tickets/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const contentType = res ? (res.headers.get('content-type') || '') : '';
+          if (contentType.includes('application/json')) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            throw new Error(`Server returned non-JSON response (${res.status}): ${text.substring(0, 80)}`);
+          }
+        } catch (e) {
+          if (!data) throw e;
+        }
       }
 
       if (data && data.success && data.ticket) {
