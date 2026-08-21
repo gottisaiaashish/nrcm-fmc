@@ -294,7 +294,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     try {
       const ticketIdOrDbId = editingTicket.ticketId || editingTicket._id;
       const payload = {
-        ticketId: ticketIdOrDbId,
+        ticketId: editingTicket.ticketId || ticketIdOrDbId,
         id: ticketIdOrDbId,
         _id: editingTicket._id,
         showDate: editFormData.showDate,
@@ -308,24 +308,56 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         email: editFormData.email
       };
 
-      // Try POST /api/admin/tickets/update (Vercel & proxy safe) first
-      let res = await fetch('/api/admin/tickets/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const parseJsonSafely = async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          return await res.json();
+        }
+        const text = await res.text();
+        throw new Error(`Server returned non-JSON response (${res.status}): ${text.substring(0, 100)}`);
+      };
 
-      // Fallback to PUT /api/admin/tickets/:id if needed
-      if (!res.ok) {
-        res = await fetch(`/api/admin/tickets/${encodeURIComponent(ticketIdOrDbId)}`, {
-          method: 'PUT',
+      let data = null;
+
+      // 1. Try relative endpoint /api/admin/tickets/update
+      try {
+        const res = await fetch('/api/admin/tickets/update', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (res.ok) {
+          data = await parseJsonSafely(res);
+        }
+      } catch (_) {}
+
+      // 2. Try direct backend Render URL if relative proxy failed or returned non-ok
+      if (!data || !data.success) {
+        try {
+          const res = await fetch('https://nrcm-fmc.onrender.com/api/admin/tickets/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          data = await parseJsonSafely(res);
+        } catch (_) {}
       }
 
-      const data = await res.json();
-      if (data.success && data.ticket) {
+      // 3. Fallback to /api/admin/tickets/update/:id if still needed
+      if (!data || !data.success) {
+        try {
+          const res = await fetch(`/api/admin/tickets/update/${encodeURIComponent(ticketIdOrDbId)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          data = await parseJsonSafely(res);
+        } catch (err) {
+          if (!data) throw err;
+        }
+      }
+
+      if (data && data.success && data.ticket) {
         setTicketsList(prev => prev.map(t => (t._id === data.ticket._id || t.ticketId === data.ticket.ticketId) ? data.ticket : t));
         setEditSuccessMsg('✅ Ticket details & Branch/Year updated successfully!');
         setTimeout(() => {
@@ -334,10 +366,10 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
           setEditingTicket(null);
         }, 1200);
       } else {
-        setEditError(data.error || 'Failed to update ticket.');
+        setEditError((data && data.error) || 'Failed to update ticket details.');
       }
     } catch (err) {
-      setEditError('Network error updating ticket: ' + err.message);
+      setEditError('Error updating ticket: ' + err.message);
     } finally {
       setEditLoading(false);
     }

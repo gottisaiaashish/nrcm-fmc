@@ -1081,13 +1081,30 @@ const handleUpdateTicketLogic = async (targetId, body) => {
   if (email !== undefined) updateFields.email = email;
   if (status !== undefined) updateFields.status = status;
 
+  const ticketIdCandidate = String(body.ticketId || body.id || targetId || '').trim();
+  const dbIdCandidate = String(body._id || targetId || '').trim();
+
   if (isMongoConnected) {
-    const query = mongoose.Types.ObjectId.isValid(targetId)
-      ? { $or: [{ _id: targetId }, { ticketId: targetId }] }
-      : { ticketId: targetId };
+    const orConditions = [];
+    if (dbIdCandidate && mongoose.Types.ObjectId.isValid(dbIdCandidate)) {
+      orConditions.push({ _id: dbIdCandidate });
+    }
+    if (ticketIdCandidate) {
+      orConditions.push({ ticketId: ticketIdCandidate });
+      orConditions.push({ ticketId: new RegExp(`^${ticketIdCandidate.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')}$`, 'i') });
+    }
+    if (targetId) {
+      orConditions.push({ ticketId: String(targetId).trim() });
+    }
+
+    const query = orConditions.length > 0 ? { $or: orConditions } : { ticketId: ticketIdCandidate };
     return await Ticket.findOneAndUpdate(query, { $set: updateFields }, { new: true });
   } else {
-    const index = inMemoryTickets.findIndex(t => (t._id && String(t._id) === String(targetId)) || t.ticketId === targetId);
+    const index = inMemoryTickets.findIndex(t => 
+      (t._id && String(t._id) === dbIdCandidate) || 
+      (t.ticketId && t.ticketId.toLowerCase() === ticketIdCandidate.toLowerCase()) ||
+      (t.ticketId && t.ticketId === String(targetId).trim())
+    );
     if (index !== -1) {
       inMemoryTickets[index] = { ...inMemoryTickets[index], ...updateFields };
       return inMemoryTickets[index];
@@ -1096,10 +1113,10 @@ const handleUpdateTicketLogic = async (targetId, body) => {
   return null;
 };
 
-// 13c. Admin - Update Single Ticket Details (POST Endpoint - Proxy & Vercel Safe)
-app.post('/api/admin/tickets/update', async (req, res) => {
+// 13c. Admin - Update Single Ticket Details (POST & PUT Endpoint - Proxy & Vercel Safe)
+const handleTicketUpdateExpress = async (req, res) => {
   try {
-    const targetId = req.body.ticketId || req.body.id || req.body._id;
+    const targetId = req.body.ticketId || req.body.id || req.body._id || req.params.id;
     if (!targetId) {
       return res.status(400).json({ success: false, error: 'Ticket ID is required.' });
     }
@@ -1113,35 +1130,13 @@ app.post('/api/admin/tickets/update', async (req, res) => {
     console.error('Update Ticket Error:', error);
     res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
   }
-});
+};
 
-app.post('/api/admin/tickets/update/:id', async (req, res) => {
-  try {
-    const targetId = req.params.id || req.body.ticketId || req.body.id;
-    const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
-    if (!updatedTicket) {
-      return res.status(404).json({ success: false, error: 'Ticket not found.' });
-    }
-    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
-  } catch (error) {
-    console.error('Update Ticket Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
-  }
-});
-
-app.put('/api/admin/tickets/:id', async (req, res) => {
-  try {
-    const targetId = req.params.id || req.body.ticketId;
-    const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
-    if (!updatedTicket) {
-      return res.status(404).json({ success: false, error: 'Ticket not found.' });
-    }
-    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
-  } catch (error) {
-    console.error('Update Ticket Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
-  }
-});
+app.post('/api/admin/tickets/update', handleTicketUpdateExpress);
+app.put('/api/admin/tickets/update', handleTicketUpdateExpress);
+app.post('/api/admin/tickets/update/:id', handleTicketUpdateExpress);
+app.put('/api/admin/tickets/update/:id', handleTicketUpdateExpress);
+app.put('/api/admin/tickets/:id', handleTicketUpdateExpress);
 
 // 13d. Admin - Bulk Update Ticket Timings
 app.post('/api/admin/tickets/bulk-update-timing', async (req, res) => {
