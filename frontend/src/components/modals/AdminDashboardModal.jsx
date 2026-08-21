@@ -308,53 +308,24 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         email: editFormData.email
       };
 
-      const parseJsonSafely = async (res) => {
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          return await res.json();
-        }
+      // Direct Render URL on Vercel deployment, or relative URL on local dev
+      const apiUrl = (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
+        ? 'https://nrcm-fmc.onrender.com/api/admin/tickets/update'
+        : '/api/admin/tickets/update';
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      let data = null;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
         const text = await res.text();
         throw new Error(`Server returned non-JSON response (${res.status}): ${text.substring(0, 100)}`);
-      };
-
-      let data = null;
-
-      // 1. Try relative endpoint /api/admin/tickets/update
-      try {
-        const res = await fetch('/api/admin/tickets/update', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          data = await parseJsonSafely(res);
-        }
-      } catch (_) {}
-
-      // 2. Try direct backend Render URL if relative proxy failed or returned non-ok
-      if (!data || !data.success) {
-        try {
-          const res = await fetch('https://nrcm-fmc.onrender.com/api/admin/tickets/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          data = await parseJsonSafely(res);
-        } catch (_) {}
-      }
-
-      // 3. Fallback to /api/admin/tickets/update/:id if still needed
-      if (!data || !data.success) {
-        try {
-          const res = await fetch(`/api/admin/tickets/update/${encodeURIComponent(ticketIdOrDbId)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          data = await parseJsonSafely(res);
-        } catch (err) {
-          if (!data) throw err;
-        }
       }
 
       if (data && data.success && data.ticket) {
