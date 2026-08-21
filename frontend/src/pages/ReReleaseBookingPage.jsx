@@ -1200,7 +1200,8 @@ export default function ReReleaseBookingPage() {
                   {(eventSettings.showTimes && eventSettings.showTimes.length > 0 ? eventSettings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM']).map((st) => {
                     const timeString = typeof st === 'string' ? st : (st.time || st);
                     const isSelected = selectedShowTime === timeString;
-                    const defaultCap = eventSettings.showCapacity || 250;
+                    const isAfternoon = timeString.includes('01:00 PM') || timeString.includes('02:30') || timeString.includes('Afternoon') || timeString.includes('Matinee');
+                    const defaultCap = isAfternoon ? 200 : (eventSettings.slotCapacities?.[timeString] || eventSettings.showCapacity || 250);
                     const slotData = availability[selectedDate]?.[timeString] || { booked: 0, capacity: defaultCap, remaining: defaultCap, isHousefull: false };
                     const isHousefull = slotData.isHousefull || slotData.remaining <= 0;
 
@@ -1374,7 +1375,8 @@ export default function ReReleaseBookingPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    const defaultCap = eventSettings.showCapacity || 250;
+                    const isAfternoon = selectedShowTime?.includes('01:00 PM') || selectedShowTime?.includes('02:30') || selectedShowTime?.includes('Afternoon') || selectedShowTime?.includes('Matinee');
+                    const defaultCap = isAfternoon ? 200 : (eventSettings.slotCapacities?.[selectedShowTime] || eventSettings.showCapacity || 250);
                     const slotData = availability[selectedDate]?.[selectedShowTime] || { remaining: defaultCap, isHousefull: false };
                     if (slotData.isHousefull || slotData.remaining <= 0) {
                       alert(`HOUSEFULL! The show on ${selectedDate} (${selectedShowTime}) has reached maximum capacity of ${slotData.capacity || defaultCap} seats. Please choose another show time.`);

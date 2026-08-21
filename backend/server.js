@@ -223,6 +223,10 @@ let inMemoryEventSettings = {
   dates: ['AUGUST 24, 2026'],
   showTimes: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'],
   showCapacity: 250,
+  slotCapacities: {
+    '10:00 AM to 12:30 PM': 250,
+    '01:00 PM to 03:30 PM': 200
+  },
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
@@ -263,6 +267,7 @@ const eventSettingsSchema = new mongoose.Schema({
   dates: { type: [String], default: ['AUGUST 24, 2026'] },
   showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
   showCapacity: { type: Number, default: 250 },
+  slotCapacities: { type: Object, default: { '10:00 AM to 12:30 PM': 250, '01:00 PM to 03:30 PM': 200 } },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
@@ -613,6 +618,17 @@ async function getShowBookedCount(showDate, showTime) {
   }
 }
 
+function getShowCapacity(showTime, settings) {
+  const cleanTime = (showTime || '').trim();
+  if (settings?.slotCapacities && settings.slotCapacities[cleanTime]) {
+    return Number(settings.slotCapacities[cleanTime]);
+  }
+  if (cleanTime.includes('01:00 PM') || cleanTime.includes('02:30') || cleanTime.includes('Afternoon') || cleanTime.includes('Matinee')) {
+    return 200;
+  }
+  return settings?.showCapacity || 250;
+}
+
 // 7b. Availability Endpoint
 app.get('/api/tickets/availability', async (req, res) => {
   try {
@@ -622,13 +638,13 @@ app.get('/api/tickets/availability', async (req, res) => {
     }
     const dates = settings?.dates?.length ? settings.dates : ['AUGUST 24, 2026', 'AUGUST 25, 2026'];
     const showTimes = settings?.showTimes?.length ? settings.showTimes : ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'];
-    const capacity = settings?.showCapacity || 250;
     const availability = {};
 
     for (const d of dates) {
       availability[d] = {};
       for (const st of showTimes) {
         const booked = await getShowBookedCount(d, st);
+        const capacity = getShowCapacity(st, settings);
         availability[d][st] = {
           booked,
           capacity,
@@ -740,7 +756,7 @@ app.post('/api/tickets/create-order', async (req, res) => {
     if (isMongoConnected) {
       settings = await EventSettings.findOne({});
     }
-    const maxCapacity = settings?.showCapacity || 250;
+    const maxCapacity = getShowCapacity(requestedTime, settings);
 
     if (currentBooked + requestedQty > maxCapacity) {
       return res.status(400).json({

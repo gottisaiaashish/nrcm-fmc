@@ -1244,12 +1244,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {Object.keys(ticketStats.showTimeBreakdown).length > 0 ? (
                     Object.entries(ticketStats.showTimeBreakdown).map(([showName, count]) => {
-                      const pct = Math.round((count / (ticketStats.totalTickets || 1)) * 100);
+                      const isAfternoon = showName.includes('01:00 PM') || showName.includes('02:30') || showName.includes('Afternoon') || showName.includes('Matinee');
+                      const showLimit = isAfternoon ? 200 : (eventSettings?.slotCapacities?.[showName] || eventSettings?.showCapacity || 250);
+                      const pct = Math.min(100, Math.round((count / showLimit) * 100));
                       return (
                         <div key={showName} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: '#334155' }}>
-                            <span>{showName}</span>
-                            <span style={{ color: '#dc2626', fontFamily: 'monospace' }}>{count} Tickets ({pct}%)</span>
+                            <span>{showName} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>(Limit: {showLimit})</span></span>
+                            <span style={{ color: '#dc2626', fontFamily: 'monospace' }}>{count} / {showLimit} ({pct}%)</span>
                           </div>
                           <div style={{ height: 6, width: '100%', backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#dc2626', borderRadius: 3 }} />
