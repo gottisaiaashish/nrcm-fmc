@@ -637,6 +637,12 @@ app.get('/api/tickets/availability', async (req, res) => {
         };
       }
     }
+    return res.json({ success: true, availability });
+  } catch (error) {
+    console.error('Fetch Availability Error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch availability.' });
+  }
+});
 
 // 7c. Event Settings Endpoints
 app.get('/api/event-settings', async (req, res) => {
