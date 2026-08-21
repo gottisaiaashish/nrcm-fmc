@@ -1067,49 +1067,76 @@ app.delete('/api/admin/tickets/:id', async (req, res) => {
   }
 });
 
-// 13c. Admin - Update Single Ticket Details (Change Show Timing, Show Date, etc.)
-app.put('/api/admin/tickets/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { showTime, showDate, tierName, studentName, rollNo, branch, mobile, email, status } = req.body;
+// Helper function for updating ticket fields
+const handleUpdateTicketLogic = async (targetId, body) => {
+  const { showTime, showDate, tierName, studentName, rollNo, branch, mobile, email, status } = body;
+  const updateFields = {};
+  if (showTime !== undefined) updateFields.showTime = showTime;
+  if (showDate !== undefined) updateFields.showDate = showDate;
+  if (tierName !== undefined) updateFields.tierName = tierName;
+  if (studentName !== undefined) updateFields.studentName = studentName;
+  if (rollNo !== undefined) updateFields.rollNo = rollNo;
+  if (branch !== undefined) updateFields.branch = branch;
+  if (mobile !== undefined) updateFields.mobile = mobile;
+  if (email !== undefined) updateFields.email = email;
+  if (status !== undefined) updateFields.status = status;
 
-    const updateFields = {};
-    if (showTime !== undefined) updateFields.showTime = showTime;
-    if (showDate !== undefined) updateFields.showDate = showDate;
-    if (tierName !== undefined) updateFields.tierName = tierName;
-    if (studentName !== undefined) updateFields.studentName = studentName;
-    if (rollNo !== undefined) updateFields.rollNo = rollNo;
-    if (branch !== undefined) updateFields.branch = branch;
-    if (mobile !== undefined) updateFields.mobile = mobile;
-    if (email !== undefined) updateFields.email = email;
-    if (status !== undefined) updateFields.status = status;
-
-    let updatedTicket = null;
-
-    if (isMongoConnected) {
-      const query = mongoose.Types.ObjectId.isValid(id)
-        ? { $or: [{ _id: id }, { ticketId: id }] }
-        : { ticketId: id };
-      updatedTicket = await Ticket.findOneAndUpdate(query, { $set: updateFields }, { new: true });
-    } else {
-      const index = inMemoryTickets.findIndex(t => (t._id && String(t._id) === String(id)) || t.ticketId === id);
-      if (index !== -1) {
-        inMemoryTickets[index] = { ...inMemoryTickets[index], ...updateFields };
-        updatedTicket = inMemoryTickets[index];
-      }
+  if (isMongoConnected) {
+    const query = mongoose.Types.ObjectId.isValid(targetId)
+      ? { $or: [{ _id: targetId }, { ticketId: targetId }] }
+      : { ticketId: targetId };
+    return await Ticket.findOneAndUpdate(query, { $set: updateFields }, { new: true });
+  } else {
+    const index = inMemoryTickets.findIndex(t => (t._id && String(t._id) === String(targetId)) || t.ticketId === targetId);
+    if (index !== -1) {
+      inMemoryTickets[index] = { ...inMemoryTickets[index], ...updateFields };
+      return inMemoryTickets[index];
     }
+  }
+  return null;
+};
 
+// 13c. Admin - Update Single Ticket Details (POST Endpoint - Proxy & Vercel Safe)
+app.post('/api/admin/tickets/update', async (req, res) => {
+  try {
+    const targetId = req.body.ticketId || req.body.id || req.body._id;
+    if (!targetId) {
+      return res.status(400).json({ success: false, error: 'Ticket ID is required.' });
+    }
+    const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
     if (!updatedTicket) {
       return res.status(404).json({ success: false, error: 'Ticket not found.' });
     }
-
     console.log(`🎟️ [ADMIN TICKET UPDATED] Ticket ${updatedTicket.ticketId} updated: ${updatedTicket.showDate} @ ${updatedTicket.showTime}`);
+    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
+  } catch (error) {
+    console.error('Update Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
+  }
+});
 
-    return res.json({
-      success: true,
-      message: 'Ticket details updated successfully!',
-      ticket: updatedTicket
-    });
+app.post('/api/admin/tickets/update/:id', async (req, res) => {
+  try {
+    const targetId = req.params.id || req.body.ticketId || req.body.id;
+    const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
+    if (!updatedTicket) {
+      return res.status(404).json({ success: false, error: 'Ticket not found.' });
+    }
+    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
+  } catch (error) {
+    console.error('Update Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
+  }
+});
+
+app.put('/api/admin/tickets/:id', async (req, res) => {
+  try {
+    const targetId = req.params.id || req.body.ticketId;
+    const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
+    if (!updatedTicket) {
+      return res.status(404).json({ success: false, error: 'Ticket not found.' });
+    }
+    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
   } catch (error) {
     console.error('Update Ticket Error:', error);
     res.status(500).json({ success: false, error: 'Failed to update ticket details.' });

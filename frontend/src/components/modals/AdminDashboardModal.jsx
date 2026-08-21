@@ -292,11 +292,12 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     setEditSuccessMsg('');
 
     try {
-      const ticketIdOrDbId = editingTicket._id || editingTicket.ticketId;
-      const res = await fetch(`/api/admin/tickets/${encodeURIComponent(ticketIdOrDbId)}`, {
-        method: 'PUT',
+      const ticketIdOrDbId = editingTicket.ticketId || editingTicket._id;
+      const res = await fetch('/api/admin/tickets/update', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          ticketId: ticketIdOrDbId,
           showDate: editFormData.showDate,
           showTime: editFormData.showTime,
           tierName: editFormData.tierName,
