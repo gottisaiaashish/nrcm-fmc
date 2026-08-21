@@ -1087,6 +1087,9 @@ const handleUpdateTicketLogic = async (targetId, body) => {
   if (isMongoConnected) {
     const orConditions = [];
     if (dbIdCandidate && mongoose.Types.ObjectId.isValid(dbIdCandidate)) {
+      try {
+        orConditions.push({ _id: new mongoose.Types.ObjectId(dbIdCandidate) });
+      } catch (_) {}
       orConditions.push({ _id: dbIdCandidate });
     }
     if (ticketIdCandidate) {
@@ -1096,6 +1099,9 @@ const handleUpdateTicketLogic = async (targetId, body) => {
     if (targetId) {
       orConditions.push({ ticketId: String(targetId).trim() });
     }
+    if (rollNo && studentName) {
+      orConditions.push({ rollNo: String(rollNo).trim(), studentName: String(studentName).trim() });
+    }
 
     const query = orConditions.length > 0 ? { $or: orConditions } : { ticketId: ticketIdCandidate };
     return await Ticket.findOneAndUpdate(query, { $set: updateFields }, { new: true });
@@ -1103,7 +1109,8 @@ const handleUpdateTicketLogic = async (targetId, body) => {
     const index = inMemoryTickets.findIndex(t => 
       (t._id && String(t._id) === dbIdCandidate) || 
       (t.ticketId && t.ticketId.toLowerCase() === ticketIdCandidate.toLowerCase()) ||
-      (t.ticketId && t.ticketId === String(targetId).trim())
+      (t.ticketId && t.ticketId === String(targetId).trim()) ||
+      (t.rollNo && t.rollNo === String(rollNo).trim() && t.studentName === String(studentName).trim())
     );
     if (index !== -1) {
       inMemoryTickets[index] = { ...inMemoryTickets[index], ...updateFields };
@@ -1118,17 +1125,17 @@ const handleTicketUpdateExpress = async (req, res) => {
   try {
     const targetId = req.body.ticketId || req.body.id || req.body._id || req.params.id;
     if (!targetId) {
-      return res.status(400).json({ success: false, error: 'Ticket ID is required.' });
+      return res.status(200).json({ success: false, error: 'Ticket ID is required.' });
     }
     const updatedTicket = await handleUpdateTicketLogic(targetId, req.body);
     if (!updatedTicket) {
-      return res.status(404).json({ success: false, error: 'Ticket not found.' });
+      return res.status(200).json({ success: false, error: `Ticket '${targetId}' was not found in the database.` });
     }
     console.log(`🎟️ [ADMIN TICKET UPDATED] Ticket ${updatedTicket.ticketId} updated: ${updatedTicket.showDate} @ ${updatedTicket.showTime}`);
-    return res.json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
+    return res.status(200).json({ success: true, message: 'Ticket details updated successfully!', ticket: updatedTicket });
   } catch (error) {
     console.error('Update Ticket Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
+    return res.status(200).json({ success: false, error: 'Failed to update ticket details: ' + error.message });
   }
 };
 
