@@ -496,6 +496,44 @@ app.delete('/api/admin/registrations/:id', async (req, res) => {
   }
 });
 
+// 5b. Update Registration Entry (Admin Endpoint)
+app.put('/api/admin/registrations/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, branch, mobile, email, interestedArea } = req.body;
+
+    const updateFields = {};
+    if (name !== undefined) updateFields.name = name;
+    if (branch !== undefined) updateFields.branch = branch;
+    if (mobile !== undefined) updateFields.mobile = mobile;
+    if (email !== undefined) updateFields.email = email;
+    if (interestedArea !== undefined) updateFields.interestedArea = interestedArea;
+
+    let updatedDoc = null;
+    if (isMongoConnected) {
+      const query = mongoose.Types.ObjectId.isValid(id)
+        ? { $or: [{ _id: id }, { passId: id }] }
+        : { passId: id };
+      updatedDoc = await Registration.findOneAndUpdate(query, { $set: updateFields }, { new: true });
+    } else {
+      const index = inMemoryRegistrations.findIndex(r => (r._id && String(r._id) === String(id)) || r.passId === id);
+      if (index !== -1) {
+        inMemoryRegistrations[index] = { ...inMemoryRegistrations[index], ...updateFields };
+        updatedDoc = inMemoryRegistrations[index];
+      }
+    }
+
+    if (!updatedDoc) {
+      return res.status(404).json({ success: false, error: 'Registration not found.' });
+    }
+
+    return res.json({ success: true, message: 'Registration updated successfully!', registration: updatedDoc });
+  } catch (error) {
+    console.error('Update Registration Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update registration.' });
+  }
+});
+
 // --- RE-RELEASE MOVIE EVENT & TICKET BOOKING ENDPOINTS ---
 
 // 6. Get Event Settings (Public)
@@ -1026,6 +1064,98 @@ app.delete('/api/admin/tickets/:id', async (req, res) => {
   } catch (error) {
     console.error('Delete Ticket Error:', error);
     res.status(500).json({ success: false, error: 'Failed to delete ticket.' });
+  }
+});
+
+// 13c. Admin - Update Single Ticket Details (Change Show Timing, Show Date, etc.)
+app.put('/api/admin/tickets/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { showTime, showDate, tierName, studentName, rollNo, branch, mobile, email, status } = req.body;
+
+    const updateFields = {};
+    if (showTime !== undefined) updateFields.showTime = showTime;
+    if (showDate !== undefined) updateFields.showDate = showDate;
+    if (tierName !== undefined) updateFields.tierName = tierName;
+    if (studentName !== undefined) updateFields.studentName = studentName;
+    if (rollNo !== undefined) updateFields.rollNo = rollNo;
+    if (branch !== undefined) updateFields.branch = branch;
+    if (mobile !== undefined) updateFields.mobile = mobile;
+    if (email !== undefined) updateFields.email = email;
+    if (status !== undefined) updateFields.status = status;
+
+    let updatedTicket = null;
+
+    if (isMongoConnected) {
+      const query = mongoose.Types.ObjectId.isValid(id)
+        ? { $or: [{ _id: id }, { ticketId: id }] }
+        : { ticketId: id };
+      updatedTicket = await Ticket.findOneAndUpdate(query, { $set: updateFields }, { new: true });
+    } else {
+      const index = inMemoryTickets.findIndex(t => (t._id && String(t._id) === String(id)) || t.ticketId === id);
+      if (index !== -1) {
+        inMemoryTickets[index] = { ...inMemoryTickets[index], ...updateFields };
+        updatedTicket = inMemoryTickets[index];
+      }
+    }
+
+    if (!updatedTicket) {
+      return res.status(404).json({ success: false, error: 'Ticket not found.' });
+    }
+
+    console.log(`🎟️ [ADMIN TICKET UPDATED] Ticket ${updatedTicket.ticketId} updated: ${updatedTicket.showDate} @ ${updatedTicket.showTime}`);
+
+    return res.json({
+      success: true,
+      message: 'Ticket details updated successfully!',
+      ticket: updatedTicket
+    });
+  } catch (error) {
+    console.error('Update Ticket Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update ticket details.' });
+  }
+});
+
+// 13d. Admin - Bulk Update Ticket Timings
+app.post('/api/admin/tickets/bulk-update-timing', async (req, res) => {
+  try {
+    const { ticketIds, showTime, showDate } = req.body;
+
+    if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
+      return res.status(400).json({ success: false, error: 'No ticket IDs provided for bulk update.' });
+    }
+
+    const updateFields = {};
+    if (showTime) updateFields.showTime = showTime;
+    if (showDate) updateFields.showDate = showDate;
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ success: false, error: 'Please specify new show time or show date.' });
+    }
+
+    if (isMongoConnected) {
+      const validObjectIds = ticketIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+      await Ticket.updateMany(
+        { $or: [{ _id: { $in: validObjectIds } }, { ticketId: { $in: ticketIds } }] },
+        { $set: updateFields }
+      );
+    } else {
+      inMemoryTickets.forEach((t, idx) => {
+        if (ticketIds.includes(String(t._id)) || ticketIds.includes(t.ticketId)) {
+          inMemoryTickets[idx] = { ...inMemoryTickets[idx], ...updateFields };
+        }
+      });
+    }
+
+    console.log(`🎟️ [BULK TICKET TIMING UPDATED] Updated ${ticketIds.length} tickets to: ${showDate || 'Same Date'} @ ${showTime || 'Same Time'}`);
+
+    return res.json({
+      success: true,
+      message: `Successfully updated timings for ${ticketIds.length} ticket(s)!`
+    });
+  } catch (error) {
+    console.error('Bulk Update Ticket Timing Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to bulk update ticket timings.' });
   }
 });
 

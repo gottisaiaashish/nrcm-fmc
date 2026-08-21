@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus } from 'lucide-react';
+import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus, Clock, Edit } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
@@ -70,6 +70,31 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     razorpayPaymentId: '',
     razorpayOrderId: ''
   });
+
+  // Edit Single Ticket Timing & Details Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editSuccessMsg, setEditSuccessMsg] = useState('');
+  const [editingTicket, setEditingTicket] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    ticketId: '',
+    studentName: '',
+    rollNo: '',
+    showDate: 'AUGUST 24, 2026',
+    showTime: '10:00 AM to 12:30 PM',
+    tierName: '',
+    status: 'VALID'
+  });
+
+  // Bulk Edit Tickets Timing State
+  const [selectedTicketIds, setSelectedTicketIds] = useState([]);
+  const [bulkEditModalOpen, setBulkEditModalOpen] = useState(false);
+  const [bulkShowTime, setBulkShowTime] = useState('');
+  const [bulkShowDate, setBulkShowDate] = useState('');
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkSuccessMsg, setBulkSuccessMsg] = useState('');
 
   // Event Suggestions State
   const [suggestionsList, setSuggestionsList] = useState([]);
@@ -236,6 +261,133 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       setIssueError('Network error issuing ticket: ' + err.message);
     } finally {
       setIssueLoading(false);
+    }
+  };
+
+  const handleOpenEditModal = (ticket) => {
+    setEditingTicket(ticket);
+    setEditFormData({
+      ticketId: ticket.ticketId,
+      studentName: ticket.studentName || '',
+      rollNo: ticket.rollNo || '',
+      branch: ticket.branch || '',
+      mobile: ticket.mobile || '',
+      email: ticket.email || '',
+      showDate: ticket.showDate || eventSettings.releaseDate || 'AUGUST 24, 2026',
+      showTime: ticket.showTime || (eventSettings.showTimes?.[0]) || '10:00 AM to 12:30 PM',
+      tierName: ticket.tierName || '',
+      status: ticket.status || 'VALID'
+    });
+    setEditError('');
+    setEditSuccessMsg('');
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateTicket = async (e) => {
+    e.preventDefault();
+    if (!editingTicket) return;
+
+    setEditLoading(true);
+    setEditError('');
+    setEditSuccessMsg('');
+
+    try {
+      const ticketIdOrDbId = editingTicket._id || editingTicket.ticketId;
+      const res = await fetch(`/api/admin/tickets/${encodeURIComponent(ticketIdOrDbId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          showDate: editFormData.showDate,
+          showTime: editFormData.showTime,
+          tierName: editFormData.tierName,
+          status: editFormData.status,
+          studentName: editFormData.studentName,
+          rollNo: editFormData.rollNo,
+          branch: editFormData.branch,
+          mobile: editFormData.mobile,
+          email: editFormData.email
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.ticket) {
+        setTicketsList(prev => prev.map(t => (t._id === data.ticket._id || t.ticketId === data.ticket.ticketId) ? data.ticket : t));
+        setEditSuccessMsg('✅ Ticket details & Branch/Year updated successfully!');
+        setTimeout(() => {
+          setEditModalOpen(false);
+          setEditSuccessMsg('');
+          setEditingTicket(null);
+        }, 1200);
+      } else {
+        setEditError(data.error || 'Failed to update ticket.');
+      }
+    } catch (err) {
+      setEditError('Network error updating ticket: ' + err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleToggleSelectAllTickets = (e) => {
+    if (e.target.checked) {
+      const allIds = filteredTickets.map(t => t._id || t.ticketId);
+      setSelectedTicketIds(allIds);
+    } else {
+      setSelectedTicketIds([]);
+    }
+  };
+
+  const handleToggleSelectTicket = (id) => {
+    setSelectedTicketIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkUpdateTiming = async (e) => {
+    e.preventDefault();
+    if (selectedTicketIds.length === 0) return;
+
+    setBulkLoading(true);
+    setBulkError('');
+    setBulkSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/admin/tickets/bulk-update-timing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticketIds: selectedTicketIds,
+          showTime: bulkShowTime,
+          showDate: bulkShowDate
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTicketsList(prev => prev.map(t => {
+          const tId = t._id || t.ticketId;
+          if (selectedTicketIds.includes(tId)) {
+            return {
+              ...t,
+              ...(bulkShowTime ? { showTime: bulkShowTime } : {}),
+              ...(bulkShowDate ? { showDate: bulkShowDate } : {})
+            };
+          }
+          return t;
+        }));
+        setBulkSuccessMsg(`✅ Timings updated for ${selectedTicketIds.length} ticket(s)!`);
+        setTimeout(() => {
+          setBulkEditModalOpen(false);
+          setSelectedTicketIds([]);
+          setBulkSuccessMsg('');
+          setBulkShowTime('');
+          setBulkShowDate('');
+        }, 1200);
+      } else {
+        setBulkError(data.error || 'Failed to bulk update ticket timings.');
+      }
+    } catch (err) {
+      setBulkError('Network error: ' + err.message);
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -1172,52 +1324,92 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 </div>
               </div>
 
+              {/* Bulk Selection Bar */}
+              {selectedTicketIds.length > 0 && (
+                <div style={{ backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe', padding: '8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#1e40af' }}>
+                    Selected {selectedTicketIds.length} ticket(s)
+                  </span>
+                  <button
+                    onClick={() => setBulkEditModalOpen(true)}
+                    style={{ padding: '6px 14px', borderRadius: 8, backgroundColor: '#2563eb', color: '#ffffff', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Clock size={14} /> Bulk Change Show Timing
+                  </button>
+                </div>
+              )}
+
               <div style={{ overflowX:'auto', overflowY:'auto', maxHeight:440 }}>
                 <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
                   <thead>
                     <tr style={S.tHead}>
+                      <th style={{ ...S.tHeadTh, width:30 }}>
+                        <input
+                          type="checkbox"
+                          onChange={handleToggleSelectAllTickets}
+                          checked={filteredTickets.length > 0 && selectedTicketIds.length === filteredTickets.length}
+                        />
+                      </th>
                       {['#','Ticket Pass ID','Student Name','Mobile No','Roll No','Branch','Show Date & Time','Category','Price','Status','Action'].map((h, i) => (
                         <th key={i} style={{ ...S.tHeadTh, textAlign: i === 10 ? 'right' : 'left' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTickets.length > 0 ? filteredTickets.map((t, idx) => (
-                      <tr key={t._id || idx} style={S.tRow}>
-                        <td style={S.tCell}>{idx + 1}</td>
-                        <td style={{ ...S.tCell, color:'#dc2626', fontFamily:'monospace', fontWeight:700 }}>{t.ticketId}</td>
-                        <td style={{ ...S.tCell, fontWeight:600 }}>{t.studentName}</td>
-                        <td style={{ ...S.tCell, fontFamily:'monospace', fontWeight:700, color:'#0f172a' }}>{t.mobile || 'N/A'}</td>
-                        <td style={{ ...S.tCell, fontFamily:'monospace' }}>{t.rollNo}</td>
-                        <td style={S.tCell}>{t.branch}</td>
-                        <td style={S.tCell}>{t.showDate || 'AUGUST 24, 2026'} ({t.showTime})</td>
-                        <td style={{ ...S.tCell, fontWeight:600 }}>{t.tierName}</td>
-                        <td style={{ ...S.tCell, color:'#16a34a', fontWeight:700 }}>₹{t.price}</td>
-                        <td style={S.tCell}>
-                          <span style={{
-                            padding:'3px 8px', borderRadius:6, fontSize:10, fontWeight:800,
-                            backgroundColor: t.status === 'USED' ? '#fee2e2' : '#dcfce7',
-                            color: t.status === 'USED' ? '#b91c1c' : '#15803d'
-                          }}>
-                            {t.status === 'USED' ? 'USED / SCANNED' : 'VALID'}
-                          </span>
-                        </td>
-                        <td style={{ ...S.tCell, textAlign:'right' }}>
-                          <button
-                            onClick={() => {
-                              setActiveTab('gate_scanner');
-                              setScanTicketIdInput(t.ticketId);
-                              handleVerifyTicket(t.ticketId);
-                            }}
-                            style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#f0fdf4', color:'#16a34a', border:'none', cursor:'pointer', fontSize:11, marginRight:6 }}
-                          >
-                            Verify & Scan
-                          </button>
-                          <button onClick={() => handleDeleteTicket(t._id || t.ticketId)} style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#fef2f2', color:'#ef4444', border:'none', cursor:'pointer' }}>Delete</button>
-                        </td>
-                      </tr>
-                    )) : (
-                      <tr><td colSpan="11" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No booked tickets found.</td></tr>
+                    {filteredTickets.length > 0 ? filteredTickets.map((t, idx) => {
+                      const tId = t._id || t.ticketId;
+                      const isSelected = selectedTicketIds.includes(tId);
+                      return (
+                        <tr key={t._id || idx} style={{ ...S.tRow, backgroundColor: isSelected ? '#f0f9ff' : 'transparent' }}>
+                          <td style={S.tCell}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleToggleSelectTicket(tId)}
+                            />
+                          </td>
+                          <td style={S.tCell}>{idx + 1}</td>
+                          <td style={{ ...S.tCell, color:'#dc2626', fontFamily:'monospace', fontWeight:700 }}>{t.ticketId}</td>
+                          <td style={{ ...S.tCell, fontWeight:600 }}>{t.studentName}</td>
+                          <td style={{ ...S.tCell, fontFamily:'monospace', fontWeight:700, color:'#0f172a' }}>{t.mobile || 'N/A'}</td>
+                          <td style={{ ...S.tCell, fontFamily:'monospace' }}>{t.rollNo}</td>
+                          <td style={S.tCell}>{t.branch}</td>
+                          <td style={{ ...S.tCell, fontWeight:600, color:'#2563eb' }}>{t.showDate || 'AUGUST 24, 2026'} ({t.showTime})</td>
+                          <td style={{ ...S.tCell, fontWeight:600 }}>{t.tierName}</td>
+                          <td style={{ ...S.tCell, color:'#16a34a', fontWeight:700 }}>₹{t.price}</td>
+                          <td style={S.tCell}>
+                            <span style={{
+                              padding:'3px 8px', borderRadius:6, fontSize:10, fontWeight:800,
+                              backgroundColor: t.status === 'USED' ? '#fee2e2' : '#dcfce7',
+                              color: t.status === 'USED' ? '#b91c1c' : '#15803d'
+                            }}>
+                              {t.status === 'USED' ? 'USED / SCANNED' : 'VALID'}
+                            </span>
+                          </td>
+                          <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
+                            <button
+                              onClick={() => handleOpenEditModal(t)}
+                              style={{ padding:'4px 10px', borderRadius:6, backgroundColor:'#eff6ff', color:'#2563eb', border:'1px solid #bfdbfe', cursor:'pointer', fontSize:11, marginRight:6, fontWeight:700, display:'inline-flex', alignItems:'center', gap:4 }}
+                              title="Change Show Timing & Details"
+                            >
+                              <Clock size={12} /> Edit Timing
+                            </button>
+                            <button
+                              onClick={() => {
+                                setActiveTab('gate_scanner');
+                                setScanTicketIdInput(t.ticketId);
+                                handleVerifyTicket(t.ticketId);
+                              }}
+                              style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#f0fdf4', color:'#16a34a', border:'none', cursor:'pointer', fontSize:11, marginRight:6 }}
+                            >
+                              Verify & Scan
+                            </button>
+                            <button onClick={() => handleDeleteTicket(t._id || t.ticketId)} style={{ padding:'4px 8px', borderRadius:6, backgroundColor:'#fef2f2', color:'#ef4444', border:'none', cursor:'pointer' }}>Delete</button>
+                          </td>
+                        </tr>
+                      );
+                    }) : (
+                      <tr><td colSpan="12" style={{ ...S.tCell, textAlign:'center', padding:40 }}>No booked tickets found.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -1690,6 +1882,352 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   style={{ padding: '10px 20px', borderRadius: '10px', backgroundColor: '#dc2626', color: '#ffffff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)' }}
                 >
                   <Plus size={16} /> {issueLoading ? 'Issuing Ticket...' : 'Generate & Add Ticket'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT TICKET TIMING & DETAILS MODAL ── */}
+      {editModalOpen && editingTicket && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 10000,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '520px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid #e5e7eb',
+            padding: '24px'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f3f4f6' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Clock size={20} color="#2563eb" /> Change Ticket Show Timing
+                </h3>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
+                  Update show date & time for Ticket: <strong style={{ color: '#dc2626', fontFamily: 'monospace' }}>{editingTicket.ticketId}</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Ticket Brief Card */}
+            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px' }}>
+              <div style={{ fontWeight: 700, color: '#0f172a' }}>{editingTicket.studentName} ({editingTicket.rollNo})</div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                Branch: {editingTicket.branch || 'N/A'} | Current: <span style={{ color: '#dc2626', fontWeight: 600 }}>{editingTicket.showDate || 'AUGUST 24, 2026'} ({editingTicket.showTime})</span>
+              </div>
+            </div>
+
+            {/* Notifications */}
+            {editError && (
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 600 }}>
+                {editError}
+              </div>
+            )}
+            {editSuccessMsg && (
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', color: '#16a34a', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 700 }}>
+                {editSuccessMsg}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleUpdateTicket} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              
+              {/* Row 1: Student Name & Roll No */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Student Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.studentName}
+                    onChange={e => setEditFormData({ ...editFormData, studentName: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Roll Number
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.rollNo}
+                    onChange={e => setEditFormData({ ...editFormData, rollNo: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Branch & Year (Crucial requested fix) */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  🎓 Branch & Year (Edit Branch Mistakes) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. CSE - 1st Year, ECE - 2nd Year..."
+                  value={editFormData.branch}
+                  onChange={e => setEditFormData({ ...editFormData, branch: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #2563eb', fontSize: '13px', fontWeight: 600, boxSizing: 'border-box', backgroundColor: '#eff6ff' }}
+                />
+              </div>
+
+              {/* Row 3: Mobile & Email */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Mobile Number
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.mobile}
+                    onChange={e => setEditFormData({ ...editFormData, mobile: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.email}
+                    onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              {/* Show Time Select / Custom Input */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  Show Time *
+                </label>
+                <select
+                  value={editFormData.showTime}
+                  onChange={e => setEditFormData({ ...editFormData, showTime: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box', marginBottom: '6px' }}
+                >
+                  {eventSettings.showTimes && eventSettings.showTimes.map((st, i) => (
+                    <option key={i} value={st}>{st}</option>
+                  ))}
+                  <option value="10:00 AM to 12:30 PM">10:00 AM to 12:30 PM</option>
+                  <option value="01:00 PM to 03:30 PM">01:00 PM to 03:30 PM</option>
+                  <option value="04:00 PM to 06:30 PM">04:00 PM to 06:30 PM</option>
+                  <option value="07:00 PM to 09:30 PM">07:00 PM to 09:30 PM</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Or type custom timing (e.g. 02:00 PM to 04:30 PM)"
+                  value={editFormData.showTime}
+                  onChange={e => setEditFormData({ ...editFormData, showTime: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Show Date Select / Custom Input */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  Show Date *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. AUGUST 24, 2026"
+                  value={editFormData.showDate}
+                  onChange={e => setEditFormData({ ...editFormData, showDate: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Category & Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Pass Category
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.tierName}
+                    onChange={e => setEditFormData({ ...editFormData, tierName: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                    Ticket Status
+                  </label>
+                  <select
+                    value={editFormData.status}
+                    onChange={e => setEditFormData({ ...editFormData, status: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  >
+                    <option value="VALID">VALID</option>
+                    <option value="USED">USED / SCANNED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(false)}
+                  style={{ padding: '10px 18px', borderRadius: '10px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  style={{ padding: '10px 20px', borderRadius: '10px', backgroundColor: '#2563eb', color: '#ffffff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)' }}
+                >
+                  <Save size={16} /> {editLoading ? 'Saving Changes...' : 'Save Updated Details'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── BULK EDIT TICKETS TIMING MODAL ── */}
+      {bulkEditModalOpen && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 10000,
+          backgroundColor: 'rgba(0, 0, 0, 0.65)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '480px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
+            border: '1px solid #e5e7eb',
+            padding: '24px'
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f3f4f6' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Clock size={20} color="#2563eb" /> Bulk Change Show Timings
+                </h3>
+                <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
+                  Updating timings for <strong style={{ color: '#2563eb' }}>{selectedTicketIds.length} selected ticket(s)</strong>
+                </p>
+              </div>
+              <button
+                onClick={() => setBulkEditModalOpen(false)}
+                style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Notifications */}
+            {bulkError && (
+              <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 600 }}>
+                {bulkError}
+              </div>
+            )}
+            {bulkSuccessMsg && (
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', color: '#16a34a', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', marginBottom: '14px', fontWeight: 700 }}>
+                {bulkSuccessMsg}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleBulkUpdateTiming} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              
+              {/* Bulk Show Time */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  Select New Show Time
+                </label>
+                <select
+                  value={bulkShowTime}
+                  onChange={e => setBulkShowTime(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box', marginBottom: '6px' }}
+                >
+                  <option value="">-- Keep Original Time --</option>
+                  {eventSettings.showTimes && eventSettings.showTimes.map((st, i) => (
+                    <option key={i} value={st}>{st}</option>
+                  ))}
+                  <option value="10:00 AM to 12:30 PM">10:00 AM to 12:30 PM</option>
+                  <option value="01:00 PM to 03:30 PM">01:00 PM to 03:30 PM</option>
+                  <option value="04:00 PM to 06:30 PM">04:00 PM to 06:30 PM</option>
+                  <option value="07:00 PM to 09:30 PM">07:00 PM to 09:30 PM</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Or type custom timing"
+                  value={bulkShowTime}
+                  onChange={e => setBulkShowTime(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Bulk Show Date */}
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                  Select New Show Date
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. AUGUST 24, 2026 (Leave empty to keep original)"
+                  value={bulkShowDate}
+                  onChange={e => setBulkShowDate(e.target.value)}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f3f4f6' }}>
+                <button
+                  type="button"
+                  onClick={() => setBulkEditModalOpen(false)}
+                  style={{ padding: '10px 18px', borderRadius: '10px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '13px' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={bulkLoading || (!bulkShowTime && !bulkShowDate)}
+                  style={{ padding: '10px 20px', borderRadius: '10px', backgroundColor: '#2563eb', color: '#ffffff', fontWeight: 800, border: 'none', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)', opacity: (!bulkShowTime && !bulkShowDate) ? 0.6 : 1 }}
+                >
+                  <Clock size={16} /> {bulkLoading ? 'Updating All...' : `Apply Timing to ${selectedTicketIds.length} Tickets`}
                 </button>
               </div>
             </form>
