@@ -293,22 +293,37 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
     try {
       const ticketIdOrDbId = editingTicket.ticketId || editingTicket._id;
-      const res = await fetch('/api/admin/tickets/update', {
+      const payload = {
+        ticketId: ticketIdOrDbId,
+        id: ticketIdOrDbId,
+        _id: editingTicket._id,
+        showDate: editFormData.showDate,
+        showTime: editFormData.showTime,
+        tierName: editFormData.tierName,
+        status: editFormData.status,
+        studentName: editFormData.studentName,
+        rollNo: editFormData.rollNo,
+        branch: editFormData.branch,
+        mobile: editFormData.mobile,
+        email: editFormData.email
+      };
+
+      // Try POST /api/admin/tickets/update (Vercel & proxy safe) first
+      let res = await fetch('/api/admin/tickets/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ticketId: ticketIdOrDbId,
-          showDate: editFormData.showDate,
-          showTime: editFormData.showTime,
-          tierName: editFormData.tierName,
-          status: editFormData.status,
-          studentName: editFormData.studentName,
-          rollNo: editFormData.rollNo,
-          branch: editFormData.branch,
-          mobile: editFormData.mobile,
-          email: editFormData.email
-        })
+        body: JSON.stringify(payload)
       });
+
+      // Fallback to PUT /api/admin/tickets/:id if needed
+      if (!res.ok) {
+        res = await fetch(`/api/admin/tickets/${encodeURIComponent(ticketIdOrDbId)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
       const data = await res.json();
       if (data.success && data.ticket) {
         setTicketsList(prev => prev.map(t => (t._id === data.ticket._id || t.ticketId === data.ticket.ticketId) ? data.ticket : t));
