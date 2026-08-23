@@ -399,6 +399,19 @@ const sendTicketHypeEmail = async (ticket) => {
     }] : [];
 
     if (rawBrevoKey && rawBrevoKey.startsWith('xkeysib-')) {
+      const brevoBody = {
+        sender: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
+        replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
+        to: [{ email: email, name: studentName }],
+        subject: subject,
+        htmlContent: htmlContent
+      };
+      if (pdfBuffer) {
+        brevoBody.attachment = [{
+          content: pdfBuffer.toString('base64'),
+          name: `BUSINESSMAN_Pass_${ticketId}.pdf`
+        }];
+      }
       const resp = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -406,17 +419,7 @@ const sendTicketHypeEmail = async (ticket) => {
           'api-key': rawBrevoKey,
           'content-type': 'application/json'
         },
-        body: JSON.stringify({
-          sender: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
-          replyTo: { name: 'NRCM Film Making Club', email: EMAIL_USER || 'nrcmfmc@gmail.com' },
-          to: [{ email: email, name: studentName }],
-          subject: subject,
-          htmlContent: htmlContent,
-          attachment: pdfBuffer ? [{
-            content: pdfBuffer.toString('base64'),
-            name: `BUSINESSMAN_Pass_${ticketId}.pdf`
-          }] : []
-        })
+        body: JSON.stringify(brevoBody)
       });
       const resData = await resp.json();
       if (resp.ok) {
