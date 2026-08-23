@@ -731,34 +731,42 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   if (!isOpen) return null;
 
-  const filteredRegistrations = registrations.filter(r => {
+  const safeRegistrations = Array.isArray(registrations) ? registrations : [];
+  const safeTickets = Array.isArray(ticketsList) ? ticketsList : [];
+  const safeShortlisted = Array.isArray(shortlistedIds) ? shortlistedIds : [];
+
+  const filteredRegistrations = safeRegistrations.filter(r => {
+    if (!r) return false;
     const isMatch =
-      r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.branch?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.mobile?.includes(searchQuery) ||
-      r.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.passId?.toLowerCase().includes(searchQuery.toLowerCase());
+      (r.name || '')?.toLowerCase().includes((searchQuery || '').toLowerCase()) ||
+      (r.branch || '')?.toLowerCase().includes((searchQuery || '').toLowerCase()) ||
+      (r.mobile || '')?.includes(searchQuery || '') ||
+      (r.email || '')?.toLowerCase().includes((searchQuery || '').toLowerCase()) ||
+      (r.passId || '')?.toLowerCase().includes((searchQuery || '').toLowerCase());
 
     if (!isMatch) return false;
-    const isShortlisted = shortlistedIds.includes(r._id) || shortlistedIds.includes(r.passId);
+    const isShortlisted = safeShortlisted.includes(r._id) || safeShortlisted.includes(r.passId);
     if (activeTab === 'shortlisted') return isShortlisted;
     return !isShortlisted;
   });
 
-  const filteredTickets = ticketsList.filter(t => {
+  const filteredTickets = safeTickets.filter(t => {
+    if (!t) return false;
+    const q = (ticketSearchQuery || '').toLowerCase();
     return (
-      t.ticketId?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
-      t.studentName?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
-      t.rollNo?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
-      t.mobile?.includes(ticketSearchQuery) ||
-      t.bookingRef?.toLowerCase().includes(ticketSearchQuery.toLowerCase()) ||
-      t.showTime?.toLowerCase().includes(ticketSearchQuery.toLowerCase())
+      (t.ticketId || '')?.toLowerCase().includes(q) ||
+      (t.studentName || '')?.toLowerCase().includes(q) ||
+      (t.rollNo || '')?.toLowerCase().includes(q) ||
+      (t.mobile || '')?.includes(ticketSearchQuery || '') ||
+      (t.bookingRef || '')?.toLowerCase().includes(q) ||
+      (t.showTime || '')?.toLowerCase().includes(q)
     );
   });
 
   // Real-Time Ticket Analytics & Detailed Breakdown
   const ticketStats = React.useMemo(() => {
-    const totalTickets = ticketsList.length;
+    const list = Array.isArray(ticketsList) ? ticketsList : [];
+    const totalTickets = list.length;
     let totalRevenue = 0;
     let validTickets = 0;
     let usedTickets = 0;
@@ -768,7 +776,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     const dateBreakdown = {};
     const branchBreakdown = {};
 
-    ticketsList.forEach(t => {
+    list.forEach(t => {
+      if (!t) return;
       totalRevenue += (Number(t.price) || 0);
 
       if (t.status === 'USED') {
@@ -786,15 +795,19 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       showTimeBreakdown[show] = (showTimeBreakdown[show] || 0) + 1;
 
       if (t.createdAt) {
-        const d = new Date(t.createdAt);
-        const istHours = (d.getUTCHours() + 5 + Math.floor((d.getUTCMinutes() + 30) / 60)) % 24;
-        if (istHours >= 6 && istHours < 12) bookingTimeSlots.morning++;
-        else if (istHours >= 12 && istHours < 17) bookingTimeSlots.afternoon++;
-        else if (istHours >= 17 && istHours < 22) bookingTimeSlots.evening++;
-        else bookingTimeSlots.night++;
+        try {
+          const d = new Date(t.createdAt);
+          if (!isNaN(d.getTime())) {
+            const istHours = (d.getUTCHours() + 5 + Math.floor((d.getUTCMinutes() + 30) / 60)) % 24;
+            if (istHours >= 6 && istHours < 12) bookingTimeSlots.morning++;
+            else if (istHours >= 12 && istHours < 17) bookingTimeSlots.afternoon++;
+            else if (istHours >= 17 && istHours < 22) bookingTimeSlots.evening++;
+            else bookingTimeSlots.night++;
 
-        const dateStr = d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' });
-        dateBreakdown[dateStr] = (dateBreakdown[dateStr] || 0) + 1;
+            const dateStr = d.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' });
+            dateBreakdown[dateStr] = (dateBreakdown[dateStr] || 0) + 1;
+          }
+        } catch (_) {}
       }
 
       const br = t.branch || 'Unknown';
