@@ -223,7 +223,7 @@ const sendTicketHypeEmail = async (ticket) => {
     return false;
   }
 
-  const subject = `Official Entry Pass - ${movieTitle} Screening | NRCM FMC`;
+  const subject = `🔥 THE WAIT IS OVER! 💥 Your Official Ticket Pass for ${movieTitle} Re-Release`;
 
   const attachmentHtml = `<!DOCTYPE html>
 <html>
@@ -246,7 +246,7 @@ const sendTicketHypeEmail = async (ticket) => {
     .val-tier { color: #e11d48; font-weight: 800; }
     .qr-container { display: flex; flex-direction: column; align-items: center; padding-top: 14px; }
     .qr-box { padding: 12px; background-color: #ffffff; border: 2px solid #0f172a; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .qr-img { width: 140px; height: 140px; display: block; }
+    .qr-img { width: 150px; height: 150px; display: block; }
     .ticket-id-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-top: 10px; text-align: center; }
     .ticket-id-pill { font-size: 12px; font-family: monospace; font-weight: 800; color: #e11d48; background-color: #fff1f2; border: 1px solid #fecdd3; padding: 3px 12px; border-radius: 8px; display: inline-block; margin-top: 4px; }
     .subtext { font-size: 10px; color: #94a3b8; margin: 4px 0 0 0; text-align: center; }
@@ -274,9 +274,9 @@ const sendTicketHypeEmail = async (ticket) => {
 
     <div class="qr-container">
       <div class="qr-box">
-        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketId)}" alt="Pass QR Code" />
+        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(ticketId)}" alt="Pass QR Code" />
       </div>
-      <span class="ticket-id-label">TICKET ID CODE</span>
+      <span class="ticket-id-label">ENTRY GATE TICKET ID & SCANNER</span>
       <span class="ticket-id-pill">${ticketId}</span>
       <p class="subtext">Single-use scan at college entry gate.</p>
     </div>
@@ -290,38 +290,74 @@ const sendTicketHypeEmail = async (ticket) => {
   <meta charset="utf-8">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; line-height: 1.6; }
-    .container { max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .header { font-size: 18px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e11d48; padding-bottom: 12px; margin-bottom: 20px; }
-    .subtext { color: #475569; font-size: 14px; margin-bottom: 20px; }
-    .info-box { background-color: #f8fafc; border-left: 4px solid #e11d48; padding: 14px 18px; border-radius: 8px; margin: 18px 0; font-size: 13px; }
-    .btn { display: inline-block; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; margin-top: 10px; }
-    .footer { margin-top: 30px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+    .container { max-width: 540px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .hero-title { font-size: 22px; font-weight: 900; color: #e11d48; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 4px 0; text-align: center; }
+    .hero-sub { font-size: 14px; font-weight: 700; color: #0f172a; text-align: center; margin-bottom: 20px; }
+    .pass-card { width: 100%; max-width: 420px; margin: 20px auto; background-color: #ffffff; border: 2px solid #e11d48; border-radius: 20px; padding: 20px; box-sizing: border-box; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; gap: 8px; }
+    .pass-title { font-size: 9px; font-weight: 800; color: #e11d48; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+    .movie-name { font-size: 20px; font-weight: 800; color: #0f172a; margin: 2px 0 0 0; }
+    .valid-badge { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 14px; flex-shrink: 0; }
+    .grid { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-bottom: 1px dashed #cbd5e1; font-size: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: baseline; }
+    .label { color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .val-main { color: #0f172a; font-weight: 800; font-size: 13px; }
+    .val-mono { color: #0f172a; font-family: monospace; font-weight: 700; }
+    .val-bold { color: #0f172a; font-weight: 800; }
+    .val-tier { color: #e11d48; font-weight: 800; }
+    .qr-container { text-align: center; padding-top: 14px; }
+    .qr-box { display: inline-block; padding: 12px; background-color: #ffffff; border: 2px solid #0f172a; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .qr-img { width: 150px; height: 150px; display: block; margin: 0 auto; }
+    .ticket-id-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-top: 10px; text-align: center; }
+    .ticket-id-pill { font-size: 13px; font-family: monospace; font-weight: 800; color: #e11d48; background-color: #fff1f2; border: 1px solid #fecdd3; padding: 4px 14px; border-radius: 8px; display: inline-block; margin-top: 4px; }
+    .subtext { font-size: 10px; color: #94a3b8; margin: 6px 0 0 0; text-align: center; }
+    .btn { display: block; text-align: center; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 14px 20px; border-radius: 12px; font-weight: 800; font-size: 14px; margin-top: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .footer { margin-top: 24px; font-size: 12px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">NRCM Film Making Club • Official Entry Pass</div>
-    
-    <p class="subtext">Dear <strong>${studentName}</strong>,</p>
+    <h1 class="hero-title">🔥 THE WAIT IS OVER! 🔥</h1>
+    <div class="hero-sub">Your Official Entry Pass for BUSINESSMAN Special Screening is Here!</div>
 
-    <p class="subtext">Your official entry pass for the <strong>${movieTitle}</strong> special screening has been issued. Your ticket details are provided below:</p>
+    <p style="font-size: 14px; color: #475569; margin-bottom: 14px;">Dear <strong>${studentName}</strong>,</p>
+    <p style="font-size: 14px; color: #475569; margin-bottom: 14px;">Your official ticket pass with your unique QR scanner code is ready! Present this QR code scanner at the entry gate for instant verification.</p>
 
-    <div class="info-box">
-      <strong>Screening Information:</strong><br />
-      • <strong>Ticket ID:</strong> <span style="font-family: monospace; color: #e11d48; font-weight: 800;">${ticketId}</span><br />
-      • <strong>Attendee:</strong> ${studentName} (${rollNo})<br />
-      • <strong>Screening Date:</strong> ${showDate}<br />
-      • <strong>Showtime:</strong> ${showTime}<br />
-      • <strong>Venue:</strong> NRCM Main Auditorium, MT Block
+    <!-- Embedded Ticket Pass Card with QR Scanner -->
+    <div class="pass-card">
+      <div class="card-header">
+        <div>
+          <span class="pass-title">NRCM FMC OFFICIAL ENTRY PASS</span>
+          <h2 class="movie-name">${movieTitle}</h2>
+        </div>
+        <span class="valid-badge">✔ VALID</span>
+      </div>
+
+      <div class="grid">
+        <div class="row"><span class="label">Attendee:</span><span class="val-main">${studentName}</span></div>
+        <div class="row"><span class="label">Roll No:</span><span class="val-mono">${rollNo}</span></div>
+        <div class="row"><span class="label">Branch & Year:</span><span class="val-bold">${branch}</span></div>
+        <div class="row"><span class="label">Screening Date:</span><span class="val-bold">${showDate}</span></div>
+        <div class="row"><span class="label">Showtime:</span><span class="val-bold">${showTime}</span></div>
+        <div class="row"><span class="label">Tier & Price:</span><span class="val-tier">${tierName} (₹${price})</span></div>
+        <div class="row"><span class="label">Venue:</span><span class="val-bold" style="font-size:11px;">NRCM Main Auditorium, MT Block</span></div>
+      </div>
+
+      <div class="qr-container">
+        <div class="qr-box">
+          <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(ticketId)}" alt="Entry Gate QR Scanner" />
+        </div>
+        <span class="ticket-id-label">ENTRY GATE TICKET ID & SCANNER</span>
+        <span class="ticket-id-pill">${ticketId}</span>
+        <p class="subtext">Single-use scan at college entry gate.</p>
+      </div>
     </div>
 
-    <p class="subtext">Your official digital ticket pass card is attached to this email as an HTML file (<code>BUSINESSMAN_Pass_${ticketId}.html</code>). You can open and save it on your mobile device to present at the entry gate.</p>
-
-    <a href="https://nrcmfmc.web.app/?findTicket=${ticketId}" class="btn">View Online Ticket Pass</a>
+    <a href="https://nrcmfmc.web.app/?findTicket=${ticketId}" class="btn">VIEW / DOWNLOAD DIGITAL PASS</a>
 
     <div class="footer">
       <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
-      Narsimha Reddy Engineering College • Official Event Helpdesk
+      Narsimha Reddy Engineering College • Official Event Entry Pass
     </div>
   </div>
 </body>
