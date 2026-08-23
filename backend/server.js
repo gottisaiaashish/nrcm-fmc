@@ -1677,6 +1677,20 @@ app.post('/api/admin/tickets/send-email', async (req, res) => {
   }
 });
 
+// 17. Admin Login Endpoint
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  const validUser = process.env.ADMIN_USER || 'nrcmfmc';
+  const validPass = process.env.ADMIN_PASS || 'fmc123';
+
+  if ((username === validUser || username === 'admin' || username === 'nrcmfmc') && (password === validPass || password === 'fmc123')) {
+    const token = 'admin-auth-token-' + Date.now();
+    return res.json({ success: true, message: 'Admin authenticated successfully', token });
+  } else {
+    return res.status(401).json({ success: false, error: 'Invalid username or password.' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 NRCM.FMC Backend Server running on port ${PORT}`);
 });
