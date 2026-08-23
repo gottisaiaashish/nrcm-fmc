@@ -225,7 +225,7 @@ let inMemoryEventSettings = {
   showCapacity: 250,
   slotCapacities: {
     '10:00 AM to 12:30 PM': 250,
-    '01:00 PM to 03:30 PM': 200
+    '01:00 PM to 03:30 PM': 202
   },
   tiers: [
     { id: 'vip', name: 'VIP Balcony', price: 150, description: 'Premium balcony seating with snack voucher' },
@@ -267,7 +267,7 @@ const eventSettingsSchema = new mongoose.Schema({
   dates: { type: [String], default: ['AUGUST 24, 2026'] },
   showTimes: { type: [String], default: ['10:00 AM to 12:30 PM', '01:00 PM to 03:30 PM'] },
   showCapacity: { type: Number, default: 250 },
-  slotCapacities: { type: Object, default: { '10:00 AM to 12:30 PM': 250, '01:00 PM to 03:30 PM': 200 } },
+  slotCapacities: { type: Object, default: { '10:00 AM to 12:30 PM': 250, '01:00 PM to 03:30 PM': 202 } },
   tiers: { type: Array, default: [] },
   isBookingOpen: { type: Boolean, default: true },
   announcement: { type: String, default: '' },
@@ -624,7 +624,7 @@ function getShowCapacity(showTime, settings) {
     return Number(settings.slotCapacities[cleanTime]);
   }
   if (cleanTime.includes('01:00 PM') || cleanTime.includes('02:30') || cleanTime.includes('Afternoon') || cleanTime.includes('Matinee')) {
-    return 200;
+    return 202;
   }
   return settings?.showCapacity || 250;
 }

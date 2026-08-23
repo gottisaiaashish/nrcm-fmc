@@ -638,6 +638,56 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     document.body.removeChild(link);
   };
 
+  const exportTicketsCSV = (slotFilter = 'all') => {
+    let filtered = ticketsList;
+    let fileNamePrefix = 'NRCM_FMC_All_Movie_Tickets';
+
+    if (slotFilter === 'morning') {
+      filtered = ticketsList.filter(t => {
+        const s = (t.showTime || '').trim();
+        return s.includes('10:00 AM') || s.includes('10:30') || s.includes('Morning');
+      });
+      fileNamePrefix = 'NRCM_FMC_Morning_Show_Tickets';
+    } else if (slotFilter === 'afternoon') {
+      filtered = ticketsList.filter(t => {
+        const s = (t.showTime || '').trim();
+        return s.includes('01:00 PM') || s.includes('02:30') || s.includes('Afternoon') || s.includes('Matinee');
+      });
+      fileNamePrefix = 'NRCM_FMC_Afternoon_Show_Tickets';
+    }
+
+    if (filtered.length === 0) {
+      return alert(`No tickets found for ${slotFilter.toUpperCase()} show to export.`);
+    }
+
+    const headers = ['S.NO', 'TICKET ID', 'BOOKING REF', 'STUDENT NAME', 'MOBILE', 'ROLL NO', 'BRANCH', 'EMAIL', 'SHOW DATE', 'SHOW TIME', 'TIER', 'PRICE (INR)', 'STATUS', 'USED AT', 'BOOKED AT'];
+    const rows = filtered.map((t, idx) => [
+      idx + 1,
+      `"${t.ticketId || ''}"`,
+      `"${t.bookingRef || ''}"`,
+      `"${(t.studentName || '').replace(/"/g, '""')}"`,
+      `"${t.mobile || ''}"`,
+      `"${t.rollNo || ''}"`,
+      `"${(t.branch || '').replace(/"/g, '""')}"`,
+      `"${t.email || ''}"`,
+      `"${t.showDate || 'AUGUST 24, 2026'}"`,
+      `"${t.showTime || ''}"`,
+      `"${t.tierName || ''}"`,
+      `"${t.price || 0}"`,
+      `"${t.status || 'VALID'}"`,
+      `"${t.usedAt ? new Date(t.usedAt).toLocaleString() : ''}"`,
+      `"${t.createdAt ? new Date(t.createdAt).toLocaleString() : ''}"`
+    ]);
+
+    const csv = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', encodeURI(csv));
+    link.setAttribute('download', `${fileNamePrefix}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (!isOpen) return null;
 
   const filteredRegistrations = registrations.filter(r => {
@@ -845,14 +895,41 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             </button>
 
             {/* Section 3: Data Export */}
-            <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', padding:'16px 12px 2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>TOOLS</span>
+            <span style={{ fontSize:10, fontWeight:700, color:'#9ca3af', padding:'16px 12px 2px', textTransform:'uppercase', letterSpacing:'0.05em' }}>EXPORT DATA</span>
+
+            <button style={S.navBtn(false)} onClick={() => exportTicketsCSV('morning')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox('#fef3c7')}>
+                  <Download size={14} color="#d97706" />
+                </div>
+                <span>Export Morning CSV</span>
+              </div>
+            </button>
+
+            <button style={S.navBtn(false)} onClick={() => exportTicketsCSV('afternoon')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox('#ffedd5')}>
+                  <Download size={14} color="#ea580c" />
+                </div>
+                <span>Export Afternoon CSV</span>
+              </div>
+            </button>
+
+            <button style={S.navBtn(false)} onClick={() => exportTicketsCSV('all')}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={S.iconBox('#eff6ff')}>
+                  <Download size={14} color="#2563eb" />
+                </div>
+                <span>Export All Tickets CSV</span>
+              </div>
+            </button>
 
             <button style={S.navBtn(false)} onClick={exportCSV}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <div style={S.iconBox('#f0fdf4')}>
                   <Download size={14} color="#16a34a" />
                 </div>
-                <span>Export CSV</span>
+                <span>Export Applications CSV</span>
               </div>
             </button>
           </nav>
@@ -1245,13 +1322,22 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                   {Object.keys(ticketStats.showTimeBreakdown).length > 0 ? (
                     Object.entries(ticketStats.showTimeBreakdown).map(([showName, count]) => {
                       const isAfternoon = showName.includes('01:00 PM') || showName.includes('02:30') || showName.includes('Afternoon') || showName.includes('Matinee');
-                      const showLimit = isAfternoon ? 200 : (eventSettings?.slotCapacities?.[showName] || eventSettings?.showCapacity || 250);
+                      const showLimit = isAfternoon ? 202 : (eventSettings?.slotCapacities?.[showName] || eventSettings?.showCapacity || 250);
                       const pct = Math.min(100, Math.round((count / showLimit) * 100));
                       return (
                         <div key={showName} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: '#334155' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, fontWeight: 700, color: '#334155' }}>
                             <span>{showName} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>(Limit: {showLimit})</span></span>
-                            <span style={{ color: '#dc2626', fontFamily: 'monospace' }}>{count} / {showLimit} ({pct}%)</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ color: '#dc2626', fontFamily: 'monospace' }}>{count} / {showLimit} ({pct}%)</span>
+                              <button
+                                onClick={() => exportTicketsCSV(isAfternoon ? 'afternoon' : 'morning')}
+                                title={`Download ${isAfternoon ? 'Afternoon' : 'Morning'} Tickets CSV`}
+                                style={{ padding: '2px 8px', borderRadius: 6, backgroundColor: isAfternoon ? '#fff7ed' : '#fffbeb', border: '1px solid ' + (isAfternoon ? '#fdba74' : '#fcd34d'), color: isAfternoon ? '#c2410c' : '#b45309', fontSize: 10, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                              >
+                                <Download size={11} /> CSV
+                              </button>
+                            </div>
                           </div>
                           <div style={{ height: 6, width: '100%', backgroundColor: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${pct}%`, backgroundColor: '#dc2626', borderRadius: 3 }} />
@@ -1342,13 +1428,34 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
             <div style={{ ...S.card, padding:0, overflow:'hidden', flex:1, display:'flex', flexDirection:'column' }}>
               <div style={{ padding:'12px 20px', borderBottom:'1px solid #f3f4f6', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:10 }}>
                 <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e', margin:0 }}>All Booked Movie Tickets ({ticketsList.length})</h3>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                  <button
+                    onClick={() => exportTicketsCSV('morning')}
+                    title="Export Morning Tickets CSV"
+                    style={{ padding:'6px 12px', borderRadius:8, backgroundColor:'#fffbeb', color:'#b45309', fontWeight:700, border:'1px solid #fcd34d', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4 }}
+                  >
+                    <Download size={13} /> Morning CSV
+                  </button>
+                  <button
+                    onClick={() => exportTicketsCSV('afternoon')}
+                    title="Export Afternoon Tickets CSV"
+                    style={{ padding:'6px 12px', borderRadius:8, backgroundColor:'#fff7ed', color:'#c2410c', fontWeight:700, border:'1px solid #fdba74', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4 }}
+                  >
+                    <Download size={13} /> Afternoon CSV
+                  </button>
+                  <button
+                    onClick={() => exportTicketsCSV('all')}
+                    title="Export All Tickets CSV"
+                    style={{ padding:'6px 12px', borderRadius:8, backgroundColor:'#f0f9ff', color:'#0369a1', fontWeight:700, border:'1px solid #7dd3fc', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4 }}
+                  >
+                    <Download size={13} /> All CSV
+                  </button>
                   <input
                     type="text"
                     placeholder="Search ticket ID, student name, roll no..."
                     value={ticketSearchQuery}
                     onChange={e => setTicketSearchQuery(e.target.value)}
-                    style={{ width:240, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
+                    style={{ width:200, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
                   />
                   <button
                     onClick={() => setIssueModalOpen(true)}

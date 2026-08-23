@@ -1201,7 +1201,7 @@ export default function ReReleaseBookingPage() {
                     const timeString = typeof st === 'string' ? st : (st.time || st);
                     const isSelected = selectedShowTime === timeString;
                     const isAfternoon = timeString.includes('01:00 PM') || timeString.includes('02:30') || timeString.includes('Afternoon') || timeString.includes('Matinee');
-                    const defaultCap = isAfternoon ? 200 : (eventSettings.slotCapacities?.[timeString] || eventSettings.showCapacity || 250);
+                    const defaultCap = isAfternoon ? 202 : (eventSettings.slotCapacities?.[timeString] || eventSettings.showCapacity || 250);
                     const slotData = availability[selectedDate]?.[timeString] || { booked: 0, capacity: defaultCap, remaining: defaultCap, isHousefull: false };
                     const isHousefull = slotData.isHousefull || slotData.remaining <= 0;
 
@@ -1376,7 +1376,7 @@ export default function ReReleaseBookingPage() {
                   type="button"
                   onClick={() => {
                     const isAfternoon = selectedShowTime?.includes('01:00 PM') || selectedShowTime?.includes('02:30') || selectedShowTime?.includes('Afternoon') || selectedShowTime?.includes('Matinee');
-                    const defaultCap = isAfternoon ? 200 : (eventSettings.slotCapacities?.[selectedShowTime] || eventSettings.showCapacity || 250);
+                    const defaultCap = isAfternoon ? 202 : (eventSettings.slotCapacities?.[selectedShowTime] || eventSettings.showCapacity || 250);
                     const slotData = availability[selectedDate]?.[selectedShowTime] || { remaining: defaultCap, isHousefull: false };
                     if (slotData.isHousefull || slotData.remaining <= 0) {
                       alert(`HOUSEFULL! The show on ${selectedDate} (${selectedShowTime}) has reached maximum capacity of ${slotData.capacity || defaultCap} seats. Please choose another show time.`);
