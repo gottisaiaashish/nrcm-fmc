@@ -1626,10 +1626,10 @@ app.post('/api/admin/tickets/send-email', async (req, res) => {
         t = inMemoryTickets.find(item => item.ticketId === ticketId.trim() || item._id === ticketId || item.bookingRef === ticketId.trim());
       }
       if (t) targets.push(t);
-    } else if (slotFilter) {
+    } else {
       let all = [];
       if (isMongoConnected) {
-        all = await Ticket.find({});
+        all = await Ticket.find({}).sort({ createdAt: -1 });
       } else {
         all = inMemoryTickets;
       }
