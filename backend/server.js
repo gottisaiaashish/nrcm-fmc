@@ -344,7 +344,7 @@ const sendTicketHypeEmail = async (ticket) => {
     return false;
   }
 
-  const subject = `🔥 THE WAIT IS OVER! 💥 Your Official Ticket Pass for ${movieTitle} Re-Release`;
+  const subject = `Official Entry Pass - ${movieTitle} Screening | NRCM FMC`;
 
   let pdfBuffer = null;
   try {
@@ -359,22 +359,16 @@ const sendTicketHypeEmail = async (ticket) => {
   <meta charset="utf-8">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; line-height: 1.6; }
-    .container { max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-    .hero-title { font-size: 15px; font-weight: 800; color: #e11d48; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0; text-align: center; }
+    .container { max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
     .body-text { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 16px; }
-    .btn { display: block; text-align: center; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 800; font-size: 13px; margin: 20px 0; text-transform: uppercase; letter-spacing: 0.5px; }
     .footer { margin-top: 24px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 14px; line-height: 1.5; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="hero-title">🔥 THE WAIT IS OVER! 🔥</div>
+    <p class="body-text" style="margin-top:0;">Dear <strong>${studentName}</strong>,</p>
     
-    <p class="body-text">Dear <strong>${studentName}</strong>,</p>
-    
-    <p class="body-text">Your official entry pass for the <strong>${movieTitle}</strong> special screening is ready! Please find your digital ticket pass PDF (<code>BUSINESSMAN_Pass_${ticketId}.pdf</code>) attached to this email.</p>
-
-    <a href="https://nrcmfmc.web.app/?findTicket=${ticketId}" class="btn">View Digital Pass Online</a>
+    <p class="body-text">Your official entry pass for the <strong>${movieTitle}</strong> special screening is ready! Please find your digital ticket pass PDF attached to this email.</p>
 
     <div class="footer">
       <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
