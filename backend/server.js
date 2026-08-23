@@ -207,60 +207,78 @@ Ref: ${passId}
 
 const sendTicketHypeEmail = async (ticket) => {
   const ticketId = ticket.ticketId || ticket._id;
-  const studentName = ticket.studentName || 'Movie Fan';
+  const studentName = ticket.studentName || 'Attendee';
   const email = ticket.email;
   const rollNo = ticket.rollNo || 'N/A';
-  const branch = ticket.branch || 'N/A';
+  const branch = ticket.branch || 'CSE';
   const showDate = ticket.showDate || 'AUGUST 24, 2026';
   const showTime = ticket.showTime || '10:00 AM to 12:30 PM';
   const tierName = ticket.tierName || 'General Pass';
+  const price = ticket.price || 50;
   const bookingRef = ticket.bookingRef || 'N/A';
+  const movieTitle = ticket.movieTitle || 'Businessman';
 
   if (!email) {
     console.warn(`⚠️ No email address found for ticket ${ticketId}`);
     return false;
   }
 
-  const subject = `🔥 THE DAY IS HERE! 💥 Your Official Ticket Pass for BUSINESSMAN Cult Re-Release Today!`;
+  const subject = `Official Entry Pass - ${movieTitle} Screening | NRCM FMC`;
 
   const attachmentHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>NRCM FMC - Businessman Ticket Pass</title>
+  <title>NRCM FMC Official Entry Pass - ${ticketId}</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background-color: #050505; color: #ffffff; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .ticket-card { width: 100%; max-width: 480px; background: linear-gradient(145deg, #18181b, #09090b); border: 2px solid #dc2626; border-radius: 20px; padding: 24px; box-shadow: 0 10px 40px rgba(220,38,38,0.3); font-size: 14px; position: relative; overflow: hidden; }
-    .badge { background: #dc2626; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: 1.5px; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; }
-    .movie-title { font-size: 28px; font-weight: 900; margin: 12px 0 2px; text-transform: uppercase; color: #ffffff; }
-    .tagline { font-size: 12px; font-style: italic; color: #facc15; margin-bottom: 18px; font-weight: 700; }
-    .ticket-id-box { background: #000; border: 1px dashed #ef4444; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 18px; }
-    .ticket-id { font-family: monospace; font-size: 20px; font-weight: 900; color: #ef4444; letter-spacing: 2px; }
-    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #27272a; }
-    .label { color: #a1a1aa; font-weight: 600; }
-    .val { color: #ffffff; font-weight: 800; }
-    .footer-note { font-size: 11px; color: #71717a; text-align: center; margin-top: 18px; line-height: 1.4; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .pass-card { width: 100%; max-width: 420px; background-color: #ffffff; border: 2px solid #e11d48; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); box-sizing: border-box; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; gap: 8px; }
+    .pass-title { font-size: 9px; font-weight: 800; color: #e11d48; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+    .movie-name { font-size: 20px; font-weight: 800; color: #0f172a; margin: 2px 0 0 0; }
+    .valid-badge { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 14px; flex-shrink: 0; }
+    .grid { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-bottom: 1px dashed #cbd5e1; font-size: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: baseline; }
+    .label { color: #64748b; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .val-main { color: #0f172a; font-weight: 800; font-size: 13px; }
+    .val-mono { color: #0f172a; font-family: monospace; font-weight: 700; }
+    .val-bold { color: #0f172a; font-weight: 800; }
+    .val-tier { color: #e11d48; font-weight: 800; }
+    .qr-container { display: flex; flex-direction: column; align-items: center; padding-top: 14px; }
+    .qr-box { padding: 12px; background-color: #ffffff; border: 2px solid #0f172a; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .qr-img { width: 140px; height: 140px; display: block; }
+    .ticket-id-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-top: 10px; text-align: center; }
+    .ticket-id-pill { font-size: 12px; font-family: monospace; font-weight: 800; color: #e11d48; background-color: #fff1f2; border: 1px solid #fecdd3; padding: 3px 12px; border-radius: 8px; display: inline-block; margin-top: 4px; }
+    .subtext { font-size: 10px; color: #94a3b8; margin: 4px 0 0 0; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="ticket-card">
-    <span class="badge">OFFICIAL MOVIE PASS</span>
-    <div class="movie-title">BUSINESSMAN</div>
-    <div class="tagline">"Guns Don't Need Reasons, They Need Bullets!"</div>
-    <div class="ticket-id-box">
-      <span style="font-size: 10px; color: #a1a1aa; text-transform: uppercase;">Ticket Pass ID</span><br/>
-      <span class="ticket-id">${ticketId}</span>
+  <div class="pass-card">
+    <div class="card-header">
+      <div>
+        <span class="pass-title">NRCM FMC OFFICIAL ENTRY PASS</span>
+        <h2 class="movie-name">${movieTitle}</h2>
+      </div>
+      <span class="valid-badge">✔ VALID</span>
     </div>
-    <div class="detail-row"><span class="label">Student Name:</span><span class="val">${studentName}</span></div>
-    <div class="detail-row"><span class="label">Roll Number:</span><span class="val">${rollNo}</span></div>
-    <div class="detail-row"><span class="label">Branch & Year:</span><span class="val">${branch}</span></div>
-    <div class="detail-row"><span class="label">Show Date:</span><span class="val" style="color:#facc15;">${showDate}</span></div>
-    <div class="detail-row"><span class="label">Show Timing:</span><span class="val" style="color:#60a5fa;">${showTime}</span></div>
-    <div class="detail-row"><span class="label">Seat Tier:</span><span class="val">${tierName}</span></div>
-    <div class="detail-row" style="border:none;"><span class="label">Booking Ref:</span><span class="val">${bookingRef}</span></div>
-    <div class="footer-note">
-      📍 NRCM Main Auditorium, MT Block • Bring Student ID Card<br/>
-      Verified Entry Pass by NRCM Film Making Club (NRCM FMC)
+
+    <div class="grid">
+      <div class="row"><span class="label">Attendee:</span><span class="val-main">${studentName}</span></div>
+      <div class="row"><span class="label">Roll No:</span><span class="val-mono">${rollNo}</span></div>
+      <div class="row"><span class="label">Branch & Year:</span><span class="val-bold">${branch}</span></div>
+      <div class="row"><span class="label">Screening Date:</span><span class="val-bold">${showDate}</span></div>
+      <div class="row"><span class="label">Showtime:</span><span class="val-bold">${showTime}</span></div>
+      <div class="row"><span class="label">Tier & Price:</span><span class="val-tier">${tierName} (₹${price})</span></div>
+      <div class="row"><span class="label">Venue:</span><span class="val-bold" style="font-size:11px;">NRCM Main Auditorium, MT Block</span></div>
+    </div>
+
+    <div class="qr-container">
+      <div class="qr-box">
+        <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(ticketId)}" alt="Pass QR Code" />
+      </div>
+      <span class="ticket-id-label">TICKET ID CODE</span>
+      <span class="ticket-id-pill">${ticketId}</span>
+      <p class="subtext">Single-use scan at college entry gate.</p>
     </div>
   </div>
 </body>
@@ -271,71 +289,39 @@ const sendTicketHypeEmail = async (ticket) => {
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #050505; color: #ffffff; margin: 0; padding: 20px; }
-    .card { max-width: 600px; margin: 0 auto; background: #121214; border-radius: 20px; overflow: hidden; border: 1px solid #27272a; box-shadow: 0 10px 30px rgba(220,38,38,0.2); }
-    .hero-banner { background: linear-gradient(180deg, #dc2626 0%, #7f1d1d 100%); padding: 32px 20px; text-align: center; color: #ffffff; border-bottom: 3px solid #ef4444; }
-    .fire-tag { background-color: #f59e0b; color: #000000; padding: 5px 14px; border-radius: 20px; font-weight: 900; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; display: inline-block; margin-bottom: 12px; }
-    .headline { font-size: 32px; font-weight: 900; margin: 0; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .subhead { font-size: 15px; font-style: italic; color: #fef08a; margin-top: 8px; font-weight: 700; }
-    .content { padding: 28px 24px; font-size: 15px; line-height: 1.6; color: #e4e4e7; }
-    .hype-box { background: rgba(220,38,38,0.1); border-left: 4px solid #ef4444; padding: 14px 18px; border-radius: 8px; margin: 18px 0; font-size: 14px; color: #fecdd3; }
-    .ticket-box { background-color: #09090b; border: 2px dashed #dc2626; border-radius: 16px; padding: 22px; margin: 24px 0; }
-    .ticket-header { text-align: center; border-bottom: 1px solid #27272a; padding-bottom: 14px; margin-bottom: 14px; }
-    .ticket-id { font-family: monospace; color: #ef4444; font-size: 22px; font-weight: 900; letter-spacing: 2px; }
-    .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1f1f23; }
-    .label { color: #a1a1aa; font-weight: 600; }
-    .val { color: #ffffff; font-weight: 800; }
-    .btn { display: block; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: 900; font-size: 16px; margin-top: 24px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(220,38,38,0.4); }
-    .footer { text-align: center; padding: 20px; color: #71717a; font-size: 12px; border-top: 1px solid #1f1f23; background-color: #09090b; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; line-height: 1.6; }
+    .container { max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .header { font-size: 18px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e11d48; padding-bottom: 12px; margin-bottom: 20px; }
+    .subtext { color: #475569; font-size: 14px; margin-bottom: 20px; }
+    .info-box { background-color: #f8fafc; border-left: 4px solid #e11d48; padding: 14px 18px; border-radius: 8px; margin: 18px 0; font-size: 13px; }
+    .btn { display: inline-block; background-color: #e11d48; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 14px; margin-top: 10px; }
+    .footer { margin-top: 30px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="hero-banner">
-      <span class="fire-tag">🔥 IT'S 12:00 AM — RE-RELEASE DAY IS HERE! 🔥</span>
-      <h1 class="headline">BUSINESSMAN</h1>
-      <div class="subhead">"Guns Don't Need Reasons, They Need Bullets!"</div>
+  <div class="container">
+    <div class="header">NRCM Film Making Club • Official Entry Pass</div>
+    
+    <p class="subtext">Dear <strong>${studentName}</strong>,</p>
+
+    <p class="subtext">Your official entry pass for the <strong>${movieTitle}</strong> special screening has been issued. Your ticket details are provided below:</p>
+
+    <div class="info-box">
+      <strong>Screening Information:</strong><br />
+      • <strong>Ticket ID:</strong> <span style="font-family: monospace; color: #e11d48; font-weight: 800;">${ticketId}</span><br />
+      • <strong>Attendee:</strong> ${studentName} (${rollNo})<br />
+      • <strong>Screening Date:</strong> ${showDate}<br />
+      • <strong>Showtime:</strong> ${showTime}<br />
+      • <strong>Venue:</strong> NRCM Main Auditorium, MT Block
     </div>
 
-    <div class="content">
-      <p style="font-size: 17px; font-weight: 800; color: #ffffff;">Yo ${studentName}! 💥</p>
-      
-      <p>Clock <strong>12:00 AM</strong> kottindi! Official-ga <strong>BUSINESSMAN Cult Re-Release Day</strong> vachesindi! 💥</p>
-      
-      <div class="hype-box">
-        🎬 <i>"Mumbai ni aeladaniki Surya bhai ostunnadu! Get ready for the absolute madness, high-energy crowd & cult mass euphoria today at NRCM Main Auditorium!"</i>
-      </div>
+    <p class="subtext">Your official digital ticket pass card is attached to this email as an HTML file (<code>BUSINESSMAN_Pass_${ticketId}.html</code>). You can open and save it on your mobile device to present at the entry gate.</p>
 
-      <p>Mee official entry ticket pass ready ga undi. Below are your booking details:</p>
-
-      <div class="ticket-box">
-        <div class="ticket-header">
-          <span style="font-size: 11px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 1px;">OFFICIAL TICKET PASS ID</span><br/>
-          <span class="ticket-id">${ticketId}</span>
-        </div>
-
-        <div class="row"><span class="label">Student Name:</span><span class="val">${studentName}</span></div>
-        <div class="row"><span class="label">Roll Number:</span><span class="val">${rollNo}</span></div>
-        <div class="row"><span class="label">Branch & Year:</span><span class="val">${branch}</span></div>
-        <div class="row"><span class="label">Show Date:</span><span class="val" style="color: #facc15;">${showDate}</span></div>
-        <div class="row"><span class="label">Show Timing:</span><span class="val" style="color: #60a5fa;">${showTime}</span></div>
-        <div class="row"><span class="label">Category / Tier:</span><span class="val">${tierName}</span></div>
-        <div class="row" style="border: none;"><span class="label">Booking Ref:</span><span class="val">${bookingRef}</span></div>
-      </div>
-
-      <p style="font-size: 13px; color: #a1a1aa; line-height: 1.6; background: #18181b; padding: 12px; border-radius: 8px;">
-        📍 <strong>Venue:</strong> NRCM Main Auditorium, MT Block<br/>
-        📎 <strong>Attachment:</strong> Mee official Digital Ticket Pass standalone HTML file ee mail ki attach chesi undi. Download or open it anytime offline!
-      </p>
-
-      <a href="https://nrcmfmc.web.app/?findTicket=${ticketId}" class="btn">
-        🎬 VIEW & DOWNLOAD DIGITAL PASS ONLINE
-      </a>
-    </div>
+    <a href="https://nrcmfmc.web.app/?findTicket=${ticketId}" class="btn">View Online Ticket Pass</a>
 
     <div class="footer">
-      <strong>NRCM Film Making Club (NRCM FMC)</strong> • Narsimha Reddy Engineering College<br/>
-      See you at the auditorium! 🔥
+      <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
+      Narsimha Reddy Engineering College • Official Event Helpdesk
     </div>
   </div>
 </body>
