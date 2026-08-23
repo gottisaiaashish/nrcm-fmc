@@ -1544,6 +1544,12 @@ app.delete('/api/admin/suggestions/:id', async (req, res) => {
     } else {
       inMemorySuggestions = inMemorySuggestions.filter(s => s._id !== id && s.suggestionId !== id);
     }
+    return res.json({ success: true, message: 'Suggestion deleted successfully.' });
+  } catch (error) {
+    console.error('Delete Suggestion Error:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete suggestion.' });
+  }
+});
 // 17. Admin - Send Ticket Hype Email with Attachment (Single or Bulk)
 app.post('/api/admin/tickets/send-email', async (req, res) => {
   try {
