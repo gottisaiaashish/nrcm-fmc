@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus, Clock, Edit, Mail } from 'lucide-react';
 const API_BASE = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
 const API = (path) => `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
