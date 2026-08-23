@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, Eye, Star, Ticket, Settings, QrCode, CheckCircle, AlertTriangle, ShieldAlert, ShieldCheck, Film, Save, Camera, Plus, Minus, Clock, Edit } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
+const API = (path) => `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
 
 export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   // Navigation Tabs: 'overview', 'shortlisted', 'rerelease_settings', 'rerelease_tickets', 'gate_scanner'
@@ -122,7 +123,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   const fetchSuggestionsList = async () => {
     try {
-      const res = await fetch('/api/admin/suggestions');
+      const res = await fetch(API('/api/admin/suggestions'));
       const data = await res.json();
       if (data.success && Array.isArray(data.suggestions)) {
         setSuggestionsList(data.suggestions);
@@ -135,7 +136,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const deleteSuggestion = async (id) => {
     if (!window.confirm('Are you sure you want to delete this event suggestion?')) return;
     try {
-      await fetch(`/api/admin/suggestions/${id}`, { method: 'DELETE' });
+      await fetch(API(`/api/admin/suggestions/${id}`), { method: 'DELETE' });
       setSuggestionsList(prev => prev.filter(s => s._id !== id && s.suggestionId !== id));
     } catch (_) {}
   };
@@ -159,7 +160,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   const fetchRecruitmentStatus = async () => {
     try {
-      const res = await fetch('/api/recruitment-status');
+      const res = await fetch(API('/api/recruitment-status'));
       const data = await res.json();
       if (data.success && typeof data.isOpen === 'boolean') {
         setRecruitmentOpen(data.isOpen);
@@ -171,7 +172,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     const nextStatus = !recruitmentOpen;
     setRecruitmentOpen(nextStatus);
     try {
-      await fetch('/api/admin/recruitment-status', {
+      await fetch(API('/api/admin/recruitment-status'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isOpen: nextStatus })
@@ -182,10 +183,10 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const fetchRegistrations = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/registrations');
+      const response = await fetch(API('/api/admin/registrations'));
       const data = await response.json();
       if (data.success) setRegistrations(data.registrations || []);
-      const healthRes = await fetch('/api/health');
+      const healthRes = await fetch(API('/api/health'));
       const healthData = await healthRes.json();
       setDbStatus(healthData.database || 'Connected');
     } catch (err) {
@@ -197,7 +198,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   const fetchEventSettings = async () => {
     try {
-      const res = await fetch('/api/event-settings');
+      const res = await fetch(API('/api/event-settings'));
       const data = await res.json();
       if (data.success && data.settings) {
         setEventSettings(data.settings);
@@ -209,7 +210,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
 
   const fetchTicketsList = async () => {
     try {
-      const res = await fetch('/api/admin/tickets');
+      const res = await fetch(API('/api/admin/tickets'));
       const data = await res.json();
       if (data.success) {
         setTicketsList(data.tickets || []);
@@ -226,7 +227,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     setIssueSuccessMsg('');
 
     try {
-      const res = await fetch('/api/admin/tickets/issue', {
+      const res = await fetch(API('/api/admin/tickets/issue'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(issueFormData)
@@ -312,7 +313,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       let data = null;
 
       try {
-        res = await fetch('/api/admin/tickets/update', {
+        res = await fetch(API('/api/admin/tickets/update'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -384,7 +385,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     setBulkSuccessMsg('');
 
     try {
-      const res = await fetch('/api/admin/tickets/bulk-update-timing', {
+      const res = await fetch(API('/api/admin/tickets/bulk-update-timing'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -428,7 +429,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     e.preventDefault();
     setSaveSettingsStatus('Saving...');
     try {
-      const res = await fetch('/api/admin/event-settings', {
+      const res = await fetch(API('/api/admin/event-settings'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventSettings)
@@ -451,7 +452,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     }
     setSaveSettingsStatus('Resetting...');
     try {
-      const res = await fetch('/api/admin/event-settings/reset', {
+      const res = await fetch(API('/api/admin/event-settings/reset'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -477,7 +478,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     setVerificationResult(null);
 
     try {
-      const res = await fetch(`/api/admin/tickets/verify/${encodeURIComponent(idToVerify.trim())}`);
+      const res = await fetch(API(`/api/admin/tickets/verify/${encodeURIComponent(idToVerify.trim())}`));
       const data = await res.json();
       if (data.success) {
         setVerificationResult({
@@ -505,7 +506,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     setScanActionLoading(true);
 
     try {
-      const res = await fetch('/api/admin/tickets/permit', {
+      const res = await fetch(API('/api/admin/tickets/permit'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticketId: ticketIdToPermit })
@@ -691,7 +692,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const handleSendSingleTicketEmail = async (tId, studentName) => {
     if (!window.confirm(`Send 12 AM Hype Ticket Email with Attachment to ${studentName} (${tId})?`)) return;
     try {
-      const res = await fetch('/api/admin/tickets/send-email', {
+      const res = await fetch(API('/api/admin/tickets/send-email'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticketId: tId })
@@ -712,7 +713,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     if (!window.confirm(`🔥 Broadcast 12 AM Hype Ticket Emails + Attachments to ${slotLabel} ticket holders?`)) return;
 
     try {
-      const res = await fetch('/api/admin/tickets/send-email', {
+      const res = await fetch(API('/api/admin/tickets/send-email'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slotFilter })

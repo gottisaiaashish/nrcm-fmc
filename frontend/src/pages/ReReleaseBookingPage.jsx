@@ -63,7 +63,8 @@ export default function ReReleaseBookingPage() {
 
   // Fetch Live Event Settings on Mount
   useEffect(() => {
-    fetch('/api/event-settings')
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
+    fetch(`${apiUrl}/api/event-settings`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.settings) {
