@@ -58,7 +58,7 @@ export default function ReReleaseBookingPage() {
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front rows stage area with high energy crowd', badge: 'Popular' },
       { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium middle seating', badge: 'Available' }
     ],
-    isBookingOpen: true
+    isBookingOpen: false
   });
 
   // Fetch Live Event Settings on Mount
@@ -755,7 +755,7 @@ export default function ReReleaseBookingPage() {
                       <button
                         onClick={() => {
                           if (!eventSettings.isBookingOpen) {
-                            alert('Bookings Opening Soon! Online ticket pass bookings will open shortly. Stay tuned!');
+                            alert('🔥 HOUSEFULL! All show slots for Businessman screening are completely booked out. Online bookings are closed.');
                             return;
                           }
                           setActiveView('seats');
@@ -764,21 +764,21 @@ export default function ReReleaseBookingPage() {
                           width: '100%',
                           padding: '14px',
                           borderRadius: '14px',
-                          backgroundColor: eventSettings.isBookingOpen ? '#e11d48' : '#0f172a',
+                          backgroundColor: eventSettings.isBookingOpen ? '#e11d48' : '#7f1d1d',
                           color: '#ffffff',
                           fontSize: '14px',
                           fontWeight: 800,
                           border: 'none',
-                          cursor: 'pointer',
+                          cursor: eventSettings.isBookingOpen ? 'pointer' : 'not-allowed',
                           display: 'flex',
                           alignItems: 'center',
                           justify: 'center',
                           gap: '8px',
-                          boxShadow: eventSettings.isBookingOpen ? '0 4px 12px rgba(225, 29, 72, 0.3)' : '0 4px 12px rgba(15, 23, 42, 0.2)'
+                          boxShadow: eventSettings.isBookingOpen ? '0 4px 12px rgba(225, 29, 72, 0.3)' : '0 4px 12px rgba(127, 29, 29, 0.4)'
                         }}
                       >
-                        {eventSettings.isBookingOpen ? <Ticket size={18} /> : <Clock size={18} />}
-                        <span>{eventSettings.isBookingOpen ? 'Book Now' : 'Booking Will Be Open Soon'}</span>
+                        {eventSettings.isBookingOpen ? <Ticket size={18} /> : <Flame size={18} color="#f59e0b" />}
+                        <span>{eventSettings.isBookingOpen ? 'Book Now' : '🔥 HOUSEFULL - BOOKINGS CLOSED'}</span>
                       </button>
                     </div>
 

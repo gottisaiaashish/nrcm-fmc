@@ -426,8 +426,8 @@ let inMemoryEventSettings = {
     { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
     { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
   ],
-  isBookingOpen: true,
-  announcement: 'Limited seats available! Maximum 250 seats per show slot.'
+  isBookingOpen: false,
+  announcement: '🔥 HOUSEFULL! All shows are completely booked out.'
 };
 
 let inMemoryTickets = [];
@@ -463,8 +463,8 @@ const eventSettingsSchema = new mongoose.Schema({
   showCapacity: { type: Number, default: 250 },
   slotCapacities: { type: Object, default: { '10:00 AM to 12:30 PM': 250, '01:00 PM to 03:30 PM': 202 } },
   tiers: { type: Array, default: [] },
-  isBookingOpen: { type: Boolean, default: true },
-  announcement: { type: String, default: '' },
+  isBookingOpen: { type: Boolean, default: false },
+  announcement: { type: String, default: '🔥 HOUSEFULL! All shows are completely booked out.' },
   updatedAt: { type: Date, default: Date.now }
 });
 
@@ -743,6 +743,12 @@ app.get('/api/event-settings', async (req, res) => {
       if (!settings) {
         settings = new EventSettings(inMemoryEventSettings);
         await settings.save();
+      } else {
+        if (settings.isBookingOpen !== false) {
+          settings.isBookingOpen = false;
+          settings.announcement = '🔥 HOUSEFULL! All shows are completely booked out.';
+          await settings.save();
+        }
       }
       return res.json({ success: true, settings });
     } else {

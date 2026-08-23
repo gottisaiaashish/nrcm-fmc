@@ -41,8 +41,8 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
       { id: 'fanzone', name: 'Fan Zone', price: 120, description: 'Front row seats with high energy crowd' },
       { id: 'general', name: 'General Student Pass', price: 99, description: 'Standard auditorium seating' }
     ],
-    isBookingOpen: true,
-    announcement: 'Limited seats available! Book your tickets early to avoid last minute rush.'
+    isBookingOpen: false,
+    announcement: '🔥 HOUSEFULL! All shows are completely booked out.'
   });
   const [saveSettingsStatus, setSaveSettingsStatus] = useState('');
 
