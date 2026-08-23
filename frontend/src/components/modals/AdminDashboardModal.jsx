@@ -3,7 +3,65 @@ import { X, RefreshCw, Download, Trash2, Search, Users, LogOut, Home, FileText, 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://nrcm-fmc.onrender.com';
 const API = (path) => `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
 
-export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
+class AdminErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("AdminDashboardModal Error Boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 99999,
+          backgroundColor: '#0f172a',
+          color: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24,
+          fontFamily: 'sans-serif'
+        }}>
+          <h2 style={{ fontSize: 22, color: '#f43f5e', marginBottom: 12 }}>⚠️ Admin OS Render Notice</h2>
+          <p style={{ fontSize: 14, color: '#94a3b8', maxWidth: 480, textAlign: 'center', marginBottom: 20 }}>
+            {this.state.error?.message || 'An unexpected rendering error occurred in Admin OS.'}
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#e11d48',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            Reload Dashboard OS
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function AdminDashboardModalContent({ isOpen, onClose, onLogout }) {
   // Navigation Tabs: 'overview', 'shortlisted', 'rerelease_settings', 'rerelease_tickets', 'gate_scanner'
   const [activeTab, setActiveTabState] = useState(() => {
     return localStorage.getItem('nrcmfmc_admin_active_tab') || 'rerelease_tickets';
@@ -603,7 +661,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this registration?')) return;
     try {
-      await fetch(`/api/admin/registrations/${id}`, { method: 'DELETE' });
+      await fetch(API(`/api/admin/registrations/${id}`), { method: 'DELETE' });
       setRegistrations(prev => prev.filter(item => item._id !== id && item.passId !== id));
     } catch (err) {
       console.error('Delete failed:', err);
@@ -613,7 +671,7 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
   const handleDeleteTicket = async (id) => {
     if (!window.confirm('Delete this ticket pass?')) return;
     try {
-      await fetch(`/api/admin/tickets/${id}`, { method: 'DELETE' });
+      await fetch(API(`/api/admin/tickets/${id}`), { method: 'DELETE' });
       setTicketsList(prev => prev.filter(t => t._id !== id && t.ticketId !== id));
     } catch (err) {
       console.error('Delete ticket failed:', err);
@@ -2492,5 +2550,14 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminDashboardModal(props) {
+  if (!props.isOpen) return null;
+  return (
+    <AdminErrorBoundary>
+      <AdminDashboardModalContent {...props} />
+    </AdminErrorBoundary>
   );
 }
