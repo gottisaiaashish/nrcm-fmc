@@ -617,37 +617,67 @@ function AdminDashboardModalContent({ isOpen, onClose, onLogout }) {
     }
   };
 
-  const startCameraScanner = () => {
+  const startCameraScanner = async () => {
     setCameraActive(true);
-    setTimeout(() => {
-      if (!scannerRef.current) {
+
+    setTimeout(async () => {
+      try {
+        const container = document.getElementById("qr-reader-container");
+        if (!container) return;
+
+        if (scannerRef.current) {
+          try {
+            await scannerRef.current.stop();
+            scannerRef.current.clear();
+          } catch (_) {}
+          scannerRef.current = null;
+        }
+
         const html5QrCode = new Html5Qrcode("qr-reader-container");
         scannerRef.current = html5QrCode;
 
-        html5QrCode.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          (decodedText) => {
-            setScanTicketIdInput(decodedText);
-            handleVerifyTicket(decodedText);
-            stopCameraScanner();
-          },
-          () => {}
-        ).catch((err) => {
-          console.error("Error starting back camera:", err);
-          html5QrCode.start(
-            { facingMode: "user" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-              setScanTicketIdInput(decodedText);
-              handleVerifyTicket(decodedText);
-              stopCameraScanner();
-            },
-            () => {}
-          ).catch(e => console.error(e));
-        });
+        const qrSuccessCallback = (decodedText) => {
+          setScanTicketIdInput(decodedText);
+          handleVerifyTicket(decodedText);
+          stopCameraScanner();
+        };
+
+        const config = { fps: 15, qrbox: { width: 260, height: 260 } };
+
+        // Method 1: Query cameras list and pick explicit back/rear camera device
+        try {
+          const cameras = await Html5Qrcode.getCameras();
+          if (cameras && cameras.length > 0) {
+            const backCam = cameras.find(c => {
+              const label = (c.label || '').toLowerCase();
+              return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('0');
+            }) || cameras[cameras.length - 1];
+
+            const selectedCameraId = backCam ? backCam.id : cameras[0].id;
+            await html5QrCode.start(selectedCameraId, config, qrSuccessCallback, () => {});
+            return;
+          }
+        } catch (getCamerasErr) {
+          console.warn("getCameras() failed, trying facingMode:", getCamerasErr);
+        }
+
+        // Method 2: Fallback to facingMode environment constraint
+        try {
+          await html5QrCode.start({ facingMode: "environment" }, config, qrSuccessCallback, () => {});
+          return;
+        } catch (envErr) {
+          console.warn("facingMode environment failed, trying default user camera:", envErr);
+        }
+
+        // Method 3: Fallback to user camera
+        await html5QrCode.start({ facingMode: "user" }, config, qrSuccessCallback, () => {});
+
+      } catch (err) {
+        console.error("Camera startup error:", err);
+        alert("⚠️ Camera Error: Please grant camera permissions in your browser settings to scan QR codes.");
+        setCameraActive(false);
       }
-    }, 200);
+    }, 300);
   };
 
   const toggleShortlist = (id) => {
