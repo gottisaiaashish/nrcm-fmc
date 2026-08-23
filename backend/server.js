@@ -358,22 +358,34 @@ const sendTicketHypeEmail = async (ticket) => {
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; line-height: 1.6; }
-    .container { max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 26px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-    .body-text { font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 16px; }
-    .footer { margin-top: 24px; font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 14px; line-height: 1.5; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #ffffff; color: #1e293b; margin: 0; padding: 15px; line-height: 1.6; }
+    .header { font-size: 18px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e11d48; padding-bottom: 10px; margin-bottom: 18px; }
+    .body-text { font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 14px; }
+    .info-box { background-color: #f8fafc; border-left: 4px solid #e11d48; padding: 14px 18px; border-radius: 8px; margin: 18px 0; font-size: 13px; color: #1e293b; }
+    .footer { margin-top: 24px; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 14px; line-height: 1.5; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <p class="body-text" style="margin-top:0;">Dear <strong>${studentName}</strong>,</p>
-    
-    <p class="body-text">Your official entry pass for the <strong>${movieTitle}</strong> special screening is ready! Please find your digital ticket pass PDF attached to this email.</p>
+  <div class="header">NRCM Film Making Club • Official Entry Pass</div>
+  
+  <p class="body-text">Dear <strong>${studentName}</strong>,</p>
 
-    <div class="footer">
-      <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
-      Narsimha Reddy Engineering College • Official Event Helpdesk
-    </div>
+  <p class="body-text">Your official entry pass for the <strong>${movieTitle}</strong> special screening has been issued. Your ticket details are provided below:</p>
+
+  <div class="info-box">
+    <strong style="font-size: 14px; color: #0f172a; display: block; margin-bottom: 6px;">Screening Information:</strong>
+    • <strong>Ticket ID:</strong> <span style="font-family: monospace; color: #e11d48; font-weight: 800;">${ticketId}</span><br />
+    • <strong>Attendee:</strong> ${studentName} (${rollNo})<br />
+    • <strong>Screening Date:</strong> ${showDate}<br />
+    • <strong>Showtime:</strong> ${showTime}<br />
+    • <strong>Venue:</strong> NRCM Main Auditorium, MT Block
+  </div>
+
+  <p class="body-text">Your official digital ticket pass PDF (<code>BUSINESSMAN_Pass_${ticketId}.pdf</code>) is attached to this email. Please save it to present at the auditorium entry gate.</p>
+
+  <div class="footer">
+    <strong>NRCM Film Making Club (NRCM FMC)</strong><br />
+    Narsimha Reddy Engineering College • Official Event Helpdesk
   </div>
 </body>
 </html>`;
