@@ -7,6 +7,7 @@ import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import PDFDocument from 'pdfkit';
 
 // Configure DNS fallback for MongoDB Atlas SRV resolution and force IPv4 for SMTP
 try {
