@@ -847,8 +847,10 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     tHead:   { backgroundColor:'#F9F9FB', borderBottom:'1px solid #f3f4f6' },
     tHeadTh: { padding:'10px 16px', fontSize:11, fontWeight:600, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.08em', whiteSpace:'nowrap' },
     tRow:    { borderBottom:'1px solid #f9f9fb', transition:'background 0.1s' },
-    tCell:   { padding:'12px 16px', fontSize:13, color:'#374151' },
+    tCell:   { padding:'12px 16px', fontSize:13, color:'#374151' }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={S.wrap}>
