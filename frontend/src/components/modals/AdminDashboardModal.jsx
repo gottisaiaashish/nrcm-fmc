@@ -688,6 +688,46 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
     document.body.removeChild(link);
   };
 
+  const handleSendSingleTicketEmail = async (tId, studentName) => {
+    if (!window.confirm(`Send 12 AM Hype Ticket Email with Attachment to ${studentName} (${tId})?`)) return;
+    try {
+      const res = await fetch('/api/admin/tickets/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticketId: tId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`🔥 SUCCESS! Ticket email dispatched to ${studentName} (${tId})!`);
+      } else {
+        alert(`⚠️ Failed to send email: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`⚠️ Email Dispatch Error: ${err.message}`);
+    }
+  };
+
+  const handleBroadcastTicketEmails = async (slotFilter = 'all') => {
+    const slotLabel = slotFilter === 'morning' ? 'Morning Show' : (slotFilter === 'afternoon' ? 'Afternoon Show' : 'ALL');
+    if (!window.confirm(`🔥 Broadcast 12 AM Hype Ticket Emails + Attachments to ${slotLabel} ticket holders?`)) return;
+
+    try {
+      const res = await fetch('/api/admin/tickets/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slotFilter })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`🚀 BROADCAST COMPLETE!\n\n${data.message}`);
+      } else {
+        alert(`⚠️ Broadcast Error: ${data.error}`);
+      }
+    } catch (err) {
+      alert(`⚠️ Broadcast Network Error: ${err.message}`);
+    }
+  };
+
   if (!isOpen) return null;
 
   const filteredRegistrations = registrations.filter(r => {
@@ -1430,6 +1470,13 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                 <h3 style={{ fontSize:15, fontWeight:700, color:'#1c1c1e', margin:0 }}>All Booked Movie Tickets ({ticketsList.length})</h3>
                 <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
                   <button
+                    onClick={() => handleBroadcastTicketEmails('all')}
+                    title="Send 12 AM Hype Emails + Pass Attachments to ALL Tickets"
+                    style={{ padding:'6px 14px', borderRadius:8, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:800, border:'none', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, boxShadow:'0 2px 8px rgba(220,38,38,0.3)' }}
+                  >
+                    🔥 12 AM Hype Mails
+                  </button>
+                  <button
                     onClick={() => exportTicketsCSV('morning')}
                     title="Export Morning Tickets CSV"
                     style={{ padding:'6px 12px', borderRadius:8, backgroundColor:'#fffbeb', color:'#b45309', fontWeight:700, border:'1px solid #fcd34d', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4 }}
@@ -1455,11 +1502,11 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                     placeholder="Search ticket ID, student name, roll no..."
                     value={ticketSearchQuery}
                     onChange={e => setTicketSearchQuery(e.target.value)}
-                    style={{ width:200, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
+                    style={{ width:180, padding:'6px 12px', borderRadius:8, border:'1px solid #e5e7eb', fontSize:12 }}
                   />
                   <button
                     onClick={() => setIssueModalOpen(true)}
-                    style={{ padding:'6px 14px', borderRadius:8, backgroundColor:'#dc2626', color:'#ffffff', fontWeight:700, border:'none', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', gap:6 }}
+                    style={{ padding:'6px 14px', borderRadius:8, backgroundColor:'#0f172a', color:'#ffffff', fontWeight:700, border:'none', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', gap:6 }}
                   >
                     <Plus size={14} /> Issue Ticket Manually
                   </button>
@@ -1529,6 +1576,13 @@ export default function AdminDashboardModal({ isOpen, onClose, onLogout }) {
                             </span>
                           </td>
                           <td style={{ ...S.tCell, textAlign:'right', whiteSpace:'nowrap' }}>
+                            <button
+                              onClick={() => handleSendSingleTicketEmail(t.ticketId, t.studentName)}
+                              style={{ padding:'4px 10px', borderRadius:6, backgroundColor:'#fef2f2', color:'#dc2626', border:'1px solid #fca5a5', cursor:'pointer', fontSize:11, marginRight:6, fontWeight:800, display:'inline-flex', alignItems:'center', gap:4 }}
+                              title="Send 12 AM Hype Email with Pass Attachment"
+                            >
+                              <Mail size={12} /> Mail Ticket
+                            </button>
                             <button
                               onClick={() => handleOpenEditModal(t)}
                               style={{ padding:'4px 10px', borderRadius:6, backgroundColor:'#eff6ff', color:'#2563eb', border:'1px solid #bfdbfe', cursor:'pointer', fontSize:11, marginRight:6, fontWeight:700, display:'inline-flex', alignItems:'center', gap:4 }}
