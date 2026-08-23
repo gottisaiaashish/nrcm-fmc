@@ -633,6 +633,16 @@ function AdminDashboardModalContent({ isOpen, onClose, onLogout }) {
           scannerRef.current = null;
         }
 
+        // 1. Directly trigger native browser system camera permission dialog
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
+            stream.getTracks().forEach(track => track.stop());
+          } catch (permErr) {
+            console.warn("Direct getUserMedia permission trigger:", permErr);
+          }
+        }
+
         const html5QrCode = new Html5Qrcode("qr-reader-container");
         scannerRef.current = html5QrCode;
 
@@ -644,37 +654,31 @@ function AdminDashboardModalContent({ isOpen, onClose, onLogout }) {
 
         const config = { fps: 15, qrbox: { width: 260, height: 260 } };
 
-        // Method 1: Query cameras list and pick explicit back/rear camera device
-        try {
-          const cameras = await Html5Qrcode.getCameras();
-          if (cameras && cameras.length > 0) {
-            const backCam = cameras.find(c => {
-              const label = (c.label || '').toLowerCase();
-              return label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('0');
-            }) || cameras[cameras.length - 1];
-
-            const selectedCameraId = backCam ? backCam.id : cameras[0].id;
-            await html5QrCode.start(selectedCameraId, config, qrSuccessCallback, () => {});
-            return;
-          }
-        } catch (getCamerasErr) {
-          console.warn("getCameras() failed, trying facingMode:", getCamerasErr);
-        }
-
-        // Method 2: Fallback to facingMode environment constraint
+        // 2. Start scanner with back camera constraint directly
         try {
           await html5QrCode.start({ facingMode: "environment" }, config, qrSuccessCallback, () => {});
           return;
         } catch (envErr) {
-          console.warn("facingMode environment failed, trying default user camera:", envErr);
-        }
+          console.warn("Back camera facingMode environment failed, trying getCameras fallback:", envErr);
+          try {
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length > 0) {
+              const backCam = cameras.find(c => {
+                const label = (c.label || '').toLowerCase();
+                return label.includes('back') || label.includes('rear') || label.includes('environment');
+              }) || cameras[cameras.length - 1];
 
-        // Method 3: Fallback to user camera
-        await html5QrCode.start({ facingMode: "user" }, config, qrSuccessCallback, () => {});
+              await html5QrCode.start(backCam ? backCam.id : cameras[0].id, config, qrSuccessCallback, () => {});
+              return;
+            }
+          } catch (_) {}
+
+          // Final fallback to user camera
+          await html5QrCode.start({ facingMode: "user" }, config, qrSuccessCallback, () => {});
+        }
 
       } catch (err) {
         console.error("Camera startup error:", err);
-        alert("⚠️ Camera Error: Please grant camera permissions in your browser settings to scan QR codes.");
         setCameraActive(false);
       }
     }, 300);
